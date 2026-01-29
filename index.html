@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>FanProjects</title>
+  <meta name="description" content="Fan projects by fans, for fans." />
+
+  <!-- helps the "background appears" intro feel smooth -->
+  <link rel="preload" as="image" href="./assets/logo-bg.png" />
+
+  <link rel="stylesheet" href="./css/styles.css" />
+</head>
+
+<body class="home">
+  <header class="site-header">
+    <nav class="nav">
+      <a class="brand" href="./index.html" aria-label="Home">
+        <img class="brand-logo" src="./assets/logo-nav.png" alt="" aria-hidden="true">
+        <span class="brand-name">FanProjects</span>
+      </a>
+
+      <div class="nav-links">
+        <a class="active" href="./index.html">Home</a>
+        <a href="./projects.html">Projects</a>
+        <a href="./contact.html">Contact</a>
+      </div>
+    </nav>
+  </header>
+
+  <main class="hero" aria-label="Homepage intro">
+    <div class="bg" aria-hidden="true"></div>
+    <div class="overlay" aria-hidden="true"></div>
+
+    <button class="reveal-btn" id="revealBtn" type="button" aria-controls="heroContent">
+      Click
+    </button>
+
+    <section class="hero-content" id="heroContent" aria-hidden="true">
+      <p class="hero-text">
+        This is a fan project platform made by fans, for fans. </p>
+        Find running projects, join planned
+        lightshows, and take part directly through the site.
+      </p>
+
+      <div class="hero-actions">
+        <a class="btn primary" href="./projects.html">Explore Projects</a>
+        <a class="btn" href="./contact.html">Get Help / Contact</a>
+      </div>
+
+      <p class="hero-subhint">
+        Some projects are only featured as info.</p> 
+        Others run here, including synced phone lightshows.
+      </p>
+    </section>
+  </main>
+
+  <script src="./js/main.js"></script>
+</body>
+</html>
