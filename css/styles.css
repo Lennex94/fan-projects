@@ -118,18 +118,11 @@ a{ color:inherit; text-decoration:none; }
   transition: opacity 1.6s ease, transform 1.9s ease, filter 1.9s ease;
 }
 
-/* Mobile: show the whole background image (no cropping) */
 @media (max-width: 768px){
-  .hero{
-    height: 100svh; /* nicer on mobile than 100vh */
-  }
-
   .bg{
-    background-size: contain;
+    background-image: url("../assets/logo-bg-mobile.png");
+    background-size: cover;
     background-position: center;
-    background-repeat: no-repeat;
-
-    /* optional: looks better on phones */
     opacity: .75;
     transform: none;
   }
