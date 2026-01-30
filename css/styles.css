@@ -766,38 +766,49 @@ input:focus, select:focus, textarea:focus{
 }
 
 /* Start Button overlay */
-.run-start{
-  position: fixed;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 5;
-
-  padding: 14px 22px;
-  border-radius: 999px;
-  border: 1px solid rgba(255,255,255,.16);
-  background: rgba(255,255,255,.06);
-  color: rgba(233,236,243,.95);
-  cursor: pointer;
-
-  letter-spacing: .08em;
-  text-transform: uppercase;
-  backdrop-filter: blur(10px);
-
-  transition: opacity .35s ease, transform .35s ease, border-color .2s ease, background .2s ease;
+.run-page{
+  margin:0;
+  height:100vh;
+  overflow:hidden;
+  background:#000;
 }
 
-.run-start:hover{
-  border-color: rgba(124,255,216,.30);
-  background: rgba(124,255,216,.08);
+.run-screen{
+  position:fixed;
+  inset:0;
+  background:#000;
+  z-index:1;
+
+  /* smoother + bright */
+  transition: background-color 650ms ease, filter 200ms ease;
+  will-change: background-color, filter;
+}
+
+.run-start{
+  position:fixed;
+  left:50%;
+  top:50%;
+  transform:translate(-50%,-50%);
+  z-index:5;
+
+  padding:14px 22px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.18);
+  background:rgba(255,255,255,.06);
+  color:rgba(233,236,243,.95);
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  cursor:pointer;
+  backdrop-filter: blur(10px);
+
+  transition: opacity .35s ease, transform .35s ease;
 }
 
 .run-page.running .run-start{
-  opacity: 0;
-  pointer-events: none;
-  transform: translate(-50%, -50%) translateY(10px);
+  opacity:0;
+  pointer-events:none;
+  transform:translate(-50%,-50%) translateY(10px);
 }
-
 
 @media (max-width: 720px){
   .run-stats{ grid-template-columns: 1fr; }
