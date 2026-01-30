@@ -5,24 +5,24 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Join • Together, Together</title>
   <meta name="description" content="Fullscreen beat-reactive color mode." />
-  <link rel="stylesheet" href="./css/styles.css?v=12" />
+  <link rel="stylesheet" href="./css/styles.css?v=14" />
 </head>
 
 <body class="run-page">
-  <!-- Fullscreen color surface -->
   <div id="screen" class="run-screen" aria-hidden="true"></div>
 
-  <!-- Start overlay (only thing visible before permission) -->
-  <button id="startBtn" class="run-start" type="button">
-    Start
-  </button>
+  <button id="startBtn" class="run-start" type="button">Start</button>
 
-  <!-- aubiojs (WASM) -->
+  <!-- expose join params for later (block waves etc.) -->
+  <script>
+    const p = new URLSearchParams(location.search);
+    window.FP_JOIN = {
+      level: p.get("level") || "",
+      block: p.get("block") || ""
+    };
+  </script>
+
   <script src="https://unpkg.com/aubiojs"></script>
-  <script src="./js/run-hs-together-together.js?v=12"></script>
-
-  <script type="module" src="./js/hs-visualizer.js"></script>
-
+  <script src="./js/run-hs-together-together.js?v=14"></script>
 </body>
 </html>
-
