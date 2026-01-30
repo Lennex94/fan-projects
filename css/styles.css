@@ -740,205 +740,62 @@ input:focus, select:focus, textarea:focus{
 }
 
 /* ---- RUN PAGE (minimal text test + pulse) ---- */
+/* =========================
+   RUN PAGE (Visualizer)
+   ========================= */
+
 .run-page{
-  background: var(--bg);
-  min-height: 100svh;
-}
-
-.run-wrap{
-  min-height: 100svh;
-  display: grid;
-  place-items: center;
-  padding: calc(var(--nav-h) + 22px) 18px 28px;
-}
-
-.run-card{
-  width: min(880px, 92vw);
-  border: 1px solid rgba(255,255,255,.10);
-  border-radius: 22px;
-  background: rgba(255,255,255,.04);
-  box-shadow: 0 18px 60px rgba(0,0,0,.45);
-  padding: 22px;
-}
-
-.run-title{
   margin: 0;
-  font-size: clamp(1.4rem, 3vw, 2rem);
-  letter-spacing: -0.02em;
-}
-
-.run-sub{
-  margin-top: 10px;
-  color: rgba(233,236,243,.78);
-  line-height: 1.7;
-  max-width: 70ch;
-}
-
-.run-row{
-  margin-top: 16px;
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-.run-stats{
-  margin-top: 18px;
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
-}
-
-.stat{
-  border: 1px solid rgba(255,255,255,.08);
-  background: rgba(0,0,0,.20);
-  border-radius: 18px;
-  padding: 12px;
-}
-
-.stat-label{
-  font-size: .78rem;
-  color: rgba(169,176,194,.95);
-  letter-spacing: .06em;
-  text-transform: uppercase;
-}
-
-.stat-value{
-  margin-top: 6px;
-  font-size: 1.2rem;
-  color: rgba(233,236,243,.92);
-}
-
-.run-pulseWrap{
-  margin-top: 18px;
-  height: 140px;
-  border-radius: 22px;
-  border: 1px solid rgba(255,255,255,.08);
-  background: rgba(0,0,0,.22);
-  display: grid;
-  place-items: center;
+  height: 100vh;
   overflow: hidden;
+  background: #000;
+  touch-action: manipulation;
 }
 
-.run-pulse{
-  width: 42px;
-  height: 42px;
-  border-radius: 999px;
-  background: rgba(124,255,216,.35);
-  box-shadow: 0 0 30px rgba(124,255,216,.25);
-  transform: scale(1);
-  opacity: .75;
-}
-
-.run-pulse.is-beat{
-  animation: beatPop .22s ease-out;
-}
-
-@keyframes beatPop{
-  0%{ transform: scale(1); opacity: .75; }
-  50%{ transform: scale(2.2); opacity: 1; }
-  100%{ transform: scale(1); opacity: .80; }
-}
-
-.run-hint{
-  margin-top: 14px;
-  color: rgba(169,176,194,.92);
-  font-size: .95rem;
-  line-height: 1.6;
-}
-
-/* ===== RUN FULLSCREEN COLOR MODE ===== */
-.run-page{
-  margin:0;
-  background: #07080b;
-  height: 100svh;
-  overflow: hidden;
-}
-
-/* fullscreen color surface */
+/* Vollbild-Farbfläche */
 .run-screen{
   position: fixed;
   inset: 0;
-  background: #07080b;
-  display: none; /* shown when running */
-  transition: background-color 260ms ease;
+  background: #000;
+  opacity: 1;
+  z-index: 1;
+
+  /* smooth transitions */
+  transition: background-color 420ms ease, filter 520ms ease;
+  will-change: background-color, filter;
 }
 
-/* gentle pulse on beat */
-.run-screen{
-  position: fixed;
-  inset: 0;
-  background: var(--bgColor, #07080b);
-  display: none;
-  transition: background-color var(--fadeMs, 1200ms) ease;
-}
-
-/* Beat-Pulse (soft, nicht Strobo) */
-.run-screen.pulse{
-  animation: beatGlow var(--pulseMs, 650ms) ease-out;
-}
-
-@keyframes beatGlow{
-  0%{ filter: brightness(1); }
-  45%{ filter: brightness(var(--pulseStrength, 1.12)); }
-  100%{ filter: brightness(1); }
-}
-
-/* Sparkle overlay (nur manchmal, nur manche Phones) */
-.run-screen::after{
-  content:"";
-  position:absolute;
-  inset:0;
-  pointer-events:none;
-  opacity: 0;
-  background:
-    radial-gradient(circle at 18% 22%, rgba(255,255,255,.22), transparent 26%),
-    radial-gradient(circle at 72% 38%, rgba(255,255,255,.18), transparent 28%),
-    radial-gradient(circle at 42% 68%, rgba(255,255,255,.16), transparent 30%),
-    radial-gradient(circle at 86% 78%, rgba(255,255,255,.14), transparent 32%),
-    linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,0));
-  mix-blend-mode: screen;
-}
-
-.run-screen.sparkle::after{
-  animation: sparkleFlash 240ms ease-out;
-}
-
-@keyframes sparkleFlash{
-  0%{ opacity: 0; }
-  40%{ opacity: .55; }
-  100%{ opacity: 0; }
-}
-
-/* Start button overlay */
+/* Start Button overlay */
 .run-start{
   position: fixed;
   left: 50%;
-  bottom: 10vh;
-  transform: translateX(-50%);
-  z-index: 10;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 5;
 
-  padding: 16px 22px;
+  padding: 14px 22px;
   border-radius: 999px;
   border: 1px solid rgba(255,255,255,.16);
-  background: rgba(255,255,255,.08);
-  color: rgba(233,236,243,.92);
-  letter-spacing: .10em;
-  text-transform: uppercase;
+  background: rgba(255,255,255,.06);
+  color: rgba(233,236,243,.95);
   cursor: pointer;
 
+  letter-spacing: .08em;
+  text-transform: uppercase;
   backdrop-filter: blur(10px);
+
+  transition: opacity .35s ease, transform .35s ease, border-color .2s ease, background .2s ease;
 }
 
-.run-start.hidden{
+.run-start:hover{
+  border-color: rgba(124,255,216,.30);
+  background: rgba(124,255,216,.08);
+}
+
+.run-page.running .run-start{
   opacity: 0;
   pointer-events: none;
-  transform: translateX(-50%) translateY(10px);
-  transition: opacity .35s ease, transform .35s ease;
-}
-
-/* when running, show screen */
-body.running .run-screen{
-  display: block;
+  transform: translate(-50%, -50%) translateY(10px);
 }
 
 
