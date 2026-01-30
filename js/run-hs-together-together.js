@@ -1,3 +1,26 @@
+import { getBlockProgress } from "./stadium-map.js";
+
+// 1) block/rang holen: URL -> localStorage -> fallback
+const params = new URLSearchParams(location.search);
+const level = params.get("level") || localStorage.getItem("fp_level") || "lower";
+const block = params.get("block") || localStorage.getItem("fp_block") || "117";
+
+// 2) delay berechnen
+const sweepDurationMs = 9000;     // wie lange eine Welle einmal ums Stadion braucht (tweakbar)
+const upperOffsetMs = 12000;      // Unterrang startet früher, Oberrang kommt später (tweakbar)
+
+const info = getBlockProgress(level, block);
+let delayMs = 0;
+
+if (info) delayMs = info.t * sweepDurationMs;
+if (level === "upper") delayMs += upperOffsetMs;
+
+// optional debug
+if (params.get("debug") === "1") {
+  console.log("[FP] level:", level, "block:", block, "info:", info, "delayMs:", delayMs);
+}
+
+
 (() => {
   const startBtn = document.getElementById("startBtn");
   const screen = document.getElementById("screen");
@@ -191,3 +214,4 @@
   startBtn.addEventListener("click", start);
   window.addEventListener("pagehide", cleanup);
 })();
+
