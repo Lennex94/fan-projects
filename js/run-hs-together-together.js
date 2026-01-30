@@ -12,36 +12,44 @@
   let lastBeatAt = 0;
   const MIN_BEAT_GAP_MS = 180;
 
-  // ==== Palette (später easy anpassbar) ====
-  const palette = [
-    "#7cffd8", "#7aa2ff", "#ff4fd8", "#ffd36e",
-    "#a96bff", "#58ff7a", "#ff6b6b", "#5ef1ff"
-  ];
-
-  // ==== Scenes (Blocks) ====
-  // beats = wie lange der Abschnitt dauert
-  // colorEvery = nur alle X Beats neue Farbe (z.B. 8 = sehr langsam)
-  // fadeMs = wie weich die Farb-Übergänge sind
-  // pulseMs / pulseStrength = wie “hart” der Beat-Puls ist
-  const scenes = [
-    { name: "Intro", beats: 32, colorEvery: 8, fadeMs: 1400, pulseMs: 900, pulseStrength: 1.08 },
-    { name: "Build", beats: 32, colorEvery: 4, fadeMs: 1000, pulseMs: 700, pulseStrength: 1.12 },
-    { name: "Main",  beats: 64, colorEvery: 2, fadeMs: 650,  pulseMs: 420, pulseStrength: 1.15 },
-    { name: "Outro", beats: 32, colorEvery: 8, fadeMs: 1600, pulseMs: 950, pulseStrength: 1.06 }
-  ];
-
-  let sceneIndex = 0;
-  let beatInScene = 0;
-  let globalBeat = 0;
-  let colorIndex = 0;
-
   const HOP_SIZE = 512;
   const BUFFER_SIZE = 1024;
 
-  function applyScene(scene) {
-    screen.style.setProperty("--fadeMs", scene.fadeMs + "ms");
-    screen.style.setProperty("--pulseMs", scene.pulseMs + "ms");
-    screen.style.setProperty("--pulseStrength", String(scene.pulseStrength));
+  // --- Palettes (ruhig -> später bunt) ---
+  const palettes = {
+    // Anfang: ein Spektrum (kühl / clean)
+    calm: ["#7aa2ff", "#7cffd8", "#a96bff", "#5ef1ff"],
+
+    // Ab 2 Minuten: full chaos (aber hübsch)
+    full: ["#7cffd8", "#7aa2ff", "#ff4fd8", "#ffd36e", "#a96bff", "#58ff7a", "#ff6b6b", "#5ef1ff"]
+  };
+
+  // --- Timeline / Blocks (zeitbasiert, stabiler als Beat-Count) ---
+  // until: Sekunden seit Start
+  // colorEvery: nur alle X Beats neue Farbe (langsamer = hochwertiger Look)
+  // fadeMs: Übergangsdauer
+  // pulseMs/pulseStrength: Beat-Puls
+  // sparkleChance: Wahrscheinlichkeit pro Beat, dass ein Phone sparkelt
+  const timeline = [
+    { until: 30,  palette: "calm", colorEvery: 8,  fadeMs: 1800, pulseMs: 850, pulseStrength: 1.08, sparkleChance: 0.04 },
+    { until: 120, palette: "calm", colorEvery: 6,  fadeMs: 1400, pulseMs: 720, pulseStrength: 1.10, sparkleChance: 0.07 },
+
+    // ab 2 Minuten: bunter + etwas lebendiger
+    { until: 9999, palette: "full", colorEvery: 4, fadeMs: 950, pulseMs: 520, pulseStrength: 1.13, sparkleChance: 0.13 }
+  ];
+
+  let startTime = 0;
+  let globalBeat = 0;
+  let colorIndex = 0;
+
+  function getStage(elapsedSec) {
+    return timeline.find(t => elapsedSec < t.until) || timeline[timeline.length - 1];
+  }
+
+  function applyStage(stage) {
+    screen.style.setProperty("--fadeMs", stage.fadeMs + "ms");
+    screen.style.setProperty("--pulseMs", stage.pulseMs + "ms");
+    screen.style.setProperty("--pulseStrength", String(stage.pulseStrength));
   }
 
   function setColor(hex) {
@@ -54,10 +62,16 @@
     screen.classList.add("pulse");
   }
 
-  function nextScene() {
-    sceneIndex = (sceneIndex + 1) % scenes.length;
-    beatInScene = 0;
-    applyScene(scenes[sceneIndex]);
+  function sparkle() {
+    screen.classList.remove("sparkle");
+    void screen.offsetHeight;
+    screen.classList.add("sparkle");
+  }
+
+  // Pick next color in current palette (in order, nicht random-chaos)
+  function nextColor(paletteArr) {
+    colorIndex = (colorIndex + 1) % paletteArr.length;
+    return paletteArr[colorIndex];
   }
 
   function onBeat() {
@@ -66,22 +80,23 @@
     lastBeatAt = now;
 
     globalBeat++;
-    beatInScene++;
 
-    const scene = scenes[sceneIndex];
+    const elapsedSec = (now - startTime) / 1000;
+    const stage = getStage(elapsedSec);
+    applyStage(stage);
 
-    // Pulse on EVERY beat (soft)
+    // soft pulse on every beat
     pulse();
 
-    // Only change color every N beats (slower, nicer)
-    if (globalBeat % scene.colorEvery === 0) {
-      colorIndex = (colorIndex + 1) % palette.length;
-      setColor(palette[colorIndex]);
+    // sparkle on some phones sometimes (dezent)
+    if (Math.random() < stage.sparkleChance) {
+      sparkle();
     }
 
-    // Move to next scene after X beats
-    if (beatInScene >= scene.beats) {
-      nextScene();
+    // slower color change cadence
+    if (globalBeat % stage.colorEvery === 0) {
+      const pal = palettes[stage.palette] || palettes.full;
+      setColor(nextColor(pal));
     }
   }
 
@@ -107,16 +122,9 @@
     try { if (processor) processor.disconnect(); } catch {}
     try { if (source) source.disconnect(); } catch {}
     try { if (gainZero) gainZero.disconnect(); } catch {}
-
     if (stream) stream.getTracks().forEach(t => t.stop());
     if (audioCtx) audioCtx.close().catch(() => {});
-
-    audioCtx = null;
-    stream = null;
-    source = null;
-    processor = null;
-    gainZero = null;
-    tempo = null;
+    audioCtx = null; stream = null; source = null; processor = null; gainZero = null; tempo = null;
   }
 
   async function start() {
@@ -126,14 +134,14 @@
     document.body.classList.add("running");
     screen.style.display = "block";
 
-    // init scene + color
-    sceneIndex = 0;
-    beatInScene = 0;
+    startTime = performance.now();
     globalBeat = 0;
     colorIndex = 0;
 
-    applyScene(scenes[sceneIndex]);
-    setColor(palette[colorIndex]);
+    // initial: calm palette first color
+    const first = palettes.calm[0];
+    setColor(first);
+    applyStage(timeline[0]);
 
     await enterFullscreen();
     await requestWakeLock();
