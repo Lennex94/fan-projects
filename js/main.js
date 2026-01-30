@@ -111,3 +111,29 @@ document.getElementById("fpJoinBtn")?.addEventListener("click", () => {
   window.location.href = "./hs-visualizer.html";
 });
 
+// --- Project join: Level/Block -> run page (fixes 404 + removes old hs-visualizer.html usage) ---
+(function () {
+  const joinBtn = document.getElementById("fpJoinBtn");
+  const levelEl = document.getElementById("fpLevel");
+  const blockEl = document.getElementById("fpBlock");
+
+  if (!joinBtn || !levelEl || !blockEl) return;
+
+  function goJoin() {
+    const level = (levelEl.value || "").trim();
+    const block = (blockEl.value || "").trim();
+
+    const params = new URLSearchParams();
+    if (level) params.set("level", level);
+    if (block) params.set("block", block);
+
+    const url = "./run-hs-together-together.html" + (params.toString() ? `?${params.toString()}` : "");
+    window.location.href = url;
+  }
+
+  joinBtn.addEventListener("click", goJoin);
+
+  blockEl.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") goJoin();
+  });
+})();
