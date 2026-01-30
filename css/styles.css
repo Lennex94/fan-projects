@@ -846,6 +846,67 @@ input:focus, select:focus, textarea:focus{
   line-height: 1.6;
 }
 
+/* ===== RUN FULLSCREEN COLOR MODE ===== */
+.run-page{
+  margin:0;
+  background: #07080b;
+  height: 100svh;
+  overflow: hidden;
+}
+
+/* fullscreen color surface */
+.run-screen{
+  position: fixed;
+  inset: 0;
+  background: #07080b;
+  display: none; /* shown when running */
+  transition: background-color 260ms ease;
+}
+
+/* gentle pulse on beat */
+.run-screen.pulse{
+  animation: beatGlow 180ms ease-out;
+}
+
+@keyframes beatGlow{
+  0%{ filter: brightness(1); }
+  50%{ filter: brightness(1.18); }
+  100%{ filter: brightness(1); }
+}
+
+/* Start button overlay */
+.run-start{
+  position: fixed;
+  left: 50%;
+  bottom: 10vh;
+  transform: translateX(-50%);
+  z-index: 10;
+
+  padding: 16px 22px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.16);
+  background: rgba(255,255,255,.08);
+  color: rgba(233,236,243,.92);
+  letter-spacing: .10em;
+  text-transform: uppercase;
+  cursor: pointer;
+
+  backdrop-filter: blur(10px);
+}
+
+.run-start.hidden{
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(-50%) translateY(10px);
+  transition: opacity .35s ease, transform .35s ease;
+}
+
+/* when running, show screen */
+body.running .run-screen{
+  display: block;
+}
+
+
 @media (max-width: 720px){
   .run-stats{ grid-template-columns: 1fr; }
 }
