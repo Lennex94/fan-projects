@@ -12,39 +12,77 @@
   let lastBeatAt = 0;
   const MIN_BEAT_GAP_MS = 180;
 
-  // Farbe-Palette (kannst du später anpassen)
+  // ==== Palette (später easy anpassbar) ====
   const palette = [
-    "#7cffd8", // mint neon
-    "#7aa2ff", // soft blue
-    "#ff4fd8", // pink
-    "#ffd36e", // warm gold
-    "#a96bff", // purple
-    "#58ff7a", // green
-    "#ff6b6b", // red-ish
-    "#5ef1ff"  // cyan
+    "#7cffd8", "#7aa2ff", "#ff4fd8", "#ffd36e",
+    "#a96bff", "#58ff7a", "#ff6b6b", "#5ef1ff"
   ];
+
+  // ==== Scenes (Blocks) ====
+  // beats = wie lange der Abschnitt dauert
+  // colorEvery = nur alle X Beats neue Farbe (z.B. 8 = sehr langsam)
+  // fadeMs = wie weich die Farb-Übergänge sind
+  // pulseMs / pulseStrength = wie “hart” der Beat-Puls ist
+  const scenes = [
+    { name: "Intro", beats: 32, colorEvery: 8, fadeMs: 1400, pulseMs: 900, pulseStrength: 1.08 },
+    { name: "Build", beats: 32, colorEvery: 4, fadeMs: 1000, pulseMs: 700, pulseStrength: 1.12 },
+    { name: "Main",  beats: 64, colorEvery: 2, fadeMs: 650,  pulseMs: 420, pulseStrength: 1.15 },
+    { name: "Outro", beats: 32, colorEvery: 8, fadeMs: 1600, pulseMs: 950, pulseStrength: 1.06 }
+  ];
+
+  let sceneIndex = 0;
+  let beatInScene = 0;
+  let globalBeat = 0;
   let colorIndex = 0;
 
   const HOP_SIZE = 512;
   const BUFFER_SIZE = 1024;
 
-  function setColor(hex) {
-    // Smooth transition is done in CSS
-    screen.style.backgroundColor = hex;
+  function applyScene(scene) {
+    screen.style.setProperty("--fadeMs", scene.fadeMs + "ms");
+    screen.style.setProperty("--pulseMs", scene.pulseMs + "ms");
+    screen.style.setProperty("--pulseStrength", String(scene.pulseStrength));
   }
 
-  function beatTick() {
+  function setColor(hex) {
+    screen.style.setProperty("--bgColor", hex);
+  }
+
+  function pulse() {
+    screen.classList.remove("pulse");
+    void screen.offsetHeight;
+    screen.classList.add("pulse");
+  }
+
+  function nextScene() {
+    sceneIndex = (sceneIndex + 1) % scenes.length;
+    beatInScene = 0;
+    applyScene(scenes[sceneIndex]);
+  }
+
+  function onBeat() {
     const now = performance.now();
     if (now - lastBeatAt < MIN_BEAT_GAP_MS) return;
     lastBeatAt = now;
 
-    colorIndex = (colorIndex + 1) % palette.length;
-    setColor(palette[colorIndex]);
+    globalBeat++;
+    beatInScene++;
 
-    // optional “pulse”: short brightness bump, not strobe
-    screen.classList.remove("pulse");
-    void screen.offsetHeight;
-    screen.classList.add("pulse");
+    const scene = scenes[sceneIndex];
+
+    // Pulse on EVERY beat (soft)
+    pulse();
+
+    // Only change color every N beats (slower, nicer)
+    if (globalBeat % scene.colorEvery === 0) {
+      colorIndex = (colorIndex + 1) % palette.length;
+      setColor(palette[colorIndex]);
+    }
+
+    // Move to next scene after X beats
+    if (beatInScene >= scene.beats) {
+      nextScene();
+    }
   }
 
   async function requestWakeLock() {
@@ -54,7 +92,6 @@
   }
 
   async function enterFullscreen() {
-    // Fullscreen only works from a user gesture, so do it right after Start click
     try {
       const el = document.documentElement;
       if (el.requestFullscreen) await el.requestFullscreen();
@@ -83,18 +120,19 @@
   }
 
   async function start() {
-    if (!window.isSecureContext) {
-      // HTTPS required for mic
-      return;
-    }
+    if (!window.isSecureContext) return;
 
     startBtn.disabled = true;
-
-    // Make sure color screen is visible immediately
     document.body.classList.add("running");
     screen.style.display = "block";
 
-    // start with the first color
+    // init scene + color
+    sceneIndex = 0;
+    beatInScene = 0;
+    globalBeat = 0;
+    colorIndex = 0;
+
+    applyScene(scenes[sceneIndex]);
     setColor(palette[colorIndex]);
 
     await enterFullscreen();
@@ -102,14 +140,9 @@
 
     try {
       stream = await navigator.mediaDevices.getUserMedia({
-        audio: {
-          echoCancellation: false,
-          noiseSuppression: false,
-          autoGainControl: false
-        }
+        audio: { echoCancellation:false, noiseSuppression:false, autoGainControl:false }
       });
     } catch {
-      // Permission denied or not available
       document.body.classList.remove("running");
       startBtn.disabled = false;
       return;
@@ -121,7 +154,6 @@
     source = audioCtx.createMediaStreamSource(stream);
     processor = audioCtx.createScriptProcessor(HOP_SIZE, 1, 1);
 
-    // connect to destination with zero gain (some browsers need it)
     gainZero = audioCtx.createGain();
     gainZero.gain.value = 0;
 
@@ -129,7 +161,6 @@
     processor.connect(gainZero);
     gainZero.connect(audioCtx.destination);
 
-    // load aubio tempo detector
     try {
       await initAubio(audioCtx.sampleRate);
     } catch {
@@ -139,21 +170,16 @@
       return;
     }
 
-    // After we’re live, hide start button completely
     startBtn.classList.add("hidden");
 
     processor.onaudioprocess = (ev) => {
       if (!tempo) return;
       const input = ev.inputBuffer.getChannelData(0);
-
-      // aubio beat detection
       const isBeat = tempo.do(input);
-      if (isBeat) beatTick();
+      if (isBeat) onBeat();
     };
   }
 
   startBtn.addEventListener("click", start);
-
-  // Cleanup on navigation
   window.addEventListener("pagehide", cleanup);
 })();
