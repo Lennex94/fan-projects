@@ -2,151 +2,120 @@
   const screen = document.getElementById("screen");
   const startBtn = document.getElementById("startBtn");
 
-  if (!screen || !startBtn) {
-    console.warn("Missing #screen or #startBtn in HTML.");
-    return;
-  }
+  if (!screen || !startBtn) return;
 
-  console.log("[run] loaded", window.FP_JOIN || {});
-
-  // --- simple palette logic (block influences palette start) ---
-  const blockStr = (window.FP_JOIN?.block || "").toString();
-  const blockNum = parseInt(blockStr, 10);
-  const seed = Number.isFinite(blockNum) ? blockNum : 0;
-
-  const palettes = [
-    ["#00ffd5", "#7aa2ff", "#b57cff", "#ff6bd6"],          // neon cool
-    ["#ffd36b", "#ff7a7a", "#ff3df2", "#7cffd8"],          // warm pop
-    ["#7cffd8", "#00c2ff", "#5bff7a", "#ffee6b"],          // bright
-    ["#7aa2ff", "#b57cff", "#00ffd5", "#ff6b9d"],          // dreamy
-  ];
-  const palette = palettes[Math.abs(seed) % palettes.length];
-
-  let audioCtx;
-  let analyser;
-  let data;
-  let rafId;
-
-  // Beat detection variables
-  let avg = 0;        // smoothed energy avg
-  let variance = 0;   // smoothed variance
-  let lastBeat = 0;
-  let colorIndex = 0;
-
-  // CSS-friendly transitions
-  screen.style.transition = "background-color 600ms ease, filter 220ms ease";
+  // Initial state
+  screen.setAttribute("aria-hidden", "false");
   screen.style.backgroundColor = "#000";
-  screen.style.filter = "brightness(1)";
 
-  function nextColor() {
-    colorIndex = (colorIndex + 1) % palette.length;
-    return palette[colorIndex];
+  const clamp = (n, a, b) => Math.max(a, Math.min(b, n));
+
+  // Palette: erst “clean”, nach 2 Minuten bunter
+  function pickColor(elapsedSec) {
+    const calm = ["#7cffd8", "#7aa2ff", "#b37cff", "#ffffff"];
+    const wild = ["#ff3b3b", "#ff9f1a", "#ffe600", "#7cff3b", "#00f5ff", "#7aa2ff", "#b37cff", "#ff4dff"];
+
+    const palette = elapsedSec < 120 ? calm : wild;
+    return palette[Math.floor(Math.random() * palette.length)];
   }
 
-  function pulse() {
-    screen.style.filter = "brightness(1.35)";
-    setTimeout(() => (screen.style.filter = "brightness(1)"), 120);
-  }
+  let audioCtx, analyser, data;
+  let startedAt = 0;
 
-  function computeRMS(bytes) {
-    // time-domain bytes: 0..255, center 128
+  // Beat-ish detection via RMS + adaptive threshold (läuft überall, auch mobile)
+  let avg = 0;
+  let lastHit = 0;
+
+  function rmsFromTimeDomain(arr) {
     let sum = 0;
-    for (let i = 0; i < bytes.length; i++) {
-      const v = (bytes[i] - 128) / 128;
+    for (let i = 0; i < arr.length; i++) {
+      const v = (arr[i] - 128) / 128;
       sum += v * v;
     }
-    return Math.sqrt(sum / bytes.length);
+    return Math.sqrt(sum / arr.length);
   }
 
-  function tick() {
-    analyser.getByteTimeDomainData(data);
-
-    const rms = computeRMS(data);
-
-    // exponential smoothing for avg + variance
-    const a = 0.05; // smoothing factor
-    const diff = rms - avg;
-    avg += a * diff;
-    variance = (1 - a) * variance + a * diff * diff;
-
-    const std = Math.sqrt(variance);
-    const threshold = avg + std * 1.6;
-
-    const now = performance.now();
-
-    // beat gate: min 180ms between beats
-    if (rms > threshold && now - lastBeat > 180) {
-      lastBeat = now;
-
-      // beat action
-      screen.style.backgroundColor = nextColor();
-      pulse();
-    }
-
-    rafId = requestAnimationFrame(tick);
+  function pulse(strength) {
+    // brightness pulse instead of instant chaotic flashes
+    const b = 1 + clamp(strength * 1.8, 0, 1.2);
+    screen.style.filter = `brightness(${b}) saturate(1.1)`;
+    clearTimeout(pulse._t);
+    pulse._t = setTimeout(() => {
+      screen.style.filter = "brightness(1) saturate(1)";
+    }, 220);
   }
 
   async function start() {
     startBtn.disabled = true;
-    startBtn.textContent = "Starting…";
 
     try {
-      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-
-      // iOS/Safari needs explicit resume inside user gesture
-      if (audioCtx.state === "suspended") {
-        await audioCtx.resume();
-      }
-
+      // mic permission
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: {
           echoCancellation: false,
           noiseSuppression: false,
-          autoGainControl: false,
-        },
-        video: false,
+          autoGainControl: false
+        }
       });
 
-      const source = audioCtx.createMediaStreamSource(stream);
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      await audioCtx.resume();
 
+      const src = audioCtx.createMediaStreamSource(stream);
       analyser = audioCtx.createAnalyser();
       analyser.fftSize = 2048;
-
       data = new Uint8Array(analyser.fftSize);
 
-      source.connect(analyser);
+      src.connect(analyser);
 
-      // Visual: hide button, start loop
-      startBtn.style.opacity = "0";
-      startBtn.style.pointerEvents = "none";
+      document.body.classList.add("running");
+      startedAt = performance.now();
 
-      // Start with a nice first color so you SEE it's alive
-      screen.style.backgroundColor = palette[0];
+      // optional fullscreen (nicht überall supported)
+      if (document.documentElement.requestFullscreen) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      }
 
-      tick();
+      requestAnimationFrame(loop);
     } catch (err) {
-      console.error(err);
-
-      // Put button back with a useful message
+      console.error("Mic start failed:", err);
       startBtn.disabled = false;
-      startBtn.textContent = "Allow Microphone";
-      startBtn.style.opacity = "1";
-      startBtn.style.pointerEvents = "auto";
-
-      // Small visible feedback without extra UI spam:
-      screen.style.backgroundColor = "#111";
-      screen.style.filter = "brightness(1)";
-
-      // Optional: if you want a hard alert (remove if annoying)
-      alert("Microphone blocked or unavailable. Enable mic permission for this site, then try again.");
     }
   }
 
-  startBtn.addEventListener("click", start);
+  function loop(t) {
+    if (!analyser) return;
 
-  // cleanup on leave
-  window.addEventListener("pagehide", () => {
-    if (rafId) cancelAnimationFrame(rafId);
-    if (audioCtx && audioCtx.state !== "closed") audioCtx.close().catch(() => {});
-  });
+    analyser.getByteTimeDomainData(data);
+    const rms = rmsFromTimeDomain(data);
+
+    // smooth moving average
+    avg = avg * 0.96 + rms * 0.04;
+
+    // adaptive threshold
+    const threshold = avg * 1.45 + 0.008; // tweakable
+    const now = performance.now();
+    const elapsedSec = (now - startedAt) / 1000;
+
+    // beat hit condition + minimum interval
+    if (rms > threshold && (now - lastHit) > 170) {
+      lastHit = now;
+
+      // color + softer pulse
+      const c = pickColor(elapsedSec);
+      screen.style.backgroundColor = c;
+
+      // strength based on "how much above threshold"
+      const strength = clamp((rms - threshold) * 10, 0, 1);
+      pulse(strength);
+    }
+
+    // also keep subtle breathing even without big beats
+    const breathe = 0.92 + clamp((avg * 3.2), 0, 0.18);
+    screen.style.filter = `brightness(${breathe}) saturate(1.05)`;
+
+    requestAnimationFrame(loop);
+  }
+
+  startBtn.addEventListener("click", start);
 })();
