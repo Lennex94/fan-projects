@@ -4,56 +4,51 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Join • Together, Together</title>
-  <meta name="description" content="Join page for the Together, Together fanproject." />
-  <link rel="stylesheet" href="./css/styles.css" />
+  <meta name="description" content="Live beat-synced visualizer for the Together, Together fanproject." />
+  <link rel="stylesheet" href="./css/styles.css?v=1" />
 </head>
 
-<body>
-  <header class="site-header">
-    <nav class="nav">
-      <a class="brand" href="./" aria-label="Home">
-        <img class="brand-logo" src="./assets/logo-nav.png" alt="" aria-hidden="true">
-        <span class="brand-name">FanProjects</span>
-      </a>
-
-      <div class="nav-links">
-        <a href="./index.html">Home</a>
-        <a class="active" href="./projects.html">Projects</a>
-        <a href="./contact.html">Contact</a>
-      </div>
-    </nav>
-  </header>
-
-  <main class="page">
-    <header class="page-head">
-      <h1>Join Project</h1>
-      <p class="lead">
-        This page will become the “animation page” once the concept + tech is locked.
-        For now: we’re still planning.
-      </p>
-    </header>
-
-    <div class="panel">
-      <h2 class="h2">Current state</h2>
-      <p class="muted">
-        We’re exploring beat detection vs. timed cues. When we’re ready, this page will guide participants
-        and run the phone-screen animations.
+<body class="run-page">
+  <main class="run-wrap" aria-label="Run page">
+    <div class="run-card">
+      <h1 class="run-title">Together, Together • Live Mode</h1>
+      <p class="run-sub">
+        Tap start, allow microphone access, then keep your screen on. The visuals react to the music.
       </p>
 
-      <div style="margin-top:14px; display:flex; gap:12px; flex-wrap:wrap;">
-        <a class="btn primary" href="./project-hs-together-together.html">Back to project info</a>
-        <a class="btn" href="https://chat.whatsapp.com/GdYZPWDXeBdItVI70OFyV7" target="_blank" rel="noopener">
-          WhatsApp Community
-        </a>
+      <div class="run-row">
+        <button class="btn primary" id="startBtn" type="button">Start (enable mic)</button>
+        <button class="btn" id="stopBtn" type="button" disabled>Stop</button>
+        <a class="btn" href="./project-hs-together-together.html">Back to Info</a>
       </div>
+
+      <div class="run-stats">
+        <div class="stat">
+          <div class="stat-label">Status</div>
+          <div class="stat-value" id="status">Idle</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">BPM</div>
+          <div class="stat-value" id="bpm">–</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Beats</div>
+          <div class="stat-value" id="beats">0</div>
+        </div>
+      </div>
+
+      <div class="run-pulseWrap" aria-hidden="true">
+        <div class="run-pulse" id="pulse"></div>
+      </div>
+
+      <p class="run-hint">
+        iPhone tip: If it doesn’t start, tap again (Safari loves drama). Also: keep your phone brightness up.
+      </p>
     </div>
-
-    <footer class="footer">
-      <p>© <span id="year"></span> FanProjects</p>
-    </footer>
   </main>
 
-  <script src="./js/main.js"></script>
+  <!-- aubiojs (WASM) -->
+  <script src="https://unpkg.com/aubiojs"></script> <!-- usage per aubiojs docs --> 
+  <script src="./js/run-hs-together-together.js?v=1"></script>
 </body>
 </html>
-
