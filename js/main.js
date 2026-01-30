@@ -98,3 +98,16 @@ if (chips.length && grid) {
     });
   });
 }
+
+// Join selection -> store -> go to visualizer
+document.getElementById("fpJoinBtn")?.addEventListener("click", () => {
+  const level = document.getElementById("fpLevel").value;
+  const block = document.getElementById("fpBlock").value;
+
+  localStorage.setItem("fp_level", level);
+  localStorage.setItem("fp_block", block);
+
+  // WICHTIG: hier deine echte Visualizer-Seite rein
+  window.location.href = "./hs-visualizer.html";
+});
+
