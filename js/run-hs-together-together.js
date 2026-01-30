@@ -1,218 +1,152 @@
-import { getBlockProgress } from "./stadium-map.js";
-
-// 1) block/rang holen: URL -> localStorage -> fallback
-const params = new URLSearchParams(location.search);
-const level = params.get("level") || localStorage.getItem("fp_level") || "lower";
-const block = params.get("block") || localStorage.getItem("fp_block") || "117";
-
-// 2) delay berechnen
-const sweepDurationMs = 9000;     // wie lange eine Welle einmal ums Stadion braucht (tweakbar)
-const upperOffsetMs = 12000;      // Unterrang startet früher, Oberrang kommt später (tweakbar)
-
-const info = getBlockProgress(level, block);
-let delayMs = 0;
-
-if (info) delayMs = info.t * sweepDurationMs;
-if (level === "upper") delayMs += upperOffsetMs;
-
-// optional debug
-if (params.get("debug") === "1") {
-  console.log("[FP] level:", level, "block:", block, "info:", info, "delayMs:", delayMs);
-}
-
-
 (() => {
-  const startBtn = document.getElementById("startBtn");
   const screen = document.getElementById("screen");
+  const startBtn = document.getElementById("startBtn");
 
-  let audioCtx = null;
-  let stream = null;
-  let source = null;
-  let processor = null;
-  let gainZero = null;
-  let tempo = null;
+  if (!screen || !startBtn) {
+    console.warn("Missing #screen or #startBtn in HTML.");
+    return;
+  }
 
-  let lastBeatAt = 0;
-  const MIN_BEAT_GAP_MS = 180;
+  console.log("[run] loaded", window.FP_JOIN || {});
 
-  const HOP_SIZE = 512;
-  const BUFFER_SIZE = 1024;
+  // --- simple palette logic (block influences palette start) ---
+  const blockStr = (window.FP_JOIN?.block || "").toString();
+  const blockNum = parseInt(blockStr, 10);
+  const seed = Number.isFinite(blockNum) ? blockNum : 0;
 
-  // --- Palettes (ruhig -> später bunt) ---
-  const palettes = {
-    // Anfang: ein Spektrum (kühl / clean)
-    calm: ["#7aa2ff", "#7cffd8", "#a96bff", "#5ef1ff"],
-
-    // Ab 2 Minuten: full chaos (aber hübsch)
-    full: ["#7cffd8", "#7aa2ff", "#ff4fd8", "#ffd36e", "#a96bff", "#58ff7a", "#ff6b6b", "#5ef1ff"]
-  };
-
-  // --- Timeline / Blocks (zeitbasiert, stabiler als Beat-Count) ---
-  // until: Sekunden seit Start
-  // colorEvery: nur alle X Beats neue Farbe (langsamer = hochwertiger Look)
-  // fadeMs: Übergangsdauer
-  // pulseMs/pulseStrength: Beat-Puls
-  // sparkleChance: Wahrscheinlichkeit pro Beat, dass ein Phone sparkelt
-  const timeline = [
-    { until: 30,  palette: "calm", colorEvery: 8,  fadeMs: 1800, pulseMs: 850, pulseStrength: 1.08, sparkleChance: 0.04 },
-    { until: 120, palette: "calm", colorEvery: 6,  fadeMs: 1400, pulseMs: 720, pulseStrength: 1.10, sparkleChance: 0.07 },
-
-    // ab 2 Minuten: bunter + etwas lebendiger
-    { until: 9999, palette: "full", colorEvery: 4, fadeMs: 950, pulseMs: 520, pulseStrength: 1.13, sparkleChance: 0.13 }
+  const palettes = [
+    ["#00ffd5", "#7aa2ff", "#b57cff", "#ff6bd6"],          // neon cool
+    ["#ffd36b", "#ff7a7a", "#ff3df2", "#7cffd8"],          // warm pop
+    ["#7cffd8", "#00c2ff", "#5bff7a", "#ffee6b"],          // bright
+    ["#7aa2ff", "#b57cff", "#00ffd5", "#ff6b9d"],          // dreamy
   ];
+  const palette = palettes[Math.abs(seed) % palettes.length];
 
-  let startTime = 0;
-  let globalBeat = 0;
+  let audioCtx;
+  let analyser;
+  let data;
+  let rafId;
+
+  // Beat detection variables
+  let avg = 0;        // smoothed energy avg
+  let variance = 0;   // smoothed variance
+  let lastBeat = 0;
   let colorIndex = 0;
 
-  function getStage(elapsedSec) {
-    return timeline.find(t => elapsedSec < t.until) || timeline[timeline.length - 1];
-  }
+  // CSS-friendly transitions
+  screen.style.transition = "background-color 600ms ease, filter 220ms ease";
+  screen.style.backgroundColor = "#000";
+  screen.style.filter = "brightness(1)";
 
-  function applyStage(stage) {
-    screen.style.setProperty("--fadeMs", stage.fadeMs + "ms");
-    screen.style.setProperty("--pulseMs", stage.pulseMs + "ms");
-    screen.style.setProperty("--pulseStrength", String(stage.pulseStrength));
-  }
-
-  function setColor(hex) {
-    screen.style.setProperty("--bgColor", hex);
+  function nextColor() {
+    colorIndex = (colorIndex + 1) % palette.length;
+    return palette[colorIndex];
   }
 
   function pulse() {
-    screen.classList.remove("pulse");
-    void screen.offsetHeight;
-    screen.classList.add("pulse");
+    screen.style.filter = "brightness(1.35)";
+    setTimeout(() => (screen.style.filter = "brightness(1)"), 120);
   }
 
-  function sparkle() {
-    screen.classList.remove("sparkle");
-    void screen.offsetHeight;
-    screen.classList.add("sparkle");
+  function computeRMS(bytes) {
+    // time-domain bytes: 0..255, center 128
+    let sum = 0;
+    for (let i = 0; i < bytes.length; i++) {
+      const v = (bytes[i] - 128) / 128;
+      sum += v * v;
+    }
+    return Math.sqrt(sum / bytes.length);
   }
 
-  // Pick next color in current palette (in order, nicht random-chaos)
-  function nextColor(paletteArr) {
-    colorIndex = (colorIndex + 1) % paletteArr.length;
-    return paletteArr[colorIndex];
-  }
+  function tick() {
+    analyser.getByteTimeDomainData(data);
 
-  function onBeat() {
-    const now = performance.now() - delayMs;
-    if (now - lastBeatAt < MIN_BEAT_GAP_MS) return;
-    lastBeatAt = now;
+    const rms = computeRMS(data);
 
-    globalBeat++;
+    // exponential smoothing for avg + variance
+    const a = 0.05; // smoothing factor
+    const diff = rms - avg;
+    avg += a * diff;
+    variance = (1 - a) * variance + a * diff * diff;
 
-    const elapsedSec = (now - startTime) / 1000;
-    const stage = getStage(elapsedSec);
-    applyStage(stage);
+    const std = Math.sqrt(variance);
+    const threshold = avg + std * 1.6;
 
-    // soft pulse on every beat
-    pulse();
+    const now = performance.now();
 
-    // sparkle on some phones sometimes (dezent)
-    if (Math.random() < stage.sparkleChance) {
-      sparkle();
+    // beat gate: min 180ms between beats
+    if (rms > threshold && now - lastBeat > 180) {
+      lastBeat = now;
+
+      // beat action
+      screen.style.backgroundColor = nextColor();
+      pulse();
     }
 
-    // slower color change cadence
-    if (globalBeat % stage.colorEvery === 0) {
-      const pal = palettes[stage.palette] || palettes.full;
-      setColor(nextColor(pal));
-    }
-  }
-
-  async function requestWakeLock() {
-    try {
-      if ("wakeLock" in navigator) await navigator.wakeLock.request("screen");
-    } catch {}
-  }
-
-  async function enterFullscreen() {
-    try {
-      const el = document.documentElement;
-      if (el.requestFullscreen) await el.requestFullscreen();
-    } catch {}
-  }
-
-  async function initAubio(sampleRate) {
-    const mod = await window.aubio();
-    tempo = new mod.Tempo(BUFFER_SIZE, HOP_SIZE, sampleRate);
-  }
-
-  function cleanup() {
-    try { if (processor) processor.disconnect(); } catch {}
-    try { if (source) source.disconnect(); } catch {}
-    try { if (gainZero) gainZero.disconnect(); } catch {}
-    if (stream) stream.getTracks().forEach(t => t.stop());
-    if (audioCtx) audioCtx.close().catch(() => {});
-    audioCtx = null; stream = null; source = null; processor = null; gainZero = null; tempo = null;
+    rafId = requestAnimationFrame(tick);
   }
 
   async function start() {
-    if (!window.isSecureContext) return;
-
     startBtn.disabled = true;
-    document.body.classList.add("running");
-    screen.style.display = "block";
-
-    startTime = performance.now();
-    globalBeat = 0;
-    colorIndex = 0;
-
-    // initial: calm palette first color
-    const first = palettes.calm[0];
-    setColor(first);
-    applyStage(timeline[0]);
-
-    await enterFullscreen();
-    await requestWakeLock();
+    startBtn.textContent = "Starting…";
 
     try {
-      stream = await navigator.mediaDevices.getUserMedia({
-        audio: { echoCancellation:false, noiseSuppression:false, autoGainControl:false }
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+      // iOS/Safari needs explicit resume inside user gesture
+      if (audioCtx.state === "suspended") {
+        await audioCtx.resume();
+      }
+
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: false,
+          noiseSuppression: false,
+          autoGainControl: false,
+        },
+        video: false,
       });
-    } catch {
-      document.body.classList.remove("running");
+
+      const source = audioCtx.createMediaStreamSource(stream);
+
+      analyser = audioCtx.createAnalyser();
+      analyser.fftSize = 2048;
+
+      data = new Uint8Array(analyser.fftSize);
+
+      source.connect(analyser);
+
+      // Visual: hide button, start loop
+      startBtn.style.opacity = "0";
+      startBtn.style.pointerEvents = "none";
+
+      // Start with a nice first color so you SEE it's alive
+      screen.style.backgroundColor = palette[0];
+
+      tick();
+    } catch (err) {
+      console.error(err);
+
+      // Put button back with a useful message
       startBtn.disabled = false;
-      return;
+      startBtn.textContent = "Allow Microphone";
+      startBtn.style.opacity = "1";
+      startBtn.style.pointerEvents = "auto";
+
+      // Small visible feedback without extra UI spam:
+      screen.style.backgroundColor = "#111";
+      screen.style.filter = "brightness(1)";
+
+      // Optional: if you want a hard alert (remove if annoying)
+      alert("Microphone blocked or unavailable. Enable mic permission for this site, then try again.");
     }
-
-    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    await audioCtx.resume().catch(() => {});
-
-    source = audioCtx.createMediaStreamSource(stream);
-    processor = audioCtx.createScriptProcessor(HOP_SIZE, 1, 1);
-
-    gainZero = audioCtx.createGain();
-    gainZero.gain.value = 0;
-
-    source.connect(processor);
-    processor.connect(gainZero);
-    gainZero.connect(audioCtx.destination);
-
-    try {
-      await initAubio(audioCtx.sampleRate);
-    } catch {
-      cleanup();
-      document.body.classList.remove("running");
-      startBtn.disabled = false;
-      return;
-    }
-
-    startBtn.classList.add("hidden");
-
-    processor.onaudioprocess = (ev) => {
-      if (!tempo) return;
-      const input = ev.inputBuffer.getChannelData(0);
-      const isBeat = tempo.do(input);
-      if (isBeat) onBeat();
-    };
   }
 
   startBtn.addEventListener("click", start);
-  window.addEventListener("pagehide", cleanup);
+
+  // cleanup on leave
+  window.addEventListener("pagehide", () => {
+    if (rafId) cancelAnimationFrame(rafId);
+    if (audioCtx && audioCtx.state !== "closed") audioCtx.close().catch(() => {});
+  });
 })();
-
-
