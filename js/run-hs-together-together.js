@@ -1,77 +1,78 @@
-// Live beat tracking using aubiojs (WASM)
-// Source usage pattern: <script src="https://unpkg.com/aubiojs"></script> then aubio().then(...) :contentReference[oaicite:1]{index=1}
-
 (() => {
-  const $ = (id) => document.getElementById(id);
-
-  const startBtn = $("startBtn");
-  const stopBtn = $("stopBtn");
-  const statusEl = $("status");
-  const bpmEl = $("bpm");
-  const beatsEl = $("beats");
-  const pulseEl = $("pulse");
+  const startBtn = document.getElementById("startBtn");
+  const screen = document.getElementById("screen");
 
   let audioCtx = null;
   let stream = null;
   let source = null;
   let processor = null;
   let gainZero = null;
+  let tempo = null;
 
-  let tempo = null; // aubio Tempo instance
-  let beatCount = 0;
   let lastBeatAt = 0;
+  const MIN_BEAT_GAP_MS = 180;
 
-  // Settings (tweakable)
-  const HOP_SIZE = 512;      // samples per callback chunk
-  const BUFFER_SIZE = 1024;  // internal buffer window
-  const MIN_BEAT_GAP_MS = 180; // avoid double triggers
+  // Farbe-Palette (kannst du später anpassen)
+  const palette = [
+    "#7cffd8", // mint neon
+    "#7aa2ff", // soft blue
+    "#ff4fd8", // pink
+    "#ffd36e", // warm gold
+    "#a96bff", // purple
+    "#58ff7a", // green
+    "#ff6b6b", // red-ish
+    "#5ef1ff"  // cyan
+  ];
+  let colorIndex = 0;
 
-  function setStatus(msg) {
-    statusEl.textContent = msg;
+  const HOP_SIZE = 512;
+  const BUFFER_SIZE = 1024;
+
+  function setColor(hex) {
+    // Smooth transition is done in CSS
+    screen.style.backgroundColor = hex;
   }
 
-  function flashBeat() {
-    // quick visual pulse
-    pulseEl.classList.remove("is-beat");
-    // force reflow
-    void pulseEl.offsetHeight;
-    pulseEl.classList.add("is-beat");
+  function beatTick() {
+    const now = performance.now();
+    if (now - lastBeatAt < MIN_BEAT_GAP_MS) return;
+    lastBeatAt = now;
+
+    colorIndex = (colorIndex + 1) % palette.length;
+    setColor(palette[colorIndex]);
+
+    // optional “pulse”: short brightness bump, not strobe
+    screen.classList.remove("pulse");
+    void screen.offsetHeight;
+    screen.classList.add("pulse");
   }
 
   async function requestWakeLock() {
     try {
-      if ("wakeLock" in navigator) {
-        await navigator.wakeLock.request("screen");
-      }
-    } catch {
-      // ignore: not supported / blocked
-    }
+      if ("wakeLock" in navigator) await navigator.wakeLock.request("screen");
+    } catch {}
+  }
+
+  async function enterFullscreen() {
+    // Fullscreen only works from a user gesture, so do it right after Start click
+    try {
+      const el = document.documentElement;
+      if (el.requestFullscreen) await el.requestFullscreen();
+    } catch {}
   }
 
   async function initAubio(sampleRate) {
-    if (typeof window.aubio !== "function") {
-      throw new Error("aubiojs not loaded");
-    }
-
     const mod = await window.aubio();
-    if (!mod || !mod.Tempo) throw new Error("Tempo not available in aubiojs");
-
-    // aubio tempo detector
     tempo = new mod.Tempo(BUFFER_SIZE, HOP_SIZE, sampleRate);
   }
 
-  function stopAll() {
+  function cleanup() {
     try { if (processor) processor.disconnect(); } catch {}
     try { if (source) source.disconnect(); } catch {}
     try { if (gainZero) gainZero.disconnect(); } catch {}
 
-    if (stream) {
-      stream.getTracks().forEach((t) => t.stop());
-    }
-
-    if (audioCtx) {
-      audioCtx.close().catch(() => {});
-    }
+    if (stream) stream.getTracks().forEach(t => t.stop());
+    if (audioCtx) audioCtx.close().catch(() => {});
 
     audioCtx = null;
     stream = null;
@@ -79,24 +80,25 @@
     processor = null;
     gainZero = null;
     tempo = null;
-
-    beatCount = 0;
-    beatsEl.textContent = "0";
-    bpmEl.textContent = "–";
-    setStatus("Idle");
-
-    stopBtn.disabled = true;
-    startBtn.disabled = false;
   }
 
   async function start() {
     if (!window.isSecureContext) {
-      setStatus("Error: needs HTTPS");
+      // HTTPS required for mic
       return;
     }
 
     startBtn.disabled = true;
-    setStatus("Requesting microphone…");
+
+    // Make sure color screen is visible immediately
+    document.body.classList.add("running");
+    screen.style.display = "block";
+
+    // start with the first color
+    setColor(palette[colorIndex]);
+
+    await enterFullscreen();
+    await requestWakeLock();
 
     try {
       stream = await navigator.mediaDevices.getUserMedia({
@@ -106,8 +108,9 @@
           autoGainControl: false
         }
       });
-    } catch (e) {
-      setStatus("Mic denied / not available");
+    } catch {
+      // Permission denied or not available
+      document.body.classList.remove("running");
       startBtn.disabled = false;
       return;
     }
@@ -116,11 +119,9 @@
     await audioCtx.resume().catch(() => {});
 
     source = audioCtx.createMediaStreamSource(stream);
-
-    // ScriptProcessorNode is deprecated but widely supported and fine for a first prototype
     processor = audioCtx.createScriptProcessor(HOP_SIZE, 1, 1);
 
-    // Some browsers require the node to be connected to destination
+    // connect to destination with zero gain (some browsers need it)
     gainZero = audioCtx.createGain();
     gainZero.gain.value = 0;
 
@@ -128,46 +129,31 @@
     processor.connect(gainZero);
     gainZero.connect(audioCtx.destination);
 
-    setStatus("Loading beat engine…");
-
+    // load aubio tempo detector
     try {
       await initAubio(audioCtx.sampleRate);
-    } catch (e) {
-      setStatus("Beat engine failed to load");
+    } catch {
+      cleanup();
+      document.body.classList.remove("running");
       startBtn.disabled = false;
       return;
     }
 
-    setStatus("Listening… (play music near your phone)");
-    stopBtn.disabled = false;
-
-    await requestWakeLock();
+    // After we’re live, hide start button completely
+    startBtn.classList.add("hidden");
 
     processor.onaudioprocess = (ev) => {
       if (!tempo) return;
-
       const input = ev.inputBuffer.getChannelData(0);
-      // aubio expects Float32Array-like
-      const isBeat = tempo.do(input); // typically truthy on beat
 
-      // bpm updates
-      const bpm = tempo.getBpm ? tempo.getBpm() : 0;
-      if (bpm && bpm > 0 && bpm < 260) bpmEl.textContent = Math.round(bpm).toString();
-
-      const now = performance.now();
-      if (isBeat && (now - lastBeatAt) > MIN_BEAT_GAP_MS) {
-        lastBeatAt = now;
-        beatCount += 1;
-        beatsEl.textContent = String(beatCount);
-        flashBeat();
-      }
+      // aubio beat detection
+      const isBeat = tempo.do(input);
+      if (isBeat) beatTick();
     };
   }
 
-  // events
   startBtn.addEventListener("click", start);
-  stopBtn.addEventListener("click", stopAll);
 
-  // safety cleanup
-  window.addEventListener("pagehide", stopAll);
+  // Cleanup on navigation
+  window.addEventListener("pagehide", cleanup);
 })();
