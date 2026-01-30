@@ -98,7 +98,7 @@ if (params.get("debug") === "1") {
   }
 
   function onBeat() {
-    const now = performance.now();
+    const now = performance.now() - delayMs;
     if (now - lastBeatAt < MIN_BEAT_GAP_MS) return;
     lastBeatAt = now;
 
@@ -214,4 +214,5 @@ if (params.get("debug") === "1") {
   startBtn.addEventListener("click", start);
   window.addEventListener("pagehide", cleanup);
 })();
+
 
