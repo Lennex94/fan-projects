@@ -864,13 +864,22 @@ input:focus, select:focus, textarea:focus{
 }
 
 /* gentle pulse on beat */
+.run-screen{
+  position: fixed;
+  inset: 0;
+  background: var(--bgColor, #07080b);
+  display: none;
+  transition: background-color var(--fadeMs, 900ms) ease;
+}
+
+/* gentle pulse on beat, strength is configurable */
 .run-screen.pulse{
-  animation: beatGlow 180ms ease-out;
+  animation: beatGlow var(--pulseMs, 600ms) ease-out;
 }
 
 @keyframes beatGlow{
   0%{ filter: brightness(1); }
-  50%{ filter: brightness(1.18); }
+  45%{ filter: brightness(var(--pulseStrength, 1.14)); }
   100%{ filter: brightness(1); }
 }
 
