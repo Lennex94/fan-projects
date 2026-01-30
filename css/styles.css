@@ -761,7 +761,7 @@ input:focus, select:focus, textarea:focus{
   z-index: 1;
 
   /* smooth transitions */
-  transition: background-color 420ms ease, filter 520ms ease;
+  transition: background-color 1200ms ease, filter 260ms ease;
   will-change: background-color, filter;
 }
 
