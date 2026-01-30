@@ -4,51 +4,21 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Join • Together, Together</title>
-  <meta name="description" content="Live beat-synced visualizer for the Together, Together fanproject." />
-  <link rel="stylesheet" href="./css/styles.css?v=1" />
+  <meta name="description" content="Fullscreen beat-reactive color mode." />
+  <link rel="stylesheet" href="./css/styles.css?v=12" />
 </head>
 
 <body class="run-page">
-  <main class="run-wrap" aria-label="Run page">
-    <div class="run-card">
-      <h1 class="run-title">Together, Together • Live Mode</h1>
-      <p class="run-sub">
-        Tap start, allow microphone access, then keep your screen on. The visuals react to the music.
-      </p>
+  <!-- Fullscreen color surface -->
+  <div id="screen" class="run-screen" aria-hidden="true"></div>
 
-      <div class="run-row">
-        <button class="btn primary" id="startBtn" type="button">Start (enable mic)</button>
-        <button class="btn" id="stopBtn" type="button" disabled>Stop</button>
-        <a class="btn" href="./project-hs-together-together.html">Back to Info</a>
-      </div>
-
-      <div class="run-stats">
-        <div class="stat">
-          <div class="stat-label">Status</div>
-          <div class="stat-value" id="status">Idle</div>
-        </div>
-        <div class="stat">
-          <div class="stat-label">BPM</div>
-          <div class="stat-value" id="bpm">–</div>
-        </div>
-        <div class="stat">
-          <div class="stat-label">Beats</div>
-          <div class="stat-value" id="beats">0</div>
-        </div>
-      </div>
-
-      <div class="run-pulseWrap" aria-hidden="true">
-        <div class="run-pulse" id="pulse"></div>
-      </div>
-
-      <p class="run-hint">
-        iPhone tip: If it doesn’t start, tap again (Safari loves drama). Also: keep your phone brightness up.
-      </p>
-    </div>
-  </main>
+  <!-- Start overlay (only thing visible before permission) -->
+  <button id="startBtn" class="run-start" type="button">
+    Start
+  </button>
 
   <!-- aubiojs (WASM) -->
-  <script src="https://unpkg.com/aubiojs"></script> <!-- usage per aubiojs docs --> 
-  <script src="./js/run-hs-together-together.js?v=1"></script>
+  <script src="https://unpkg.com/aubiojs"></script>
+  <script src="./js/run-hs-together-together.js?v=12"></script>
 </body>
 </html>
