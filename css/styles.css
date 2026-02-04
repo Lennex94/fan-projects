@@ -370,8 +370,8 @@ body.home {
 }
 
 .bg.revealed {
-  opacity: 0.15;
-  filter: blur(100px);
+  opacity: 0.6;        /* Noch stärker! */
+  filter: blur(40px);  /* Noch weniger Blur! */
   transform: scale(1.2);
 }
 
