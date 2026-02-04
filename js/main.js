@@ -1,139 +1,183 @@
-// HOME: background intro + click reveal (and no "stuck dark" on back/forward)
-(function () {
-  const isHome = document.body.classList.contains("home");
-  if (!isHome) return;
+// ============================================
+// FanProjects - Main JavaScript
+// ============================================
 
-  const btn = document.getElementById("revealBtn");
-  const content = document.getElementById("heroContent");
-  if (!btn || !content) return;
+document.addEventListener('DOMContentLoaded', () => {
+  // Set current year in footer
+  const yearSpan = document.getElementById('year');
+  if (yearSpan) {
+    yearSpan.textContent = new Date().getFullYear();
+  }
 
-  // must match the file in /assets
-  const BG_SRC = "./assets/logo-bg.png";
+  // Hero reveal animation (homepage)
+  const revealBtn = document.getElementById('revealBtn');
+  if (revealBtn) {
+    const bg = document.querySelector('.bg');
+    const overlay = document.querySelector('.overlay');
+    const heroContent = document.getElementById('heroContent');
 
-  function runBgIntro() {
-    // hide button until bg is ready (looks cleaner)
-    btn.disabled = true;
-    document.body.classList.remove("bg-ready");
+    revealBtn.addEventListener('click', () => {
+      // Hide button
+      revealBtn.classList.add('hidden');
+      
+      // Reveal background
+      if (bg) bg.classList.add('revealed');
+      if (overlay) overlay.classList.add('revealed');
+      
+      // Show content after a delay
+      setTimeout(() => {
+        if (heroContent) {
+          heroContent.setAttribute('aria-hidden', 'false');
+          heroContent.classList.add('revealed');
+        }
+        
+        // Enable body scroll
+        document.body.style.overflow = 'auto';
+      }, 800);
+    });
+  }
 
-    const img = new Image();
-    img.src = BG_SRC;
+  // Join project functionality
+  const joinBtn = document.getElementById('fpJoinBtn');
+  if (joinBtn) {
+    joinBtn.addEventListener('click', () => {
+      const level = document.getElementById('fpLevel')?.value || '';
+      const block = document.getElementById('fpBlock')?.value || '';
 
-    const done = () => {
-      // double RAF -> guarantees the transition actually runs
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          btn.disabled = false;
-          document.body.classList.add("bg-ready");
+      if (!block) {
+        alert('Please enter your block number.');
+        return;
+      }
+
+      // Create URL with parameters
+      const params = new URLSearchParams({
+        level: level,
+        block: block
+      });
+      
+      // Navigate to run page
+      window.location.href = `./run-hs-together-together.html?${params.toString()}`;
+    });
+  }
+
+  // Add smooth scroll behavior
+  document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+      e.preventDefault();
+      const target = document.querySelector(this.getAttribute('href'));
+      if (target) {
+        target.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start'
         });
-      });
-    };
+      }
+    });
+  });
 
-    if (img.decode) {
-      img.decode().then(done).catch(done);
-    } else {
-      img.onload = done;
-      img.onerror = done;
+  // Add staggered animation to project lists
+  const projectListItems = document.querySelectorAll('.project-list li');
+  projectListItems.forEach((item, index) => {
+    item.style.opacity = '0';
+    item.style.transform = 'translateX(-20px)';
+    
+    setTimeout(() => {
+      item.style.transition = 'all 0.5s ease';
+      item.style.opacity = '1';
+      item.style.transform = 'translateX(0)';
+    }, 100 * index);
+  });
+
+  // Add staggered animation to pills in project meta
+  const pills = document.querySelectorAll('.project-meta .pill');
+  pills.forEach((pill, index) => {
+    pill.style.opacity = '0';
+    pill.style.transform = 'translateY(-10px)';
+    
+    setTimeout(() => {
+      pill.style.transition = 'all 0.4s ease';
+      pill.style.opacity = '1';
+      pill.style.transform = 'translateY(0)';
+    }, 100 * index);
+  });
+
+  // Form validation enhancement
+  const forms = document.querySelectorAll('form');
+  forms.forEach(form => {
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      
+      // Add your form submission logic here
+      // For now, just show a confirmation
+      alert('Request submitted! (This is a demo - implement actual form handling)');
+    });
+  });
+
+  // Add parallax effect to project hero images
+  const projectHeroImg = document.querySelector('.project-hero__img');
+  if (projectHeroImg) {
+    window.addEventListener('scroll', () => {
+      const scrolled = window.pageYOffset;
+      const rate = scrolled * 0.3;
+      
+      if (scrolled < window.innerHeight) {
+        projectHeroImg.style.transform = `translateY(${rate}px)`;
+      }
+    });
+  }
+
+  // Enhanced hover effects for panels
+  const panels = document.querySelectorAll('.panel');
+  panels.forEach(panel => {
+    panel.addEventListener('mouseenter', function() {
+      this.style.transform = 'translateY(-4px) scale(1.01)';
+    });
+    
+    panel.addEventListener('mouseleave', function() {
+      this.style.transform = 'translateY(0) scale(1)';
+    });
+  });
+
+  // Add loading animation for images
+  const images = document.querySelectorAll('img');
+  images.forEach(img => {
+    if (!img.complete) {
+      img.style.opacity = '0';
+      img.addEventListener('load', () => {
+        img.style.transition = 'opacity 0.5s ease';
+        img.style.opacity = '1';
+      });
     }
-  }
-
-  function hardResetHome() {
-    // instant reset (no transitions)
-    document.body.classList.add("no-anim");
-    document.body.classList.remove("revealed", "bg-ready");
-    content.setAttribute("aria-hidden", "true");
-    btn.disabled = true;
-
-    // force style recalculation
-    void document.body.offsetHeight;
-
-    requestAnimationFrame(() => {
-      document.body.classList.remove("no-anim");
-      runBgIntro();
-    });
-  }
-
-  function revealHome() {
-    document.body.classList.add("revealed");
-    content.setAttribute("aria-hidden", "false");
-  }
-
-  btn.addEventListener("click", revealHome);
-
-  // Back/forward cache: always restart the intro when you come back
-  window.addEventListener("pageshow", hardResetHome);
-
-  // When leaving, clear state so the cached snapshot isn't "dark"
-  window.addEventListener("pagehide", () => {
-    document.body.classList.remove("revealed", "bg-ready");
-    content.setAttribute("aria-hidden", "true");
   });
 
-  // normal initial load
-  hardResetHome();
-})();
-
-
-// Footer year
-const y = document.getElementById("year");
-if (y) y.textContent = new Date().getFullYear();
-
-
-// Projects filter (only if grid exists)
-const chips = document.querySelectorAll(".chip");
-const grid = document.getElementById("projectsGrid");
-
-if (chips.length && grid) {
-  chips.forEach((btn) => {
-    btn.addEventListener("click", () => {
-      chips.forEach((b) => b.classList.remove("active"));
-      btn.classList.add("active");
-
-      const filter = btn.dataset.filter;
-      const cards = grid.querySelectorAll(".card");
-
-      cards.forEach((card) => {
-        const type = card.dataset.type;
-        card.style.display = (filter === "all" || filter === type) ? "" : "none";
-      });
+  // Add custom cursor effect on buttons (optional enhancement)
+  const buttons = document.querySelectorAll('.btn');
+  buttons.forEach(button => {
+    button.addEventListener('mouseenter', () => {
+      document.body.style.cursor = 'pointer';
+    });
+    
+    button.addEventListener('mouseleave', () => {
+      document.body.style.cursor = 'default';
     });
   });
-}
 
-// Join selection -> store -> go to visualizer
-document.getElementById("fpJoinBtn")?.addEventListener("click", () => {
-  const level = document.getElementById("fpLevel").value;
-  const block = document.getElementById("fpBlock").value;
+  // Intersection Observer for fade-in animations
+  const observerOptions = {
+    threshold: 0.1,
+    rootMargin: '0px 0px -50px 0px'
+  };
 
-  localStorage.setItem("fp_level", level);
-  localStorage.setItem("fp_block", block);
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('animate-in');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, observerOptions);
 
-  // WICHTIG: hier deine echte Visualizer-Seite rein
-  window.location.href = "./hs-visualizer.html";
+  // Observe panels and sections
+  document.querySelectorAll('.panel, .two-col').forEach(el => {
+    observer.observe(el);
+  });
 });
-
-// --- Project join: Level/Block -> run page (fixes 404 + removes old hs-visualizer.html usage) ---
-(function () {
-  const joinBtn = document.getElementById("fpJoinBtn");
-  const levelEl = document.getElementById("fpLevel");
-  const blockEl = document.getElementById("fpBlock");
-
-  if (!joinBtn || !levelEl || !blockEl) return;
-
-  function goJoin() {
-    const level = (levelEl.value || "").trim();
-    const block = (blockEl.value || "").trim();
-
-    const params = new URLSearchParams();
-    if (level) params.set("level", level);
-    if (block) params.set("block", block);
-
-    const url = "./run-hs-together-together.html" + (params.toString() ? `?${params.toString()}` : "");
-    window.location.href = url;
-  }
-
-  joinBtn.addEventListener("click", goJoin);
-
-  blockEl.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") goJoin();
-  });
-})();
