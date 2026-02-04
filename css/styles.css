@@ -357,22 +357,27 @@ body.home {
 .bg {
   position: absolute;
   inset: 0;
-  /* Gradient fallback if image doesn't exist */
-  background: radial-gradient(circle at center, rgba(255, 107, 157, 0.3) 0%, rgba(167, 139, 250, 0.2) 50%, transparent 70%);
-  /* Image on top (uses ../assets/ because CSS is in css/ folder) */
-  background-image: url('../assets/logo-bg.png'), radial-gradient(circle at center, rgba(255, 107, 157, 0.3) 0%, rgba(167, 139, 250, 0.2) 50%, transparent 70%);
-  background-size: 50%, cover;
-  background-position: center, center;
-  background-repeat: no-repeat, no-repeat;
-  opacity: 0;
-  filter: blur(0);
+  /* Desktop background */
+  background-image: url('../assets/logo-bg.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: 1;  /* Initially VISIBLE */
+  filter: blur(0);  /* NO blur initially */
   transition: all 1.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .bg.revealed {
-  opacity: 0.6;        /* Noch stärker! */
-  filter: blur(40px);  /* Noch weniger Blur! */
-  transform: scale(1.2);
+  opacity: 0;  /* Fade out on click */
+  filter: blur(20px);  /* Slight blur when fading */
+  transform: scale(1.05);
+}
+
+/* Mobile background */
+@media (max-width: 768px) {
+  .bg {
+    background-image: url('../assets/logo-bg-mobile.png');
+  }
 }
 
 .overlay {
