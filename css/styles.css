@@ -357,10 +357,13 @@ body.home {
 .bg {
   position: absolute;
   inset: 0;
-  background-image: url('./assets/logo-bg.png');
-  background-size: 60%;
-  background-position: center;
-  background-repeat: no-repeat;
+  /* Gradient fallback if image doesn't exist */
+  background: radial-gradient(circle at center, rgba(255, 107, 157, 0.3) 0%, rgba(167, 139, 250, 0.2) 50%, transparent 70%);
+  /* Image on top (uses ../assets/ because CSS is in css/ folder) */
+  background-image: url('../assets/logo-bg.png'), radial-gradient(circle at center, rgba(255, 107, 157, 0.3) 0%, rgba(167, 139, 250, 0.2) 50%, transparent 70%);
+  background-size: 50%, cover;
+  background-position: center, center;
+  background-repeat: no-repeat, no-repeat;
   opacity: 0;
   filter: blur(0);
   transition: all 1.5s cubic-bezier(0.4, 0, 0.2, 1);
