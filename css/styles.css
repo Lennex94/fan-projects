@@ -342,7 +342,7 @@ a:hover {
    ============================================ */
 
 body.home {
-  overflow: hidden;
+  /* overflow removed - button is now fixed at bottom */
 }
 
 .hero {
@@ -394,47 +394,49 @@ body.home {
 }
 
 .reveal-btn {
-  font-family: var(--font-display);
-  font-size: clamp(2rem, 5vw, 2.5rem);
-  padding: clamp(1rem, 3vw, 1.5rem) clamp(2.5rem, 8vw, 4rem);
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 0.75rem 1.5rem;
   background: rgba(255, 255, 255, 0.05);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  color: white;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-radius: var(--radius-xl);
+  color: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 100px;
   cursor: pointer;
   box-shadow: 
-    0 8px 32px rgba(0, 0, 0, 0.3),
+    0 4px 16px rgba(0, 0, 0, 0.2),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
   transition: all var(--transition-base);
-  animation: pulse 2s ease-in-out infinite;
-  position: relative;
+  position: fixed;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
   z-index: 10;
-  font-weight: 400;
-  letter-spacing: 0.05em;
+  animation: subtlePulse 3s ease-in-out infinite;
 }
 
-@keyframes pulse {
-  0%, 100% {
-    transform: scale(1);
-    border-color: rgba(255, 255, 255, 0.3);
+@keyframes subtlePulse {
+  0%, 100% { 
+    opacity: 0.8;
+    border-color: rgba(255, 255, 255, 0.2);
   }
-  50% {
-    transform: scale(1.03);
-    border-color: rgba(255, 107, 157, 0.6);
-    box-shadow: 
-      0 8px 32px rgba(255, 107, 157, 0.3),
-      inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  50% { 
+    opacity: 1;
+    border-color: rgba(255, 107, 157, 0.4);
   }
 }
 
 .reveal-btn:hover {
   background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 107, 157, 0.8);
-  transform: scale(1.05);
+  border-color: rgba(255, 107, 157, 0.6);
+  color: white;
+  transform: translateX(-50%) translateY(-2px);
   box-shadow: 
-    0 12px 48px rgba(255, 107, 157, 0.4),
+    0 6px 24px rgba(255, 107, 157, 0.3),
     inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
@@ -963,8 +965,9 @@ body.home {
   }
   
   .reveal-btn {
-    font-size: clamp(1.75rem, 5vw, 2rem);
-    padding: 1rem 2.5rem;
+    font-size: 0.75rem;
+    padding: 0.625rem 1.25rem;
+    bottom: 1.5rem;
   }
   
   .two-col {
@@ -999,9 +1002,9 @@ body.home {
   }
   
   .reveal-btn {
-    font-size: clamp(1.5rem, 5vw, 1.75rem);
-    padding: 0.875rem 2rem;
-    border-width: 2px;
+    font-size: 0.7rem;
+    padding: 0.5rem 1rem;
+    bottom: 1rem;
   }
   
   .hero-text {
