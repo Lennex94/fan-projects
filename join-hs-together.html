@@ -1,0 +1,475 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Join Project – Together, Together • FanProjects</title>
+  <meta name="description" content="Select your seat to join the Harry Styles fanproject 'Together, Together' (Amsterdam, 16 May 2026)." />
+  <link rel="stylesheet" href="./css/styles.css?v=14" />
+  <style>
+    .seat-selector {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 2rem 1rem;
+    }
+
+    .selector-header {
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+
+    .selector-header h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 0.5rem;
+    }
+
+    .selector-header p {
+      color: #666;
+      font-size: 1.1rem;
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+
+    .form-group label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      color: #333;
+      font-size: 0.95rem;
+    }
+
+    .form-group select,
+    .form-group input {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      font-size: 1rem;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      background: white;
+      transition: all 0.3s ease;
+      font-family: inherit;
+    }
+
+    .form-group select:focus,
+    .form-group input:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .form-group select:disabled,
+    .form-group input:disabled {
+      background: #f5f5f5;
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+
+    .form-helper {
+      font-size: 0.85rem;
+      color: #999;
+      margin-top: 0.25rem;
+    }
+
+    .selection-summary {
+      background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+      border: 2px solid #667eea;
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin: 2rem 0;
+      display: none;
+    }
+
+    .selection-summary.active {
+      display: block;
+      animation: slideIn 0.3s ease;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .selection-summary h3 {
+      margin: 0 0 1rem 0;
+      font-size: 1.1rem;
+      color: #667eea;
+    }
+
+    .summary-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid rgba(102, 126, 234, 0.2);
+    }
+
+    .summary-item:last-child {
+      border-bottom: none;
+    }
+
+    .summary-label {
+      font-weight: 600;
+      color: #666;
+    }
+
+    .summary-value {
+      color: #333;
+      font-weight: 700;
+    }
+
+    .submit-btn {
+      width: 100%;
+      padding: 1rem;
+      font-size: 1.1rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-top: 2rem;
+    }
+
+    .submit-btn:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+    }
+
+    .submit-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .back-link {
+      display: inline-block;
+      margin-bottom: 1rem;
+      color: #667eea;
+      text-decoration: none;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .back-link:hover {
+      transform: translateX(-5px);
+    }
+
+    .info-box {
+      background: #f8f9fa;
+      border-left: 4px solid #667eea;
+      padding: 1rem;
+      margin: 2rem 0;
+      border-radius: 4px;
+    }
+
+    .info-box p {
+      margin: 0;
+      color: #666;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+
+<body class="project-page">
+  <header class="site-header">
+    <nav class="nav">
+      <a class="brand" href="./" aria-label="Home">
+        <img class="brand-logo" src="./assets/logo-nav.png" alt="" aria-hidden="true">
+        <span class="brand-name">FanProjects</span>
+      </a>
+
+      <div class="nav-links">
+        <a href="./">Home</a>
+        <a class="active" href="./projects.html">Projects</a>
+        <a href="./contact.html">Contact</a>
+      </div>
+    </nav>
+  </header>
+
+  <main class="page">
+    <div class="seat-selector">
+      <a href="./project-hs-together-together.html" class="back-link">← Back to project</a>
+      
+      <div class="selector-header">
+        <h1>Select Your Seat</h1>
+        <p>Choose your seat location to join the project</p>
+      </div>
+
+      <form id="seatForm">
+        <!-- Tier Selection -->
+        <div class="form-group">
+          <label for="tierSelect">Tier *</label>
+          <select id="tierSelect" required>
+            <option value="">-- Select your tier --</option>
+            <option value="upper">Upper tier (Oberrang)</option>
+            <option value="lower">Lower tier (Unterrang)</option>
+            <option value="standing">Standing (GA/Innenraum)</option>
+          </select>
+          <p class="form-helper">Select which level of the stadium you're in</p>
+        </div>
+
+        <!-- Block Selection -->
+        <div class="form-group">
+          <label for="blockSelect">Block *</label>
+          <select id="blockSelect" disabled required>
+            <option value="">-- Select tier first --</option>
+          </select>
+          <p class="form-helper">Your section/block number</p>
+        </div>
+
+        <!-- Row Selection -->
+        <div class="form-group">
+          <label for="rowSelect">Row *</label>
+          <select id="rowSelect" disabled required>
+            <option value="">-- Select block first --</option>
+          </select>
+          <p class="form-helper">Your row number</p>
+        </div>
+
+        <!-- Seat Input -->
+        <div class="form-group">
+          <label for="seatInput">Seat Number *</label>
+          <input 
+            type="number" 
+            id="seatInput" 
+            placeholder="e.g. 125" 
+            min="1" 
+            disabled 
+            required
+          />
+          <p class="form-helper">Your seat number in the row</p>
+        </div>
+
+        <!-- Info Box -->
+        <div class="info-box">
+          <p>
+            <strong>Note:</strong> Make sure your seat information is correct. 
+            This will be used to coordinate the light show animation for your specific location.
+          </p>
+        </div>
+
+        <!-- Selection Summary -->
+        <div id="selectionSummary" class="selection-summary">
+          <h3>📍 Your Selection</h3>
+          <div class="summary-item">
+            <span class="summary-label">Tier:</span>
+            <span class="summary-value" id="summaryTier">-</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label">Block:</span>
+            <span class="summary-value" id="summaryBlock">-</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label">Row:</span>
+            <span class="summary-value" id="summaryRow">-</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label">Seat:</span>
+            <span class="summary-value" id="summarySeat">-</span>
+          </div>
+        </div>
+
+        <!-- Submit Button -->
+        <button type="submit" class="submit-btn" id="submitBtn" disabled>
+          Confirm & Join Project
+        </button>
+      </form>
+    </div>
+
+    <footer class="footer">
+      <p>© <span id="year"></span> FanProjects</p>
+    </footer>
+  </main>
+
+  <script src="./js/main.js?v=14"></script>
+  <script>
+    let sectionMapping = null;
+    let selectedSection = null;
+
+    // Load section mapping
+    fetch('./data/section_mapping.json')
+      .then(res => res.json())
+      .then(data => {
+        sectionMapping = data;
+        console.log('Section mapping loaded:', data);
+      })
+      .catch(err => {
+        console.error('Failed to load section mapping:', err);
+        alert('Failed to load seat data. Please refresh the page.');
+      });
+
+    // Tier selection handler
+    document.getElementById('tierSelect').addEventListener('change', function(e) {
+      const tier = e.target.value;
+      const blockSelect = document.getElementById('blockSelect');
+      const rowSelect = document.getElementById('rowSelect');
+      const seatInput = document.getElementById('seatInput');
+      
+      // Reset dependent fields
+      blockSelect.innerHTML = '<option value="">-- Select your block --</option>';
+      rowSelect.innerHTML = '<option value="">-- Select block first --</option>';
+      seatInput.value = '';
+      blockSelect.disabled = false;
+      rowSelect.disabled = true;
+      seatInput.disabled = true;
+      selectedSection = null;
+      
+      // Update summary
+      document.getElementById('summaryTier').textContent = 
+        tier ? sectionMapping.tiers[tier].name : '-';
+      document.getElementById('summaryBlock').textContent = '-';
+      document.getElementById('summaryRow').textContent = '-';
+      document.getElementById('summarySeat').textContent = '-';
+      
+      if (tier && sectionMapping) {
+        const sections = sectionMapping.tiers[tier].sections;
+        sections.forEach(section => {
+          const option = document.createElement('option');
+          option.value = section.id;
+          option.textContent = `Block ${section.name}`;
+          option.dataset.name = section.name;
+          option.dataset.rows = section.rows;
+          blockSelect.appendChild(option);
+        });
+      }
+      
+      updateSubmitButton();
+    });
+
+    // Block selection handler
+    document.getElementById('blockSelect').addEventListener('change', function(e) {
+      const blockId = e.target.value;
+      const selectedOption = e.target.options[e.target.selectedIndex];
+      const rowSelect = document.getElementById('rowSelect');
+      const seatInput = document.getElementById('seatInput');
+      
+      // Reset dependent fields
+      rowSelect.innerHTML = '<option value="">-- Select your row --</option>';
+      seatInput.value = '';
+      rowSelect.disabled = true;
+      seatInput.disabled = true;
+      
+      // Update summary
+      document.getElementById('summaryBlock').textContent = 
+        blockId ? selectedOption.dataset.name : '-';
+      document.getElementById('summaryRow').textContent = '-';
+      document.getElementById('summarySeat').textContent = '-';
+      
+      if (blockId) {
+        const maxRows = parseInt(selectedOption.dataset.rows);
+        selectedSection = {
+          id: blockId,
+          name: selectedOption.dataset.name,
+          rows: maxRows
+        };
+        
+        // Populate rows
+        for (let i = 1; i <= maxRows; i++) {
+          const option = document.createElement('option');
+          option.value = i;
+          option.textContent = `Row ${i}`;
+          rowSelect.appendChild(option);
+        }
+        
+        rowSelect.disabled = false;
+      }
+      
+      updateSubmitButton();
+    });
+
+    // Row selection handler
+    document.getElementById('rowSelect').addEventListener('change', function(e) {
+      const row = e.target.value;
+      const seatInput = document.getElementById('seatInput');
+      
+      // Update summary
+      document.getElementById('summaryRow').textContent = row || '-';
+      document.getElementById('summarySeat').textContent = '-';
+      
+      if (row) {
+        seatInput.disabled = false;
+        seatInput.focus();
+      } else {
+        seatInput.disabled = true;
+        seatInput.value = '';
+      }
+      
+      updateSubmitButton();
+    });
+
+    // Seat input handler
+    document.getElementById('seatInput').addEventListener('input', function(e) {
+      const seat = e.target.value;
+      document.getElementById('summarySeat').textContent = seat || '-';
+      updateSubmitButton();
+    });
+
+    // Update submit button state
+    function updateSubmitButton() {
+      const tier = document.getElementById('tierSelect').value;
+      const block = document.getElementById('blockSelect').value;
+      const row = document.getElementById('rowSelect').value;
+      const seat = document.getElementById('seatInput').value;
+      
+      const submitBtn = document.getElementById('submitBtn');
+      const summary = document.getElementById('selectionSummary');
+      
+      const isComplete = tier && block && row && seat;
+      submitBtn.disabled = !isComplete;
+      
+      if (isComplete) {
+        summary.classList.add('active');
+      } else {
+        summary.classList.remove('active');
+      }
+    }
+
+    // Form submission
+    document.getElementById('seatForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const tier = document.getElementById('tierSelect').value;
+      const block = document.getElementById('blockSelect').value;
+      const blockName = document.getElementById('blockSelect').options[
+        document.getElementById('blockSelect').selectedIndex
+      ].dataset.name;
+      const row = document.getElementById('rowSelect').value;
+      const seat = document.getElementById('seatInput').value;
+      
+      const seatData = {
+        tier: tier,
+        tierName: sectionMapping.tiers[tier].name,
+        sectionId: block,
+        sectionName: blockName,
+        row: row,
+        seat: seat,
+        timestamp: new Date().toISOString()
+      };
+      
+      // Store in localStorage
+      localStorage.setItem('hs_together_seat', JSON.stringify(seatData));
+      
+      // Navigate to run page (or show success message)
+      alert(`Success! Your seat has been saved:\n\n${seatData.tierName}\nBlock ${blockName}\nRow ${row}, Seat ${seat}\n\nYou can now access the light show app!`);
+      
+      // Optionally redirect to the run page
+      // window.location.href = './run-hs-together-together.html';
+    });
+
+    // Set year in footer
+    document.getElementById('year').textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>
