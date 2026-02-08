@@ -3,181 +3,187 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Join Project – Together, Together • FanProjects</title>
+  <title>Join Project - Together, Together - FanProjects</title>
   <meta name="description" content="Select your seat to join the Harry Styles fanproject 'Together, Together' (Amsterdam, 16 May 2026)." />
-  <link rel="stylesheet" href="./css/styles.css?v=14" />
+  <link rel="stylesheet" href="./css/styles.css?v=16" />
   <style>
-    .seat-selector {
-      max-width: 600px;
+    .seat-shell {
+      max-width: 860px;
       margin: 0 auto;
-      padding: 2rem 1rem;
+      padding: 2.5rem 1.25rem 4rem;
     }
 
-    .selector-header {
+    .seat-hero {
       text-align: center;
-      margin-bottom: 3rem;
+      margin-bottom: 2rem;
     }
 
-    .selector-header h1 {
-      font-size: 2.5rem;
-      font-weight: 700;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      margin-bottom: 0.5rem;
+    .seat-hero h1 {
+      font-size: 2.4rem;
+      margin-bottom: 0.35rem;
     }
 
-    .selector-header p {
-      color: #666;
-      font-size: 1.1rem;
+    .seat-hero p {
+      color: var(--text-secondary);
+      margin: 0;
     }
 
-    .form-group {
-      margin-bottom: 1.5rem;
+    .seat-loader {
+      display: none;
+      margin: 1.5rem 0 2rem;
+      padding: 1rem 0;
+      border-top: 1px solid rgba(255, 255, 255, 0.2);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
     }
 
-    .form-group label {
-      display: block;
-      font-weight: 600;
-      margin-bottom: 0.5rem;
-      color: #333;
-      font-size: 0.95rem;
+    .seat-loader.active {
+      display: grid;
+      gap: 0.75rem;
     }
 
-    .form-group select,
-    .form-group input {
-      width: 100%;
-      padding: 0.75rem 1rem;
-      font-size: 1rem;
-      border: 2px solid #e0e0e0;
-      border-radius: 8px;
-      background: white;
-      transition: all 0.3s ease;
-      font-family: inherit;
-    }
-
-    .form-group select:focus,
-    .form-group input:focus {
-      outline: none;
-      border-color: #667eea;
-      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-    }
-
-    .form-group select:disabled,
-    .form-group input:disabled {
-      background: #f5f5f5;
-      cursor: not-allowed;
-      opacity: 0.6;
-    }
-
-    .form-helper {
+    .seat-loader label {
       font-size: 0.85rem;
-      color: #999;
-      margin-top: 0.25rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--text-muted);
+    }
+
+    .tier-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin: 2rem 0 2.5rem;
+    }
+
+    .tier-card {
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 0.75rem 0;
+      color: var(--text-primary);
+      font-weight: 600;
+      text-align: left;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .tier-card:hover:not(:disabled) {
+      color: var(--primary-light);
+      border-color: rgba(255, 255, 255, 0.45);
+    }
+
+    .tier-card.active {
+      color: var(--primary-light);
+      border-color: var(--primary-light);
+    }
+
+    .tier-card:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .seat-form {
+      display: grid;
+      gap: 1.5rem;
+    }
+
+    .select-row {
+      display: none;
+      gap: 0.5rem;
+    }
+
+    .select-row.active {
+      display: grid;
+    }
+
+    .select-wrap {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+      padding-bottom: 1.25rem;
+    }
+
+    .select-wrap label {
+      display: block;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--text-muted);
+      margin-bottom: 0.5rem;
+    }
+
+    .select-wrap select {
+      width: 100%;
+      padding: 0.6rem 0.4rem;
+      border: none;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.35);
+      background: rgba(5, 6, 11, 0.65);
+      color: var(--text-primary);
+      font-size: 1rem;
+      border-radius: 6px;
+    }
+
+    .select-wrap select option {
+      background: #0a0d16;
+      color: #f9f7f3;
+    }
+
+    .select-wrap select:focus {
+      outline: none;
+      border-color: var(--primary);
     }
 
     .selection-summary {
-      background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
-      border: 2px solid #667eea;
-      border-radius: 12px;
-      padding: 1.5rem;
-      margin: 2rem 0;
       display: none;
+      padding-top: 1.5rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.2);
     }
 
     .selection-summary.active {
       display: block;
-      animation: slideIn 0.3s ease;
     }
 
-    @keyframes slideIn {
-      from {
-        opacity: 0;
-        transform: translateY(-10px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    .selection-summary h3 {
-      margin: 0 0 1rem 0;
-      font-size: 1.1rem;
-      color: #667eea;
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 0.75rem;
     }
 
     .summary-item {
-      display: flex;
-      justify-content: space-between;
       padding: 0.5rem 0;
-      border-bottom: 1px solid rgba(102, 126, 234, 0.2);
-    }
-
-    .summary-item:last-child {
-      border-bottom: none;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.12);
     }
 
     .summary-label {
-      font-weight: 600;
-      color: #666;
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
     }
 
     .summary-value {
-      color: #333;
-      font-weight: 700;
+      font-weight: 600;
+      margin-top: 0.35rem;
     }
 
-    .submit-btn {
-      width: 100%;
-      padding: 1rem;
-      font-size: 1.1rem;
-      font-weight: 700;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      margin-top: 2rem;
+    .seat-actions {
+      display: flex;
+      justify-content: flex-start;
+      margin-top: 1rem;
     }
 
-    .submit-btn:hover:not(:disabled) {
-      transform: translateY(-2px);
-      box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
-    }
-
-    .submit-btn:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
+    .seat-submit {
+      min-width: 220px;
     }
 
     .back-link {
-      display: inline-block;
-      margin-bottom: 1rem;
-      color: #667eea;
-      text-decoration: none;
-      font-weight: 600;
-      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--text-secondary);
+      margin-bottom: 1.5rem;
     }
 
     .back-link:hover {
-      transform: translateX(-5px);
-    }
-
-    .info-box {
-      background: #f8f9fa;
-      border-left: 4px solid #667eea;
-      padding: 1rem;
-      margin: 2rem 0;
-      border-radius: 4px;
-    }
-
-    .info-box p {
-      margin: 0;
-      color: #666;
-      font-size: 0.9rem;
+      color: var(--text-primary);
     }
   </style>
 </head>
@@ -199,276 +205,345 @@
   </header>
 
   <main class="page">
-    <div class="seat-selector">
-      <a href="./project-hs-together-together.html" class="back-link">← Back to project</a>
-      
-      <div class="selector-header">
-        <h1>Select Your Seat</h1>
-        <p>Choose your seat location to join the project</p>
+    <section class="seat-shell">
+      <a href="./project-hs-together-together.html" class="back-link">Back to project</a>
+
+      <div class="seat-hero">
+        <h1>Select your seat</h1>
+        <p>Choose your tier, block, row, and seat to join the lightshow.</p>
       </div>
 
-      <form id="seatForm">
-        <!-- Tier Selection -->
-        <div class="form-group">
-          <label for="tierSelect">Tier *</label>
-          <select id="tierSelect" required>
-            <option value="">-- Select your tier --</option>
-            <option value="upper">Upper tier (Oberrang)</option>
-            <option value="lower">Lower tier (Unterrang)</option>
-            <option value="standing">Standing (GA/Innenraum)</option>
-          </select>
-          <p class="form-helper">Select which level of the stadium you're in</p>
+      <div class="seat-loader" id="seatLoader">
+        <strong>Seat data not loaded.</strong>
+        <p class="muted">If you opened this file directly (file://), your browser blocks the data file. Please upload the seatmap JSON.</p>
+        <label for="seatFile">Load seatmap_mapping.json</label>
+        <input id="seatFile" type="file" accept="application/json" />
+      </div>
+
+      <div class="tier-grid" role="group" aria-label="Choose tier">
+        <button class="tier-card" type="button" data-tier="upper" disabled>Upper tier</button>
+        <button class="tier-card" type="button" data-tier="lower" disabled>Lower tier</button>
+        <button class="tier-card" type="button" data-tier="standing" disabled>Standing</button>
+      </div>
+
+      <form id="seatForm" class="seat-form">
+        <div class="select-row" id="blockRow">
+          <div class="select-wrap">
+            <label for="blockSelect" id="blockLabel">Block</label>
+            <select id="blockSelect" disabled></select>
+          </div>
         </div>
 
-        <!-- Block Selection -->
-        <div class="form-group">
-          <label for="blockSelect">Block *</label>
-          <select id="blockSelect" disabled required>
-            <option value="">-- Select tier first --</option>
-          </select>
-          <p class="form-helper">Your section/block number</p>
+        <div class="select-row" id="rowRow">
+          <div class="select-wrap">
+            <label for="rowSelect">Row</label>
+            <select id="rowSelect" disabled></select>
+          </div>
         </div>
 
-        <!-- Row Selection -->
-        <div class="form-group">
-          <label for="rowSelect">Row *</label>
-          <select id="rowSelect" disabled required>
-            <option value="">-- Select block first --</option>
-          </select>
-          <p class="form-helper">Your row number</p>
+        <div class="select-row" id="seatRow">
+          <div class="select-wrap">
+            <label for="seatSelect">Seat</label>
+            <select id="seatSelect" disabled></select>
+          </div>
         </div>
 
-        <!-- Seat Input -->
-        <div class="form-group">
-          <label for="seatInput">Seat Number *</label>
-          <input 
-            type="number" 
-            id="seatInput" 
-            placeholder="e.g. 125" 
-            min="1" 
-            disabled 
-            required
-          />
-          <p class="form-helper">Your seat number in the row</p>
-        </div>
-
-        <!-- Info Box -->
-        <div class="info-box">
-          <p>
-            <strong>Note:</strong> Make sure your seat information is correct. 
-            This will be used to coordinate the light show animation for your specific location.
-          </p>
-        </div>
-
-        <!-- Selection Summary -->
         <div id="selectionSummary" class="selection-summary">
-          <h3>📍 Your Selection</h3>
-          <div class="summary-item">
-            <span class="summary-label">Tier:</span>
-            <span class="summary-value" id="summaryTier">-</span>
-          </div>
-          <div class="summary-item">
-            <span class="summary-label">Block:</span>
-            <span class="summary-value" id="summaryBlock">-</span>
-          </div>
-          <div class="summary-item">
-            <span class="summary-label">Row:</span>
-            <span class="summary-value" id="summaryRow">-</span>
-          </div>
-          <div class="summary-item">
-            <span class="summary-label">Seat:</span>
-            <span class="summary-value" id="summarySeat">-</span>
+          <div class="summary-grid">
+            <div class="summary-item">
+              <div class="summary-label">Tier</div>
+              <div class="summary-value" id="summaryTier">-</div>
+            </div>
+            <div class="summary-item">
+              <div class="summary-label">Block</div>
+              <div class="summary-value" id="summaryBlock">-</div>
+            </div>
+            <div class="summary-item">
+              <div class="summary-label">Row</div>
+              <div class="summary-value" id="summaryRow">-</div>
+            </div>
+            <div class="summary-item">
+              <div class="summary-label">Seat</div>
+              <div class="summary-value" id="summarySeat">-</div>
+            </div>
           </div>
         </div>
 
-        <!-- Submit Button -->
-        <button type="submit" class="submit-btn" id="submitBtn" disabled>
-          Confirm & Join Project
-        </button>
+        <div class="seat-actions">
+          <button type="submit" class="btn primary seat-submit" id="submitBtn" disabled>Confirm seat</button>
+        </div>
       </form>
-    </div>
+    </section>
 
     <footer class="footer">
-      <p>© <span id="year"></span> FanProjects</p>
+      <p>(c) <span id="year"></span> FanProjects</p>
     </footer>
   </main>
 
-  <script src="./js/main.js?v=14"></script>
+  <script src="./js/main.js?v=16"></script>
   <script>
-    let sectionMapping = null;
-    let selectedSection = null;
+    const tierButtons = Array.from(document.querySelectorAll('.tier-card'));
+    const blockRow = document.getElementById('blockRow');
+    const rowRow = document.getElementById('rowRow');
+    const seatRow = document.getElementById('seatRow');
+    const blockSelect = document.getElementById('blockSelect');
+    const rowSelect = document.getElementById('rowSelect');
+    const seatSelect = document.getElementById('seatSelect');
+    const submitBtn = document.getElementById('submitBtn');
+    const summary = document.getElementById('selectionSummary');
+    const seatLoader = document.getElementById('seatLoader');
+    const seatFile = document.getElementById('seatFile');
+    const blockLabel = document.getElementById('blockLabel');
 
-    // Load section mapping
-    fetch('./data/section_mapping.json')
-      .then(res => res.json())
-      .then(data => {
-        sectionMapping = data;
-        console.log('Section mapping loaded:', data);
-      })
-      .catch(err => {
-        console.error('Failed to load section mapping:', err);
-        alert('Failed to load seat data. Please refresh the page.');
-      });
+    const summaryTier = document.getElementById('summaryTier');
+    const summaryBlock = document.getElementById('summaryBlock');
+    const summaryRow = document.getElementById('summaryRow');
+    const summarySeat = document.getElementById('summarySeat');
 
-    // Tier selection handler
-    document.getElementById('tierSelect').addEventListener('change', function(e) {
-      const tier = e.target.value;
-      const blockSelect = document.getElementById('blockSelect');
-      const rowSelect = document.getElementById('rowSelect');
-      const seatInput = document.getElementById('seatInput');
-      
-      // Reset dependent fields
-      blockSelect.innerHTML = '<option value="">-- Select your block --</option>';
-      rowSelect.innerHTML = '<option value="">-- Select block first --</option>';
-      seatInput.value = '';
-      blockSelect.disabled = false;
-      rowSelect.disabled = true;
-      seatInput.disabled = true;
-      selectedSection = null;
-      
-      // Update summary
-      document.getElementById('summaryTier').textContent = 
-        tier ? sectionMapping.tiers[tier].name : '-';
-      document.getElementById('summaryBlock').textContent = '-';
-      document.getElementById('summaryRow').textContent = '-';
-      document.getElementById('summarySeat').textContent = '-';
-      
-      if (tier && sectionMapping) {
-        const sections = sectionMapping.tiers[tier].sections;
-        sections.forEach(section => {
-          const option = document.createElement('option');
-          option.value = section.id;
-          option.textContent = `Block ${section.name}`;
-          option.dataset.name = section.name;
-          option.dataset.rows = section.rows;
-          blockSelect.appendChild(option);
-        });
+    const standingNames = {
+      'GA-FRONT-L': 'Front GA Left',
+      'GA-FRONT-R': 'Front GA Right',
+      'GA-REAR': 'Rear GA',
+      'GA-CIRCLE': 'Circle',
+      'GA-KISS': 'Kiss',
+      'GA-DISCO': 'Disco',
+      'GA-SQUARE': 'Square'
+    };
+
+    const state = {
+      tiers: { upper: [], lower: [], standing: [] },
+      sections: {},
+      tier: '',
+      block: '',
+      row: '',
+      seat: ''
+    };
+
+    const valueSort = (a, b) => {
+      const na = Number(a);
+      const nb = Number(b);
+      if (!Number.isNaN(na) && !Number.isNaN(nb)) {
+        return na - nb;
       }
-      
-      updateSubmitButton();
-    });
+      return String(a).localeCompare(String(b));
+    };
 
-    // Block selection handler
-    document.getElementById('blockSelect').addEventListener('change', function(e) {
-      const blockId = e.target.value;
-      const selectedOption = e.target.options[e.target.selectedIndex];
-      const rowSelect = document.getElementById('rowSelect');
-      const seatInput = document.getElementById('seatInput');
-      
-      // Reset dependent fields
-      rowSelect.innerHTML = '<option value="">-- Select your row --</option>';
-      seatInput.value = '';
-      rowSelect.disabled = true;
-      seatInput.disabled = true;
-      
-      // Update summary
-      document.getElementById('summaryBlock').textContent = 
-        blockId ? selectedOption.dataset.name : '-';
-      document.getElementById('summaryRow').textContent = '-';
-      document.getElementById('summarySeat').textContent = '-';
-      
-      if (blockId) {
-        const maxRows = parseInt(selectedOption.dataset.rows);
-        selectedSection = {
-          id: blockId,
-          name: selectedOption.dataset.name,
-          rows: maxRows
-        };
-        
-        // Populate rows
-        for (let i = 1; i <= maxRows; i++) {
-          const option = document.createElement('option');
-          option.value = i;
-          option.textContent = `Row ${i}`;
-          rowSelect.appendChild(option);
-        }
-        
-        rowSelect.disabled = false;
-      }
-      
-      updateSubmitButton();
-    });
+    const labelForSection = (name) => {
+      if (name.startsWith('GA-')) return standingNames[name] || name.replace('GA-', '').replace(/-/g, ' ');
+      if (name.startsWith('1-')) return name.slice(2);
+      if (name.startsWith('2-')) return name.slice(2);
+      return name;
+    };
 
-    // Row selection handler
-    document.getElementById('rowSelect').addEventListener('change', function(e) {
-      const row = e.target.value;
-      const seatInput = document.getElementById('seatInput');
-      
-      // Update summary
-      document.getElementById('summaryRow').textContent = row || '-';
-      document.getElementById('summarySeat').textContent = '-';
-      
-      if (row) {
-        seatInput.disabled = false;
-        seatInput.focus();
-      } else {
-        seatInput.disabled = true;
-        seatInput.value = '';
-      }
-      
-      updateSubmitButton();
-    });
-
-    // Seat input handler
-    document.getElementById('seatInput').addEventListener('input', function(e) {
-      const seat = e.target.value;
-      document.getElementById('summarySeat').textContent = seat || '-';
-      updateSubmitButton();
-    });
-
-    // Update submit button state
-    function updateSubmitButton() {
-      const tier = document.getElementById('tierSelect').value;
-      const block = document.getElementById('blockSelect').value;
-      const row = document.getElementById('rowSelect').value;
-      const seat = document.getElementById('seatInput').value;
-      
-      const submitBtn = document.getElementById('submitBtn');
-      const summary = document.getElementById('selectionSummary');
-      
-      const isComplete = tier && block && row && seat;
-      submitBtn.disabled = !isComplete;
-      
-      if (isComplete) {
-        summary.classList.add('active');
-      } else {
-        summary.classList.remove('active');
-      }
+    function resetSelect(select, placeholder) {
+      select.innerHTML = '';
+      const opt = document.createElement('option');
+      opt.value = '';
+      opt.textContent = placeholder;
+      select.appendChild(opt);
     }
 
-    // Form submission
-    document.getElementById('seatForm').addEventListener('submit', function(e) {
-      e.preventDefault();
-      
-      const tier = document.getElementById('tierSelect').value;
-      const block = document.getElementById('blockSelect').value;
-      const blockName = document.getElementById('blockSelect').options[
-        document.getElementById('blockSelect').selectedIndex
-      ].dataset.name;
-      const row = document.getElementById('rowSelect').value;
-      const seat = document.getElementById('seatInput').value;
-      
-      const seatData = {
-        tier: tier,
-        tierName: sectionMapping.tiers[tier].name,
-        sectionId: block,
-        sectionName: blockName,
-        row: row,
-        seat: seat,
-        timestamp: new Date().toISOString()
-      };
-      
-      // Store in localStorage
-      localStorage.setItem('hs_together_seat', JSON.stringify(seatData));
-      
-      // Navigate to run page (or show success message)
-      alert(`Success! Your seat has been saved:\n\n${seatData.tierName}\nBlock ${blockName}\nRow ${row}, Seat ${seat}\n\nYou can now access the light show app!`);
-      
-      // Optionally redirect to the run page
-      // window.location.href = './run-hs-together-together.html';
+    function updateSummary() {
+      const isStanding = state.tier === 'standing';
+      summaryTier.textContent = state.tier ? state.tier.charAt(0).toUpperCase() + state.tier.slice(1) + ' tier' : '-';
+      summaryBlock.textContent = state.block ? labelForSection(state.block) : '-';
+      summaryRow.textContent = isStanding ? 'Standing' : (state.row || '-');
+      summarySeat.textContent = isStanding ? 'N/A' : (state.seat || '-');
+
+      const complete = isStanding ? (state.tier && state.block) : (state.tier && state.block && state.row && state.seat);
+      submitBtn.disabled = !complete;
+      summary.classList.toggle('active', complete);
+    }
+
+    function setTier(tier) {
+      state.tier = tier;
+      state.block = '';
+      state.row = '';
+      state.seat = '';
+
+      tierButtons.forEach(btn => btn.classList.toggle('active', btn.dataset.tier === tier));
+
+      resetSelect(blockSelect, tier === 'standing' ? 'Select standing area' : 'Select your block');
+      resetSelect(rowSelect, 'Select your row');
+      resetSelect(seatSelect, 'Select your seat');
+
+      state.tiers[tier].forEach(sectionName => {
+        const option = document.createElement('option');
+        option.value = sectionName;
+        option.textContent = labelForSection(sectionName);
+        blockSelect.appendChild(option);
+      });
+
+      blockLabel.textContent = tier === 'standing' ? 'Standing area' : 'Block';
+      blockSelect.disabled = false;
+      rowSelect.disabled = true;
+      seatSelect.disabled = true;
+
+      blockRow.classList.add('active');
+      rowRow.classList.remove('active');
+      seatRow.classList.remove('active');
+
+      updateSummary();
+    }
+
+    function setBlock(blockName) {
+      state.block = blockName;
+      state.row = '';
+      state.seat = '';
+
+      resetSelect(rowSelect, 'Select your row');
+      resetSelect(seatSelect, 'Select your seat');
+
+      if (state.tier === 'standing') {
+        rowSelect.disabled = true;
+        seatSelect.disabled = true;
+        rowRow.classList.remove('active');
+        seatRow.classList.remove('active');
+        updateSummary();
+        return;
+      }
+
+      const rows = Object.keys(state.sections[blockName]?.rows || {}).sort(valueSort);
+      rows.forEach(row => {
+        const option = document.createElement('option');
+        option.value = row;
+        option.textContent = row;
+        rowSelect.appendChild(option);
+      });
+
+      rowSelect.disabled = false;
+      seatSelect.disabled = true;
+
+      rowRow.classList.add('active');
+      seatRow.classList.remove('active');
+
+      updateSummary();
+    }
+
+    function setRow(row) {
+      state.row = row;
+      state.seat = '';
+
+      resetSelect(seatSelect, 'Select your seat');
+
+      const seats = (state.sections[state.block]?.rows[row] || []).slice().sort(valueSort);
+      seats.forEach(seat => {
+        const option = document.createElement('option');
+        option.value = seat;
+        option.textContent = seat;
+        seatSelect.appendChild(option);
+      });
+
+      seatSelect.disabled = false;
+      seatRow.classList.add('active');
+
+      updateSummary();
+    }
+
+    function enableTiers() {
+      tierButtons.forEach(btn => {
+        btn.disabled = false;
+      });
+    }
+
+    function initSeatData(data) {
+      const sections = {};
+      data.seats.forEach(seat => {
+        const section = seat.section;
+        if (!section) return;
+        if (!sections[section]) {
+          sections[section] = { rows: {} };
+        }
+        const rowKey = String(seat.row || '');
+        const seatKey = String(seat.seat || '');
+        if (!sections[section].rows[rowKey]) {
+          sections[section].rows[rowKey] = [];
+        }
+        sections[section].rows[rowKey].push(seatKey);
+      });
+
+      state.sections = sections;
+      const sectionNames = Object.keys(sections);
+      state.tiers.upper = sectionNames.filter(name => /^2-\d{3}$/.test(name) && Number(name.slice(2)) >= 401 && Number(name.slice(2)) <= 430).sort();
+      state.tiers.lower = sectionNames.filter(name => /^1-\d{3}$/.test(name) && Number(name.slice(2)) >= 101 && Number(name.slice(2)) <= 129).sort();
+      state.tiers.standing = sectionNames.filter(name => name.startsWith('GA-')).sort();
+
+      enableTiers();
+      seatLoader.classList.remove('active');
+    }
+
+    tierButtons.forEach(btn => {
+      btn.addEventListener('click', () => setTier(btn.dataset.tier));
     });
 
-    // Set year in footer
+    blockSelect.addEventListener('change', (e) => {
+      if (!e.target.value) return;
+      setBlock(e.target.value);
+    });
+
+    rowSelect.addEventListener('change', (e) => {
+      if (!e.target.value) return;
+      setRow(e.target.value);
+    });
+
+    seatSelect.addEventListener('change', (e) => {
+      state.seat = e.target.value;
+      updateSummary();
+    });
+
+    seatFile.addEventListener('change', (event) => {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const data = JSON.parse(reader.result);
+          initSeatData(data);
+        } catch (err) {
+          alert('Could not read the seatmap JSON.');
+        }
+      };
+      reader.readAsText(file);
+    });
+
+    fetch('./data/seatmap_mapping.json')
+      .then(res => res.json())
+      .then(initSeatData)
+      .catch(err => {
+        console.error('Failed to load seat data:', err);
+        seatLoader.classList.add('active');
+      });
+
+    document.getElementById('seatForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      const isStanding = state.tier === 'standing';
+      if (!state.tier || !state.block) return;
+      if (!isStanding && (!state.row || !state.seat)) return;
+
+      const seatData = {
+        tier: state.tier,
+        block: state.block,
+        blockLabel: labelForSection(state.block),
+        row: isStanding ? null : state.row,
+        seat: isStanding ? null : state.seat,
+        timestamp: new Date().toISOString()
+      };
+
+      localStorage.setItem('hs_together_seat', JSON.stringify(seatData));
+
+      if (isStanding) {
+        alert(`Success! Your standing area has been saved:
+
+${seatData.blockLabel}`);
+      } else {
+        alert(`Success! Your seat has been saved:
+
+${seatData.blockLabel}
+Row ${seatData.row}, Seat ${seatData.seat}`);
+      }
+    });
+
     document.getElementById('year').textContent = new Date().getFullYear();
   </script>
 </body>
