@@ -2,105 +2,1082 @@
   "tiers": {
     "upper": {
       "name": "Upper tier",
-      "description": "Oberrang - Sections 401-430",
+      "description": "Oberrang",
       "sections": [
-        { "id": "s_63", "name": "2-401", "seats": 926, "rows": 27 },
-        { "id": "s_62", "name": "2-402", "seats": 1100, "rows": 27 },
-        { "id": "s_61", "name": "2-403", "seats": 510, "rows": 27 },
-        { "id": "s_60", "name": "2-404", "seats": 1201, "rows": 27 },
-        { "id": "s_59", "name": "2-405", "seats": 1112, "rows": 27 },
-        { "id": "s_133", "name": "2-406", "seats": 1080, "rows": 27 },
-        { "id": "s_52", "name": "2-407", "seats": 1233, "rows": 27 },
-        { "id": "s_53", "name": "2-408", "seats": 510, "rows": 27 },
-        { "id": "s_54", "name": "2-409", "seats": 1101, "rows": 27 },
-        { "id": "s_55", "name": "2-410", "seats": 826, "rows": 27 },
-        { "id": "s_56", "name": "2-411", "seats": 858, "rows": 27 },
-        { "id": "s_57", "name": "2-412", "seats": 535, "rows": 27 },
-        { "id": "s_66", "name": "2-413", "seats": 1821, "rows": 27 },
-        { "id": "s_68", "name": "2-414", "seats": 525, "rows": 27 },
-        { "id": "s_69", "name": "2-415", "seats": 511, "rows": 27 },
-        { "id": "s_108", "name": "2-416", "seats": 1325, "rows": 27 },
-        { "id": "s_70", "name": "2-417", "seats": 826, "rows": 27 },
-        { "id": "s_71", "name": "2-418", "seats": 522, "rows": 27 },
-        { "id": "s_72", "name": "2-419", "seats": 1217, "rows": 27 },
-        { "id": "s_73", "name": "2-420", "seats": 1273, "rows": 27 },
-        { "id": "s_74", "name": "2-421", "seats": 1266, "rows": 27 },
-        { "id": "s_75", "name": "2-422", "seats": 1223, "rows": 27 },
-        { "id": "s_76", "name": "2-423", "seats": 522, "rows": 27 },
-        { "id": "s_77", "name": "2-424", "seats": 1102, "rows": 27 },
-        { "id": "s_79", "name": "2-425", "seats": 1151, "rows": 27 },
-        { "id": "s_78", "name": "2-426", "seats": 528, "rows": 27 },
-        { "id": "s_67", "name": "2-427", "seats": 535, "rows": 27 },
-        { "id": "s_107", "name": "2-428", "seats": 1821, "rows": 27 },
-        { "id": "s_154", "name": "2-429", "seats": 538, "rows": 27 },
-        { "id": "s_64", "name": "2-430", "seats": 749, "rows": 27 }
+        {
+          "id": "s_63",
+          "name": "2-401",
+          "seats": 926,
+          "rows": 27
+        },
+        {
+          "id": "s_62",
+          "name": "2-402",
+          "seats": 1100,
+          "rows": 27
+        },
+        {
+          "id": "s_61",
+          "name": "2-403",
+          "seats": 510,
+          "rows": 27
+        },
+        {
+          "id": "s_60",
+          "name": "2-404",
+          "seats": 1201,
+          "rows": 27
+        },
+        {
+          "id": "s_59",
+          "name": "2-405",
+          "seats": 1112,
+          "rows": 27
+        },
+        {
+          "id": "s_133",
+          "name": "2-406",
+          "seats": 1080,
+          "rows": 27
+        },
+        {
+          "id": "s_52",
+          "name": "2-407",
+          "seats": 1233,
+          "rows": 27
+        },
+        {
+          "id": "s_53",
+          "name": "2-408",
+          "seats": 510,
+          "rows": 27
+        },
+        {
+          "id": "s_54",
+          "name": "2-409",
+          "seats": 1101,
+          "rows": 27
+        },
+        {
+          "id": "s_55",
+          "name": "2-410",
+          "seats": 826,
+          "rows": 27
+        },
+        {
+          "id": "s_56",
+          "name": "2-411",
+          "seats": 858,
+          "rows": 27
+        },
+        {
+          "id": "s_57",
+          "name": "2-412",
+          "seats": 535,
+          "rows": 27
+        },
+        {
+          "id": "s_66",
+          "name": "2-413",
+          "seats": 1821,
+          "rows": 27
+        },
+        {
+          "id": "s_68",
+          "name": "2-414",
+          "seats": 525,
+          "rows": 27
+        },
+        {
+          "id": "s_69",
+          "name": "2-415",
+          "seats": 511,
+          "rows": 27
+        },
+        {
+          "id": "s_108",
+          "name": "2-416",
+          "seats": 1325,
+          "rows": 27
+        },
+        {
+          "id": "s_70",
+          "name": "2-417",
+          "seats": 826,
+          "rows": 27
+        },
+        {
+          "id": "s_71",
+          "name": "2-418",
+          "seats": 522,
+          "rows": 27
+        },
+        {
+          "id": "s_72",
+          "name": "2-419",
+          "seats": 1217,
+          "rows": 27
+        },
+        {
+          "id": "s_73",
+          "name": "2-420",
+          "seats": 1273,
+          "rows": 27
+        },
+        {
+          "id": "s_74",
+          "name": "2-421",
+          "seats": 1266,
+          "rows": 27
+        },
+        {
+          "id": "s_75",
+          "name": "2-422",
+          "seats": 1223,
+          "rows": 27
+        },
+        {
+          "id": "s_76",
+          "name": "2-423",
+          "seats": 522,
+          "rows": 27
+        },
+        {
+          "id": "s_77",
+          "name": "2-424",
+          "seats": 1102,
+          "rows": 27
+        },
+        {
+          "id": "s_79",
+          "name": "2-425",
+          "seats": 1151,
+          "rows": 27
+        },
+        {
+          "id": "s_78",
+          "name": "2-426",
+          "seats": 528,
+          "rows": 27
+        },
+        {
+          "id": "s_67",
+          "name": "2-427",
+          "seats": 535,
+          "rows": 27
+        },
+        {
+          "id": "s_107",
+          "name": "2-428",
+          "seats": 1821,
+          "rows": 27
+        },
+        {
+          "id": "s_154",
+          "name": "2-429",
+          "seats": 538,
+          "rows": 27
+        },
+        {
+          "id": "s_64",
+          "name": "2-430",
+          "seats": 749,
+          "rows": 27
+        }
       ]
     },
     "lower": {
       "name": "Lower tier",
-      "description": "Unterrang - Sections 101-128",
+      "description": "Unterrang",
       "sections": [
-        { "id": "s_40", "name": "1-101", "seats": 408, "rows": 19 },
-        { "id": "s_39", "name": "1-102", "seats": 573, "rows": 19 },
-        { "id": "s_38", "name": "1-103", "seats": 518, "rows": 19 },
-        { "id": "s_37", "name": "1-104", "seats": 496, "rows": 19 },
-        { "id": "s_36", "name": "1-105", "seats": 406, "rows": 19 },
-        { "id": "s_26", "name": "1-106", "seats": 438, "rows": 19 },
-        { "id": "s_25", "name": "1-107", "seats": 401, "rows": 19 },
-        { "id": "s_24", "name": "1-108", "seats": 463, "rows": 19 },
-        { "id": "s_27", "name": "1-110", "seats": 601, "rows": 19 },
-        { "id": "s_28", "name": "1-111", "seats": 406, "rows": 19 },
-        { "id": "s_171", "name": "1-112", "seats": 1038, "rows": 30 },
-        { "id": "s_29", "name": "1-113", "seats": 1114, "rows": 30 },
-        { "id": "s_30", "name": "1-114", "seats": 798, "rows": 30 },
-        { "id": "s_31", "name": "1-115", "seats": 904, "rows": 30 },
-        { "id": "s_32", "name": "1-117", "seats": 1101, "rows": 27 },
-        { "id": "s_33", "name": "1-118", "seats": 348, "rows": 29 },
-        { "id": "s_34", "name": "1-119", "seats": 1359, "rows": 30 },
-        { "id": "s_35", "name": "1-120", "seats": 1362, "rows": 29 },
-        { "id": "s_47", "name": "1-121", "seats": 1362, "rows": 29 },
-        { "id": "s_46", "name": "1-122", "seats": 1299, "rows": 30 },
-        { "id": "s_45", "name": "1-123", "seats": 686, "rows": 29 },
-        { "id": "s_44", "name": "1-124", "seats": 845, "rows": 27 },
-        { "id": "s_43", "name": "1-126", "seats": 1084, "rows": 30 },
-        { "id": "s_42", "name": "1-127", "seats": 859, "rows": 30 },
-        { "id": "s_41", "name": "1-128", "seats": 846, "rows": 30 }
+        {
+          "id": "s_80",
+          "name": "1-001",
+          "seats": 44,
+          "rows": 5
+        },
+        {
+          "id": "s_81",
+          "name": "1-002",
+          "seats": 108,
+          "rows": 5
+        },
+        {
+          "id": "s_82",
+          "name": "1-003",
+          "seats": 125,
+          "rows": 5
+        },
+        {
+          "id": "s_83",
+          "name": "1-004",
+          "seats": 128,
+          "rows": 5
+        },
+        {
+          "id": "s_84",
+          "name": "1-005",
+          "seats": 60,
+          "rows": 5
+        },
+        {
+          "id": "s_85",
+          "name": "1-006",
+          "seats": 55,
+          "rows": 5
+        },
+        {
+          "id": "s_86",
+          "name": "1-007",
+          "seats": 103,
+          "rows": 5
+        },
+        {
+          "id": "s_87",
+          "name": "1-008",
+          "seats": 135,
+          "rows": 5
+        },
+        {
+          "id": "s_88",
+          "name": "1-010",
+          "seats": 108,
+          "rows": 5
+        },
+        {
+          "id": "s_89",
+          "name": "1-011",
+          "seats": 44,
+          "rows": 5
+        },
+        {
+          "id": "s_90",
+          "name": "1-012",
+          "seats": 54,
+          "rows": 3
+        },
+        {
+          "id": "s_91",
+          "name": "1-013",
+          "seats": 87,
+          "rows": 3
+        },
+        {
+          "id": "s_92",
+          "name": "1-014",
+          "seats": 86,
+          "rows": 3
+        },
+        {
+          "id": "s_93",
+          "name": "1-015",
+          "seats": 70,
+          "rows": 3
+        },
+        {
+          "id": "s_109",
+          "name": "1-016",
+          "seats": 52,
+          "rows": 3
+        },
+        {
+          "id": "s_101",
+          "name": "1-017",
+          "seats": 111,
+          "rows": 5
+        },
+        {
+          "id": "s_100",
+          "name": "1-018",
+          "seats": 50,
+          "rows": 5
+        },
+        {
+          "id": "s_99",
+          "name": "1-019",
+          "seats": 208,
+          "rows": 5
+        },
+        {
+          "id": "s_98",
+          "name": "1-020",
+          "seats": 240,
+          "rows": 5
+        },
+        {
+          "id": "s_97",
+          "name": "1-021",
+          "seats": 240,
+          "rows": 5
+        },
+        {
+          "id": "s_96",
+          "name": "1-022",
+          "seats": 208,
+          "rows": 5
+        },
+        {
+          "id": "s_95",
+          "name": "1-023",
+          "seats": 82,
+          "rows": 5
+        },
+        {
+          "id": "s_94",
+          "name": "1-024",
+          "seats": 79,
+          "rows": 5
+        },
+        {
+          "id": "s_106",
+          "name": "1-025",
+          "seats": 71,
+          "rows": 4
+        },
+        {
+          "id": "s_105",
+          "name": "1-026",
+          "seats": 111,
+          "rows": 4
+        },
+        {
+          "id": "s_104",
+          "name": "1-027",
+          "seats": 120,
+          "rows": 4
+        },
+        {
+          "id": "s_103",
+          "name": "1-028",
+          "seats": 83,
+          "rows": 4
+        },
+        {
+          "id": "s_102",
+          "name": "1-029",
+          "seats": 71,
+          "rows": 4
+        },
+        {
+          "id": "s_40",
+          "name": "1-101",
+          "seats": 408,
+          "rows": 19
+        },
+        {
+          "id": "s_39",
+          "name": "1-102",
+          "seats": 573,
+          "rows": 19
+        },
+        {
+          "id": "s_38",
+          "name": "1-103",
+          "seats": 518,
+          "rows": 19
+        },
+        {
+          "id": "s_37",
+          "name": "1-104",
+          "seats": 496,
+          "rows": 19
+        },
+        {
+          "id": "s_36",
+          "name": "1-105",
+          "seats": 406,
+          "rows": 19
+        },
+        {
+          "id": "s_26",
+          "name": "1-106",
+          "seats": 438,
+          "rows": 19
+        },
+        {
+          "id": "s_25",
+          "name": "1-107",
+          "seats": 401,
+          "rows": 19
+        },
+        {
+          "id": "s_24",
+          "name": "1-108",
+          "seats": 463,
+          "rows": 19
+        },
+        {
+          "id": "s_27",
+          "name": "1-110",
+          "seats": 601,
+          "rows": 19
+        },
+        {
+          "id": "s_28",
+          "name": "1-111",
+          "seats": 406,
+          "rows": 19
+        },
+        {
+          "id": "s_171",
+          "name": "1-112",
+          "seats": 1006,
+          "rows": 28
+        },
+        {
+          "id": "s_29",
+          "name": "1-113",
+          "seats": 1114,
+          "rows": 30
+        },
+        {
+          "id": "s_30",
+          "name": "1-114",
+          "seats": 798,
+          "rows": 30
+        },
+        {
+          "id": "s_31",
+          "name": "1-115",
+          "seats": 904,
+          "rows": 30
+        },
+        {
+          "id": "s_172",
+          "name": "1-116",
+          "seats": 1002,
+          "rows": 28
+        },
+        {
+          "id": "s_32",
+          "name": "1-117",
+          "seats": 1101,
+          "rows": 27
+        },
+        {
+          "id": "s_33",
+          "name": "1-118",
+          "seats": 348,
+          "rows": 29
+        },
+        {
+          "id": "s_34",
+          "name": "1-119",
+          "seats": 1359,
+          "rows": 30
+        },
+        {
+          "id": "s_35",
+          "name": "1-120",
+          "seats": 1362,
+          "rows": 29
+        },
+        {
+          "id": "s_47",
+          "name": "1-121",
+          "seats": 1362,
+          "rows": 29
+        },
+        {
+          "id": "s_46",
+          "name": "1-122",
+          "seats": 1299,
+          "rows": 30
+        },
+        {
+          "id": "s_45",
+          "name": "1-123",
+          "seats": 686,
+          "rows": 29
+        },
+        {
+          "id": "s_44",
+          "name": "1-124",
+          "seats": 845,
+          "rows": 27
+        },
+        {
+          "id": "s_168",
+          "name": "1-125",
+          "seats": 995,
+          "rows": 28
+        },
+        {
+          "id": "s_43",
+          "name": "1-126",
+          "seats": 1084,
+          "rows": 30
+        },
+        {
+          "id": "s_42",
+          "name": "1-127",
+          "seats": 859,
+          "rows": 30
+        },
+        {
+          "id": "s_41",
+          "name": "1-128",
+          "seats": 846,
+          "rows": 30
+        },
+        {
+          "id": "s_169",
+          "name": "1-129",
+          "seats": 999,
+          "rows": 28
+        },
+        {
+          "id": "s_112",
+          "name": "1-200",
+          "seats": 20,
+          "rows": 2
+        },
+        {
+          "id": "s_112",
+          "name": "1-201",
+          "seats": 10,
+          "rows": 2
+        },
+        {
+          "id": "s_112",
+          "name": "1-202",
+          "seats": 10,
+          "rows": 2
+        },
+        {
+          "id": "s_112",
+          "name": "1-203",
+          "seats": 10,
+          "rows": 2
+        },
+        {
+          "id": "s_112",
+          "name": "1-204",
+          "seats": 12,
+          "rows": 2
+        },
+        {
+          "id": "s_112",
+          "name": "1-205",
+          "seats": 12,
+          "rows": 2
+        },
+        {
+          "id": "s_112",
+          "name": "1-206",
+          "seats": 10,
+          "rows": 2
+        },
+        {
+          "id": "s_112",
+          "name": "1-207",
+          "seats": 10,
+          "rows": 2
+        },
+        {
+          "id": "s_112",
+          "name": "1-208",
+          "seats": 10,
+          "rows": 2
+        },
+        {
+          "id": "s_164",
+          "name": "1-209",
+          "seats": 10,
+          "rows": 2
+        },
+        {
+          "id": "s_164",
+          "name": "1-210",
+          "seats": 10,
+          "rows": 2
+        },
+        {
+          "id": "s_164",
+          "name": "1-211",
+          "seats": 10,
+          "rows": 2
+        },
+        {
+          "id": "s_164",
+          "name": "1-212",
+          "seats": 10,
+          "rows": 2
+        },
+        {
+          "id": "s_164",
+          "name": "1-213",
+          "seats": 12,
+          "rows": 2
+        },
+        {
+          "id": "s_164",
+          "name": "1-214",
+          "seats": 10,
+          "rows": 2
+        },
+        {
+          "id": "s_164",
+          "name": "1-215",
+          "seats": 10,
+          "rows": 2
+        },
+        {
+          "id": "s_164",
+          "name": "1-216",
+          "seats": 10,
+          "rows": 2
+        },
+        {
+          "id": "s_164",
+          "name": "1-217",
+          "seats": 10,
+          "rows": 2
+        },
+        {
+          "id": "s_114",
+          "name": "1-218",
+          "seats": 10,
+          "rows": 2
+        },
+        {
+          "id": "s_114",
+          "name": "1-219",
+          "seats": 10,
+          "rows": 2
+        },
+        {
+          "id": "s_114",
+          "name": "1-220",
+          "seats": 10,
+          "rows": 2
+        },
+        {
+          "id": "s_114",
+          "name": "1-221",
+          "seats": 10,
+          "rows": 2
+        },
+        {
+          "id": "s_114",
+          "name": "1-222",
+          "seats": 10,
+          "rows": 2
+        },
+        {
+          "id": "s_114",
+          "name": "1-223",
+          "seats": 10,
+          "rows": 2
+        },
+        {
+          "id": "s_114",
+          "name": "1-224",
+          "seats": 10,
+          "rows": 2
+        },
+        {
+          "id": "s_114",
+          "name": "1-225",
+          "seats": 10,
+          "rows": 2
+        },
+        {
+          "id": "s_114",
+          "name": "1-226",
+          "seats": 10,
+          "rows": 2
+        },
+        {
+          "id": "s_165",
+          "name": "1-227",
+          "seats": 10,
+          "rows": 2
+        },
+        {
+          "id": "s_165",
+          "name": "1-228",
+          "seats": 10,
+          "rows": 2
+        },
+        {
+          "id": "s_165",
+          "name": "1-229",
+          "seats": 10,
+          "rows": 2
+        },
+        {
+          "id": "s_165",
+          "name": "1-230",
+          "seats": 10,
+          "rows": 2
+        },
+        {
+          "id": "s_165",
+          "name": "1-231",
+          "seats": 10,
+          "rows": 2
+        },
+        {
+          "id": "s_165",
+          "name": "1-232",
+          "seats": 10,
+          "rows": 2
+        },
+        {
+          "id": "s_165",
+          "name": "1-233",
+          "seats": 10,
+          "rows": 2
+        },
+        {
+          "id": "s_165",
+          "name": "1-234",
+          "seats": 10,
+          "rows": 2
+        },
+        {
+          "id": "s_165",
+          "name": "1-235",
+          "seats": 20,
+          "rows": 2
+        },
+        {
+          "id": "s_116",
+          "name": "1-300",
+          "seats": 20,
+          "rows": 2
+        },
+        {
+          "id": "s_116",
+          "name": "1-301",
+          "seats": 10,
+          "rows": 2
+        },
+        {
+          "id": "s_116",
+          "name": "1-302",
+          "seats": 10,
+          "rows": 2
+        },
+        {
+          "id": "s_116",
+          "name": "1-303",
+          "seats": 10,
+          "rows": 2
+        },
+        {
+          "id": "s_116",
+          "name": "1-304",
+          "seats": 10,
+          "rows": 2
+        },
+        {
+          "id": "s_116",
+          "name": "1-305",
+          "seats": 10,
+          "rows": 2
+        },
+        {
+          "id": "s_116",
+          "name": "1-306",
+          "seats": 10,
+          "rows": 2
+        },
+        {
+          "id": "s_116",
+          "name": "1-307",
+          "seats": 10,
+          "rows": 2
+        },
+        {
+          "id": "s_117",
+          "name": "1-308",
+          "seats": 10,
+          "rows": 2
+        },
+        {
+          "id": "s_117",
+          "name": "1-309",
+          "seats": 10,
+          "rows": 2
+        },
+        {
+          "id": "s_117",
+          "name": "1-310",
+          "seats": 10,
+          "rows": 2
+        },
+        {
+          "id": "s_117",
+          "name": "1-311",
+          "seats": 10,
+          "rows": 2
+        },
+        {
+          "id": "s_117",
+          "name": "1-312",
+          "seats": 14,
+          "rows": 2
+        },
+        {
+          "id": "s_117",
+          "name": "1-313",
+          "seats": 14,
+          "rows": 2
+        },
+        {
+          "id": "s_117",
+          "name": "1-314",
+          "seats": 14,
+          "rows": 2
+        },
+        {
+          "id": "s_117",
+          "name": "1-315",
+          "seats": 14,
+          "rows": 2
+        },
+        {
+          "id": "s_118",
+          "name": "1-316",
+          "seats": 11,
+          "rows": 2
+        },
+        {
+          "id": "s_118",
+          "name": "1-317",
+          "seats": 11,
+          "rows": 2
+        },
+        {
+          "id": "s_118",
+          "name": "1-318",
+          "seats": 14,
+          "rows": 2
+        },
+        {
+          "id": "s_118",
+          "name": "1-319",
+          "seats": 10,
+          "rows": 2
+        },
+        {
+          "id": "s_118",
+          "name": "1-320",
+          "seats": 10,
+          "rows": 2
+        },
+        {
+          "id": "s_118",
+          "name": "1-321",
+          "seats": 10,
+          "rows": 2
+        },
+        {
+          "id": "s_118",
+          "name": "1-322",
+          "seats": 10,
+          "rows": 2
+        },
+        {
+          "id": "s_118",
+          "name": "1-323",
+          "seats": 10,
+          "rows": 2
+        },
+        {
+          "id": "s_119",
+          "name": "1-324",
+          "seats": 10,
+          "rows": 2
+        },
+        {
+          "id": "s_119",
+          "name": "1-325",
+          "seats": 10,
+          "rows": 2
+        },
+        {
+          "id": "s_119",
+          "name": "1-326",
+          "seats": 10,
+          "rows": 2
+        },
+        {
+          "id": "s_119",
+          "name": "1-327",
+          "seats": 10,
+          "rows": 2
+        },
+        {
+          "id": "s_119",
+          "name": "1-328",
+          "seats": 10,
+          "rows": 2
+        },
+        {
+          "id": "s_119",
+          "name": "1-329",
+          "seats": 10,
+          "rows": 2
+        },
+        {
+          "id": "s_119",
+          "name": "1-330",
+          "seats": 10,
+          "rows": 2
+        },
+        {
+          "id": "s_119",
+          "name": "1-331",
+          "seats": 18,
+          "rows": 2
+        },
+        {
+          "id": "s_121",
+          "name": "1-350",
+          "seats": 62,
+          "rows": 3
+        },
+        {
+          "id": "s_123",
+          "name": "1-514",
+          "seats": 25,
+          "rows": 3
+        },
+        {
+          "id": "s_111",
+          "name": "1-601",
+          "seats": 25,
+          "rows": 3
+        },
+        {
+          "id": "s_122",
+          "name": "1-608",
+          "seats": 10,
+          "rows": 2
+        },
+        {
+          "id": "s_122",
+          "name": "1-609",
+          "seats": 10,
+          "rows": 2
+        },
+        {
+          "id": "s_122",
+          "name": "1-610",
+          "seats": 10,
+          "rows": 2
+        },
+        {
+          "id": "s_122",
+          "name": "1-611",
+          "seats": 10,
+          "rows": 2
+        },
+        {
+          "id": "s_122",
+          "name": "1-612",
+          "seats": 10,
+          "rows": 2
+        },
+        {
+          "id": "s_122",
+          "name": "1-613",
+          "seats": 12,
+          "rows": 2
+        },
+        {
+          "id": "s_123",
+          "name": "1-614",
+          "seats": 25,
+          "rows": 3
+        },
+        {
+          "id": "s_171",
+          "name": "1-812",
+          "seats": 32,
+          "rows": 2
+        },
+        {
+          "id": "s_172",
+          "name": "1-816",
+          "seats": 34,
+          "rows": 2
+        },
+        {
+          "id": "s_168",
+          "name": "1-825",
+          "seats": 34,
+          "rows": 2
+        },
+        {
+          "id": "s_169",
+          "name": "1-829",
+          "seats": 32,
+          "rows": 2
+        },
+        {
+          "id": "s_110",
+          "name": "1-CJ",
+          "seats": 70,
+          "rows": 2
+        },
+        {
+          "id": "s_120",
+          "name": "1-KL",
+          "seats": 50,
+          "rows": 2
+        }
       ]
     },
     "standing": {
       "name": "Standing",
-      "description": "GA/Standing areas - Sections 001-029",
+      "description": "GA/Innenraum",
       "sections": [
-        { "id": "s_80", "name": "1-001", "seats": 44, "rows": 5 },
-        { "id": "s_81", "name": "1-002", "seats": 108, "rows": 5 },
-        { "id": "s_82", "name": "1-003", "seats": 125, "rows": 5 },
-        { "id": "s_83", "name": "1-004", "seats": 128, "rows": 5 },
-        { "id": "s_84", "name": "1-005", "seats": 60, "rows": 5 },
-        { "id": "s_85", "name": "1-006", "seats": 55, "rows": 5 },
-        { "id": "s_86", "name": "1-007", "seats": 103, "rows": 5 },
-        { "id": "s_87", "name": "1-008", "seats": 135, "rows": 5 },
-        { "id": "s_88", "name": "1-010", "seats": 108, "rows": 5 },
-        { "id": "s_89", "name": "1-011", "seats": 44, "rows": 5 },
-        { "id": "s_90", "name": "1-012", "seats": 54, "rows": 3 },
-        { "id": "s_91", "name": "1-013", "seats": 87, "rows": 3 },
-        { "id": "s_92", "name": "1-014", "seats": 86, "rows": 3 },
-        { "id": "s_93", "name": "1-015", "seats": 70, "rows": 3 },
-        { "id": "s_109", "name": "1-016", "seats": 52, "rows": 3 },
-        { "id": "s_101", "name": "1-017", "seats": 111, "rows": 5 },
-        { "id": "s_100", "name": "1-018", "seats": 50, "rows": 5 },
-        { "id": "s_99", "name": "1-019", "seats": 208, "rows": 5 },
-        { "id": "s_98", "name": "1-020", "seats": 240, "rows": 5 },
-        { "id": "s_97", "name": "1-021", "seats": 240, "rows": 5 },
-        { "id": "s_96", "name": "1-022", "seats": 208, "rows": 5 },
-        { "id": "s_95", "name": "1-023", "seats": 82, "rows": 5 },
-        { "id": "s_94", "name": "1-024", "seats": 79, "rows": 5 },
-        { "id": "s_106", "name": "1-025", "seats": 71, "rows": 4 },
-        { "id": "s_105", "name": "1-026", "seats": 111, "rows": 4 },
-        { "id": "s_104", "name": "1-027", "seats": 120, "rows": 4 },
-        { "id": "s_103", "name": "1-028", "seats": 83, "rows": 4 },
-        { "id": "s_102", "name": "1-029", "seats": 71, "rows": 4 },
-        { "id": "s_110", "name": "1-CJ", "seats": 70, "rows": 2 },
-        { "id": "s_120", "name": "1-KL", "seats": 50, "rows": 2 }
+        {
+          "id": "ga_ga-circle",
+          "name": "GA-CIRCLE",
+          "seats": 625,
+          "rows": 1
+        },
+        {
+          "id": "ga_ga-disco",
+          "name": "GA-DISCO",
+          "seats": 625,
+          "rows": 1
+        },
+        {
+          "id": "ga_ga-front-l",
+          "name": "GA-FRONT-L",
+          "seats": 3750,
+          "rows": 1
+        },
+        {
+          "id": "ga_ga-front-r",
+          "name": "GA-FRONT-R",
+          "seats": 3750,
+          "rows": 1
+        },
+        {
+          "id": "ga_ga-kiss",
+          "name": "GA-KISS",
+          "seats": 625,
+          "rows": 1
+        },
+        {
+          "id": "ga_ga-rear",
+          "name": "GA-REAR",
+          "seats": 5000,
+          "rows": 1
+        },
+        {
+          "id": "ga_ga-square",
+          "name": "GA-SQUARE",
+          "seats": 625,
+          "rows": 1
+        }
       ]
     }
   }
