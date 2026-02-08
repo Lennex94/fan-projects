@@ -3,9 +3,9 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Harry Styles — Together, Together • FanProjects</title>
+  <title>Harry Styles - Together, Together - FanProjects</title>
   <meta name="description" content="Planning page for the Harry Styles fanproject 'Together, Together' (Amsterdam, 16 May 2026)." />
-  <link rel="stylesheet" href="./css/styles.css?v=14" />
+  <link rel="stylesheet" href="./css/styles.css?v=15" />
 </head>
 
 <body class="project-page">
@@ -25,7 +25,6 @@
   </header>
 
   <main class="page">
-    <!-- HERO / COVER -->
     <section class="project-hero" aria-label="Project cover">
       <img class="project-hero__img" src="./assets/hs-amsterdam.jpg" alt="" aria-hidden="true">
       <div class="project-hero__scrim" aria-hidden="true"></div>
@@ -38,25 +37,32 @@
           <span class="pill">16 MAY 2026</span>
         </div>
 
-        <h1 class="project-title">Harry Styles — “Together, Together”</h1>
+        <h1 class="project-title">Harry Styles - "Together, Together"</h1>
         <p class="project-lead">
           Fanproject for the Amsterdam show. Updates and participation will be handled through this site.
         </p>
 
         <div class="project-ctaRow">
-          <a class="btn" href="https://chat.whatsapp.com/GdYZPWDXeBdItVI70OFyV7" target="_blank" rel="noopener">
-            WhatsApp Community
-          </a>
+          <div class="social-links" aria-label="Social links">
+            <a href="https://chat.whatsapp.com/GdYZPWDXeBdItVI70OFyV7" target="_blank" rel="noopener" aria-label="WhatsApp">
+              <img src="./assets/WhatsAppIcon.png" alt="" aria-hidden="true">
+            </a>
+            <a href="https://www.tiktok.com/@hsfanprojektamsterdam" target="_blank" rel="noopener" aria-label="TikTok">
+              <img src="./assets/TiktokIcon.png" alt="" aria-hidden="true">
+            </a>
+            <a href="https://www.instagram.com/togethertogetherfanprojects/" target="_blank" rel="noopener" aria-label="Instagram">
+              <img src="./assets/InstagramIcon.png" alt="" aria-hidden="true">
+            </a>
+          </div>
         </div>
 
-        <!-- JOIN -->
         <div class="join-box" aria-label="Join project">
-          <p style="margin-bottom: 1rem; color: #f0f0f0; font-size: 0.95rem;">
+          <p>
             Ready to participate? Select your exact seat location to receive your personalized light show animation.
           </p>
-          <a href="./join-hs-together.html" class="btn primary" style="display: inline-block; text-decoration: none; width: 100%; text-align: center; box-sizing: border-box; padding: 0.75rem 1.5rem;">
-            Select Your Seat →
-          </a>
+          <div class="join-box__cta">
+            <a href="./join-hs-together.html" class="btn primary">Select your seat</a>
+          </div>
         </div>
 
         <p class="project-miniNote">
@@ -65,18 +71,17 @@
       </div>
     </section>
 
-    <!-- CONTENT -->
     <section class="two-col" aria-label="Project info">
       <div class="panel">
         <h2 class="h2">Status / Description</h2>
-        <p class="muted">We’re currently still planning this project.</p>
+        <p class="muted">We are currently still planning this project.</p>
         <p class="muted">
-          The idea is to create an animated lightshow that runs across participants’ phone screens.
-          Right now we’re still figuring out the best way to implement it.
+          The idea is to create an animated lightshow that runs across participants' phone screens.
+          Right now we are still figuring out the best way to implement it.
         </p>
         <p class="muted">
-          Since this is the opening show, we can only plan parts of it for now because we don’t know
-          exactly how it will play out on the day. One approach we’re considering is using beat detection,
+          Since this is the opening show, we can only plan parts of it for now because we do not know
+          exactly how it will play out on the day. One approach we are considering is using beat detection,
           which would trigger different color animations on phones, like a beat / music visualizer.
         </p>
       </div>
@@ -86,21 +91,16 @@
 
         <ul class="project-list">
           <li>
-            <strong>Join the WhatsApp community</strong> to get updates and instructions.
-            <div class="project-linkRow">
-              <a class="link" href="https://chat.whatsapp.com/GdYZPWDXeBdItVI70OFyV7" target="_blank" rel="noopener">
-                Open WhatsApp invite
-              </a>
-            </div>
+            <strong>Follow the social updates</strong> to get timing and instructions as the date gets closer.
           </li>
 
           <li>
-            <strong>Helpers & co-organizers wanted.</strong> Planning, design, coordination, anything helps.
+            <strong>Helpers and co-organizers wanted.</strong> Planning, design, coordination, anything helps.
             The more people, the better.
           </li>
 
           <li>
-            Once the concept is locked, we’ll create <strong>info sheets</strong> that need to be handed out
+            Once the concept is locked, we will create <strong>info sheets</strong> that need to be handed out
             in the stadium. If you can help with distribution, please reach out early.
           </li>
 
@@ -110,18 +110,96 @@
           </li>
 
           <li>
-            If you want to <strong>promote the project</strong> (socials, groups, friends), that’s very welcome.
-            We’re genuinely grateful for it.
+            If you want to <strong>promote the project</strong> (socials, groups, friends), that is very welcome.
+            We are genuinely grateful for it.
           </li>
         </ul>
       </div>
+    
+    <section class="helpers" aria-label="Helpers">
+      <div class="helpers-meta">
+        <span class="helpers-count" id="helpersCount">0 helpers</span>
+        <span class="helpers-rotator" id="helpersRotator"></span>
+      </div>
+      <div class="helpers-loader" id="helpersLoader">
+        <p class="muted">If you opened this page directly (file://), your browser blocks helpers.json. Load it manually:</p>
+        <input id="helpersFile" type="file" accept="application/json" />
+      </div>
     </section>
+</section>
 
     <footer class="footer">
-      <p>© <span id="year"></span> FanProjects</p>
+      <p>(c) <span id="year"></span> FanProjects</p>
     </footer>
   </main>
 
-  <script src="./js/main.js?v=14"></script>
+  <script src="./js/main.js?v=15"></script>
+  <script>
+    const helpersCount = document.getElementById('helpersCount');
+    const helpersRotator = document.getElementById('helpersRotator');
+    const helpersLoader = document.getElementById('helpersLoader');
+    const helpersFile = document.getElementById('helpersFile');
+    let helperTimer = null;
+
+    function startRotation(names) {
+      if (!helpersRotator) return;
+      if (helperTimer) {
+        clearInterval(helperTimer);
+        helperTimer = null;
+      }
+      if (!names.length) {
+        helpersRotator.textContent = '';
+        helpersRotator.classList.remove('show');
+        return;
+      }
+      let index = 0;
+      helpersRotator.textContent = names[index];
+      helpersRotator.classList.add('show');
+      helperTimer = setInterval(() => {
+        helpersRotator.classList.remove('show');
+        setTimeout(() => {
+          index = (index + 1) % names.length;
+          helpersRotator.textContent = names[index];
+          helpersRotator.classList.add('show');
+        }, 200);
+      }, 2000);
+    }
+
+    function renderHelpers(data) {
+      if (!helpersCount) return;
+      const helpers = (data.helpers || []).map(name => String(name).trim()).filter(Boolean);
+      helpersCount.textContent = helpers.length === 1 ? '1 helper' : `${helpers.length} helpers`;
+      startRotation(helpers);
+      if (helpersLoader) helpersLoader.style.display = helpers.length ? 'none' : 'grid';
+    }
+
+    if (helpersFile) {
+      helpersFile.addEventListener('change', (event) => {
+        const file = event.target.files && event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+          try {
+            const data = JSON.parse(reader.result);
+            renderHelpers(data);
+          } catch (err) {
+            alert('Could not read helpers.json');
+          }
+        };
+        reader.readAsText(file);
+      });
+    }
+
+    fetch('./data/helpers.json')
+      .then(res => res.json())
+      .then(renderHelpers)
+      .catch(() => {
+        if (helpersLoader) helpersLoader.style.display = 'grid';
+      });
+  </script>
+
+  
+  
+  
 </body>
 </html>
