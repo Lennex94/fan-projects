@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>FanProjects</title>
   <meta name="description" content="Fan projects by fans, for fans." />
-  <link rel="stylesheet" href="./css/styles.css" />
+  <link rel="stylesheet" href="./css/styles.css?v=16" />
 </head>
 
 <body class="home">
@@ -29,100 +29,32 @@
     <div class="overlay" aria-hidden="true"></div>
 
     <button class="reveal-btn" id="revealBtn" type="button" aria-controls="heroContent">
-      Click
+      Enter
     </button>
 
     <section class="hero-content" id="heroContent" aria-hidden="true">
+      <p class="hero-kicker">FAN_BUILT CONCERT MOMENTS</p>
+      <h1 class="hero-title">Build the lightshow<br>Sync the crowd</h1>
       <p class="hero-text">
-        This is a fan project platform made by fans, for fans.
-        Find running projects, join planned lightshows, and take part directly through the site.
+        FanProjects is a home for fanmade projects and lightshows.
+        Find your fanproject on this website, or request one!
       </p>
 
       <div class="hero-actions">
         <a class="btn primary" href="./projects.html">Explore Projects</a>
-        <a class="btn" href="./contact.html">Get Help / Contact</a>
+        <a class="btn" href="./contact.html">Get Help/Contact</a>
       </div>
 
       <p class="hero-subhint">
-        Some projects are only featured as info.
-        Others run here, including synced phone lightshows.
+        Some projects are info only. Others run here with synced phone lightshows.
       </p>
     </section>
   </main>
 
-  <!-- INLINE JAVASCRIPT - FALLBACK IF EXTERNAL DOESN'T WORK -->
-  <script>
-    console.log('🚀 Inline JavaScript loaded!');
-    
-    // This runs IMMEDIATELY
-    (function() {
-      console.log('✅ Self-executing function started');
-      
-      // Wait for DOM
-      if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initHero);
-      } else {
-        initHero();
-      }
-      
-      function initHero() {
-        console.log('✅ DOM Ready - Initializing hero');
-        
-        const revealBtn = document.getElementById('revealBtn');
-        const bg = document.querySelector('.bg');
-        const overlay = document.querySelector('.overlay');
-        const heroContent = document.getElementById('heroContent');
-        
-        console.log('Elements found:', {
-          revealBtn: !!revealBtn,
-          bg: !!bg,
-          overlay: !!overlay,
-          heroContent: !!heroContent
-        });
-        
-        if (!revealBtn) {
-          console.error('❌ Reveal button not found!');
-          return;
-        }
-        
-        revealBtn.addEventListener('click', function() {
-          console.log('🎉 Button clicked!');
-          
-          // Hide button
-          this.classList.add('hidden');
-          console.log('✅ Button hidden');
-          
-          // Reveal background
-          if (bg) {
-            bg.classList.add('revealed');
-            console.log('✅ Background revealed');
-          }
-          
-          if (overlay) {
-            overlay.classList.add('revealed');
-            console.log('✅ Overlay revealed');
-          }
-          
-          // Show content after delay
-          setTimeout(function() {
-            if (heroContent) {
-              heroContent.setAttribute('aria-hidden', 'false');
-              heroContent.classList.add('revealed');
-              console.log('✅ Content revealed');
-            }
-            
-            document.body.style.overflow = 'auto';
-            console.log('✅ Scroll enabled');
-            console.log('🎊 Hero reveal complete!');
-          }, 800);
-        });
-        
-        console.log('✅ Click listener attached to button');
-      }
-    })();
-  </script>
-  
-  <!-- EXTERNAL JAVASCRIPT - OPTIONAL, INLINE WORKS AS BACKUP -->
-  <script src="./js/main.js"></script>
+  <footer class="footer">
+    <p>(c) <span id="year"></span> FanProjects</p>
+  </footer>
+
+  <script src="./js/main.js?v=16"></script>
 </body>
 </html>
