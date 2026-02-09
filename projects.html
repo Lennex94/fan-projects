@@ -3,29 +3,75 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Run - Together, Together</title>
-  <meta name="description" content="Fullscreen timeline playback for the fan lightshow." />
-  <link rel="stylesheet" href="./css/styles.css?v=19" />
+  <title>Projects - FanProjects</title>
+  <meta name="description" content="Explore amazing fan projects and join the movement." />
+  <link rel="stylesheet" href="./css/styles.css" />
 </head>
 
-<body class="run-page">
-  <div id="screen" class="run-screen" aria-hidden="true"></div>
-  <button id="startBtn" class="run-start" type="button">Start</button>
+<body class="projects-page-body">
+  <header class="site-header site-header--transparent">
+    <nav>
+      <a class="brand" href="./index.html" aria-label="Home">
+        <span class="brand-name">FanProjects</span>
+      </a>
 
-  <div id="runLoader" class="run-loader" hidden>
-    <div class="run-loader-card">
-      <h2>Load show files</h2>
-      <p class="muted">If you opened this page directly (file://), your browser blocks JSON files. Load them manually.</p>
-      <label for="timelineFile">timeline.json</label>
-      <input id="timelineFile" type="file" accept="application/json" />
-      <label for="seatmapFile">seatmap_mapping.json</label>
-      <input id="seatmapFile" type="file" accept="application/json" />
-      <p class="muted" id="loaderStatus">Waiting for files...</p>
+      <div class="nav-links">
+        <a href="./index.html">Home</a>
+        <a class="active" href="./projects.html">Projects</a>
+        <a href="./contact.html">Contact</a>
+      </div>
+    </nav>
+  </header>
+
+  <main class="page-projects">
+    <section class="hero-projects">
+      <div class="hero-projects__content container">
+        <h1 class="hero-projects__title animate-fade-up">EXPLORE PROJECTS</h1>
+        <div class="hero-projects__info animate-fade-up" style="animation-delay: 0.2s;">
+          <p>Join an active fan project and make a real impact</p>
+          <p>Every member brings the movement closer to reality</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="page-content">
+        <div class="projects-list-vertical animate-fade-up" style="animation-delay: 0.4s;">
+          <a href="./project-hs-together-together.html" class="project-card" aria-label="Harry Styles - Together, Together Project">
+            <img src="./assets/Harry.png" alt="Harry Styles Amsterdam Concert" class="project-card-image">
+            <div class="project-card-overlay">
+              <div class="project-tags">
+                <span class="tag featured">FEATURED</span>
+                <span class="tag">16 MAY 2026</span>
+                <span class="tag">AMSTERDAM</span>
+              </div>
+              <h3 class="project-title">Together Together</h3>
+              <p class="project-description">
+                A synchronized lightshow experience for fans. Register your seat and become part of something unforgettable.
+              </p>
+            </div>
+          </a>
+
+          <div class="card text-center">
+            <h3 style="font-size: 2.5rem; margin-bottom: var(--space-lg);">✨</h3>
+            <h3>More Projects Coming</h3>
+            <p style="margin-bottom: var(--space-lg);">Have an idea for your own fan project? We'd love to hear it.</p>
+            <a href="./contact.html" class="btn secondary">Propose a Project</a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container text-center">
+      <p>&copy; <span id="year"></span> FanProjects. Made by fans, for fans.</p>
     </div>
-  </div>
+  </footer>
 
-  <div id="runStatus" class="run-status"></div>
-
-  <script src="./js/run-hs-together-together.js?v=2"></script>
+  <script src="./js/main.js"></script>
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+  </script>
 </body>
 </html>
