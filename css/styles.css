@@ -294,8 +294,15 @@ a:hover {
    ============================================ */
 
 .projects-page-body {
-  background: url('../assets/FAN PROJECTS.png') no-repeat center center fixed;
+  background: url('../assets/FAN PROJECTS.png') no-repeat center center;
   background-size: cover;
+  background-attachment: fixed;
+}
+
+@media (max-width: 1024px) {
+  .projects-page-body {
+    background-attachment: scroll;
+  }
 }
 
 .projects-page-body::before {
@@ -984,9 +991,16 @@ a:hover {
    ============================================ */
 
 .project-detail-page {
-  background: url('../assets/Harry.png') no-repeat center center fixed;
+  background: url('../assets/Harry.png') no-repeat center center;
   background-size: cover;
+  background-attachment: fixed;
   color: #fff;
+}
+
+@media (max-width: 1024px) {
+  .project-detail-page {
+    background-attachment: scroll;
+  }
 }
 
 .project-detail-page::before {
