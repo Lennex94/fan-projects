@@ -616,16 +616,22 @@
 
     const selection = getSelection();
     if (!selection) {
-      setStatus('No seat selected. Please return and choose a seat first.');
+      setStatus('Kein Sitzplatz ausgewählt. Bitte wähle zuerst einen Platz aus.');
       return;
     }
 
-    state.timeline = await loadJsonWithFallback(['./data/timeline.json', './timeline.json']);
-    state.seatmap = await loadJsonWithFallback(['./data/seatmap_mapping.json']);
+    state.timeline = await loadJsonWithFallback(['data/timeline.json', './data/timeline.json', './timeline.json']);
+    state.seatmap = await loadJsonWithFallback(['data/seatmap_mapping.json', './data/seatmap_mapping.json']);
 
     if (!state.timeline || !state.seatmap) {
-      runLoader.hidden = false;
-      setStatus('Load timeline.json and seatmap_mapping.json to continue.');
+      // Check if we are running locally via file://
+      if (window.location.protocol === 'file:') {
+        runLoader.hidden = false;
+        setStatus('Bitte lade die Dateien manuell, da dein Browser den Zugriff lokal blockiert.');
+      } else {
+        runLoader.hidden = false;
+        setStatus('Dateien konnten nicht automatisch geladen werden.');
+      }
       return;
     }
 
@@ -663,10 +669,10 @@
       reader.onload = () => {
         try {
           state.timeline = JSON.parse(reader.result);
-          if (loaderStatus) loaderStatus.textContent = 'timeline.json loaded.';
+          if (loaderStatus) loaderStatus.textContent = 'timeline.json geladen.';
           tryManualLoad();
         } catch {
-          alert('Could not read timeline.json');
+          alert('timeline.json konnte nicht gelesen werden.');
         }
       };
       reader.readAsText(file);
@@ -681,10 +687,10 @@
       reader.onload = () => {
         try {
           state.seatmap = JSON.parse(reader.result);
-          if (loaderStatus) loaderStatus.textContent = 'seatmap_mapping.json loaded.';
+          if (loaderStatus) loaderStatus.textContent = 'seatmap_mapping.json geladen.';
           tryManualLoad();
         } catch {
-          alert('Could not read seatmap_mapping.json');
+          alert('seatmap_mapping.json konnte nicht gelesen werden.');
         }
       };
       reader.readAsText(file);
