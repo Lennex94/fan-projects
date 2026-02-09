@@ -11,6 +11,56 @@ function setStatus(message, isError = false) {
   statusEl.style.color = isError ? '#ff7a59' : 'rgba(249, 247, 243, 0.72)';
 }
 
+function initStepFlow() {
+  if (!form) return;
+  const steps = Array.from(form.querySelectorAll('[data-step]'))
+    .filter((el) => el.tagName === 'LABEL' || el.tagName === 'BUTTON')
+    .sort((a, b) => Number(a.dataset.step) - Number(b.dataset.step));
+
+  steps.forEach((el, index) => {
+    if (index > 0) el.style.display = 'none';
+  });
+
+  const showStep = (idx) => {
+    if (steps[idx]) steps[idx].style.display = '';
+  };
+
+  const advanceIfReady = (currentIndex) => {
+    const current = steps[currentIndex];
+    if (!current) return;
+    const input = current.querySelector('input, select, textarea');
+    if (!input) return;
+    const value = String(input.value || '').trim();
+    if (!value) return;
+    showStep(currentIndex + 1);
+  };
+
+  steps.forEach((step, index) => {
+    const input = step.querySelector('input, select, textarea');
+    if (!input) return;
+    input.addEventListener('change', () => advanceIfReady(index));
+    input.addEventListener('input', () => advanceIfReady(index));
+  });
+
+  const socialSelect = form.querySelector('select[name="social_platform"]');
+  const socialsInput = form.querySelector('input[name="socials"]');
+  if (socialSelect && socialsInput) {
+    socialSelect.addEventListener('change', () => {
+      const platform = socialSelect.value;
+      if (!platform) return;
+      const placeholderMap = {
+        instagram: '@username',
+        tiktok: '@username',
+        whatsapp: '+31 6 12345678',
+        email: 'name@email.com',
+        x: '@username',
+        other: 'Your contact',
+      };
+      socialsInput.placeholder = placeholderMap[platform] || 'Your contact';
+    });
+  }
+}
+
 async function submitHelper(payload) {
   const res = await fetch(`${SUPABASE_URL}/rest/v1/${TABLE}`, {
     method: 'POST',
@@ -30,9 +80,13 @@ async function submitHelper(payload) {
 }
 
 if (form) {
+  initStepFlow();
   form.addEventListener('submit', async (event) => {
     event.preventDefault();
     const data = new FormData(form);
+
+    const socialPlatform = String(data.get('social_platform') || '').trim();
+    const socialHandle = String(data.get('socials') || '').trim();
 
     const payload = {
       attending: data.get('attending') === 'yes',
@@ -42,7 +96,7 @@ if (form) {
       block_or_ga: String(data.get('block_or_ga') || '').trim(),
       can_print: data.get('can_print') === 'yes',
       extra_blocks: String(data.get('extra_blocks') || '').trim(),
-      socials: String(data.get('socials') || '').trim(),
+      socials: socialPlatform ? `${socialPlatform}: ${socialHandle}` : socialHandle,
       show_name_public: data.get('show_name_public') === 'yes',
     };
 
@@ -56,6 +110,7 @@ if (form) {
       await submitHelper(payload);
       setStatus('Thanks! Your response has been saved.');
       form.reset();
+      initStepFlow();
     } catch (err) {
       console.error(err);
       setStatus('Something went wrong. Please try again.', true);
