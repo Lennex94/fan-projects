@@ -90,8 +90,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 100 * index);
   });
 
-  const forms = document.querySelectorAll('form');
-  forms.forEach(form => {
+  const demoForms = document.querySelectorAll('form[data-demo="true"]');
+  demoForms.forEach(form => {
     form.addEventListener('submit', (e) => {
       e.preventDefault();
       alert('Request submitted! (This is a demo - implement actual form handling)');
