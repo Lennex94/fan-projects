@@ -885,7 +885,6 @@ a:hover {
 }
 
 .list li {
-  padding-left: 2rem;
   margin-bottom: var(--space-md);
   position: relative;
   color: var(--text-light);
@@ -893,25 +892,12 @@ a:hover {
 }
 
 .list li::before {
-  content: '→';
-  position: absolute;
-  left: 0;
-  color: var(--accent-cyan);
-  font-weight: 700;
-  font-size: 1.2em;
+  display: none;
 }
 
 .list strong {
   color: var(--text-white);
   font-weight: 600;
-}
-
-.list.no-arrows li {
-  padding-left: 0;
-}
-
-.list.no-arrows li::before {
-  display: none;
 }
 
 /* ============================================
