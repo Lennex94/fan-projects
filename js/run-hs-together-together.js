@@ -552,7 +552,8 @@
     const timeMs = now - state.startTime;
     if (timeMs > state.durationMs) {
       state.playing = false;
-      setStatus('Show finished.');
+      document.body.classList.remove('playing');
+      setStatus('Show beendet.');
       startBtn.classList.remove('hidden');
       return;
     }
@@ -565,6 +566,8 @@
 
   function startShow() {
     if (!state.seat || !state.timeline) return;
+    
+    document.body.classList.add('playing');
     
     // Request fullscreen on start for a better experience
     if (document.documentElement.requestFullscreen) {
@@ -601,7 +604,7 @@
   function checkReady() {
     if (state.timeline && state.seatmap && state.seat) {
       enableStart();
-      setStatus('Ready. Press Start when the song begins.');
+      setStatus('Bereit. Drücke Start, sobald der Song beginnt.');
       return true;
     }
     return false;
@@ -631,7 +634,7 @@
     state.seat = getSeatFromSelection(state.seatmap.seats || [], selection);
 
     if (!state.seat) {
-      setStatus('Seat not found. Please re-select your seat.');
+      setStatus('Sitzplatz nicht gefunden. Bitte wähle deinen Sitzplatz erneut aus.');
       return;
     }
 
@@ -646,7 +649,7 @@
     const selection = getSelection();
     state.seat = getSeatFromSelection(state.seatmap.seats || [], selection);
     if (!state.seat) {
-      setStatus('Seat not found. Please re-select your seat.');
+      setStatus('Sitzplatz nicht gefunden. Bitte wähle deinen Sitzplatz erneut aus.');
       return;
     }
     checkReady();
