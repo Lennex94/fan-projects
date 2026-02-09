@@ -3,25 +3,29 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Join - Together, Together</title>
-  <meta name="description" content="Fullscreen beat-reactive color mode." />
-  <link rel="stylesheet" href="./css/styles.css?v=18" />
+  <title>Run - Together, Together</title>
+  <meta name="description" content="Fullscreen timeline playback for the fan lightshow." />
+  <link rel="stylesheet" href="./css/styles.css?v=19" />
 </head>
 
 <body class="run-page">
   <div id="screen" class="run-screen" aria-hidden="true"></div>
   <button id="startBtn" class="run-start" type="button">Start</button>
 
-  <script src="https://unpkg.com/aubiojs"></script>
+  <div id="runLoader" class="run-loader" hidden>
+    <div class="run-loader-card">
+      <h2>Load show files</h2>
+      <p class="muted">If you opened this page directly (file://), your browser blocks JSON files. Load them manually.</p>
+      <label for="timelineFile">timeline.json</label>
+      <input id="timelineFile" type="file" accept="application/json" />
+      <label for="seatmapFile">seatmap_mapping.json</label>
+      <input id="seatmapFile" type="file" accept="application/json" />
+      <p class="muted" id="loaderStatus">Waiting for files...</p>
+    </div>
+  </div>
 
-  <script>
-    const p = new URLSearchParams(location.search);
-    window.FP_JOIN = {
-      level: p.get("level") || "",
-      block: p.get("block") || ""
-    };
-  </script>
+  <div id="runStatus" class="run-status"></div>
 
-  <script src="./js/run-hs-together-together.js?v=19"></script>
+  <script src="./js/run-hs-together-together.js?v=2"></script>
 </body>
 </html>
