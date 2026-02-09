@@ -27,7 +27,7 @@
   <main class="page">
     <header class="page-head">
       <h1>Volunteer for the fanproject</h1>
-      <p class="lead">Help us organize the Together, Together lightshow in Amsterdam. We need people in the stands and standing areas.</p>
+      <p class="lead">Help us organize the Together, Together lightshow in Amsterdam. We need people in the seating and standing areas.</p>
     </header>
 
     <section class="two-col">
@@ -44,7 +44,7 @@
       <div class="panel">
         <h2 class="h2">Volunteer form</h2>
         <form id="helperForm" class="form">
-          <label>
+          <label data-step="1">
             Are you at the 16 May 2026 Amsterdam show?
             <select name="attending" required>
               <option value="">Select one...</option>
@@ -53,7 +53,7 @@
             </select>
           </label>
 
-          <label>
+          <label data-step="2">
             Do you want to actively help?
             <select name="wants_help" required>
               <option value="">Select one...</option>
@@ -62,12 +62,12 @@
             </select>
           </label>
 
-          <label>
+          <label data-step="3">
             Your name
             <input type="text" name="name" required />
           </label>
 
-          <label>
+          <label data-step="4">
             Where are you sitting / standing?
             <select name="area_type" required>
               <option value="">Select one...</option>
@@ -76,12 +76,12 @@
             </select>
           </label>
 
-          <label>
+          <label data-step="5">
             Block or GA area
             <input type="text" name="block_or_ga" placeholder="Block 117 or GA Front Left" required />
           </label>
 
-          <label>
+          <label data-step="6">
             Can you print flyers? (5-8 per block)
             <select name="can_print" required>
               <option value="">Select one...</option>
@@ -90,17 +90,30 @@
             </select>
           </label>
 
-          <label>
+          <label data-step="7">
             If you can cover nearby blocks, list them
             <input type="text" name="extra_blocks" placeholder="Example: 116, 118" />
           </label>
 
-          <label>
-            Socials or contact
-            <input type="text" name="socials" placeholder="Instagram @, TikTok, WhatsApp, etc." required />
+          <label data-step="8">
+            Which social do you want to share?
+            <select name="social_platform" required>
+              <option value="">Select one...</option>
+              <option value="instagram">Instagram</option>
+              <option value="tiktok">TikTok</option>
+              <option value="whatsapp">WhatsApp</option>
+              <option value="email">Email</option>
+              <option value="x">X / Twitter</option>
+              <option value="other">Other</option>
+            </select>
           </label>
 
-          <label>
+          <label data-step="9">
+            Social handle / contact
+            <input type="text" name="socials" placeholder="@username or number" required />
+          </label>
+
+          <label data-step="10">
             Show my name publicly as a helper
             <select name="show_name_public" required>
               <option value="">Select one...</option>
@@ -109,7 +122,7 @@
             </select>
           </label>
 
-          <button class="btn primary" type="submit">Submit</button>
+          <button class="btn primary" type="submit" data-step="11">Submit</button>
           <p class="muted" id="helperFormStatus"></p>
         </form>
       </div>
