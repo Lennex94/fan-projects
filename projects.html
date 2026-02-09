@@ -4,15 +4,14 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Projects - FanProjects</title>
-  <meta name="description" content="Featured fan projects." />
+  <meta name="description" content="Explore amazing fan projects and join the movement." />
   <link rel="stylesheet" href="./css/styles.css" />
 </head>
 
-<body>
-  <header class="site-header">
-    <nav class="nav">
-      <a class="brand" href="./" aria-label="Home">
-        <img class="brand-logo" src="./assets/logo-nav.png" alt="" aria-hidden="true">
+<body class="projects-page-body">
+  <header class="site-header site-header--transparent">
+    <nav>
+      <a class="brand" href="./index.html" aria-label="Home">
         <span class="brand-name">FanProjects</span>
       </a>
 
@@ -24,44 +23,55 @@
     </nav>
   </header>
 
-  <main class="page">
-    <header class="page-head">
-      <h1>Projects</h1>
-      <p class="lead">Currently featured: 1 project. More coming when the universe delivers.</p>
-    </header>
-
-    <a class="project-spotlight" href="./project-hs-together-together.html"
-      aria-label="Open project: Harry Styles - Together, Together (Amsterdam, 16 May 2026)">
-
-      <img class="project-spotlight__img"
-          src="./assets/hs-amsterdam.jpg"
-          alt=""
-          aria-hidden="true">
-
-      <div class="project-spotlight__scrim" aria-hidden="true"></div>
-
-      <div class="project-spotlight__content">
-        <div class="project-spotlight__meta">
-          <span class="pill featured">FEATURED</span>
-          <span class="pill planned">16 MAY 2026</span>
-          <span class="pill">AMSTERDAM</span>
+  <main class="page-projects">
+    <section class="hero-projects">
+      <div class="hero-projects__content container">
+        <h1 class="hero-projects__title animate-fade-up">EXPLORE PROJECTS</h1>
+        <div class="hero-projects__info animate-fade-up" style="animation-delay: 0.2s;">
+          <p>Join an active fan project and make a real impact</p>
+          <p>Every member brings the movement closer to reality</p>
         </div>
-
-        <h2 class="project-spotlight__title">Harry Styles - "Together, Together"</h2>
-        <p class="project-spotlight__desc">
-          Fanproject for the Amsterdam show. Info, timing, and participation will be handled through this site.
-        </p>
-
-        <span class="project-spotlight__cta">Open project</span>
       </div>
-    </a>
+    </section>
 
-    <footer class="footer">
-      <p>(c) <span id="year"></span> FanProjects</p>
-    </footer>
+    <section class="section">
+      <div class="page-content">
+        <div class="projects-list-vertical animate-fade-up" style="animation-delay: 0.4s;">
+          <a href="./project-hs-together-together.html" class="project-card" aria-label="Harry Styles - Together, Together Project">
+            <img src="./assets/Harry.png" alt="Harry Styles Amsterdam Concert" class="project-card-image">
+            <div class="project-card-overlay">
+              <div class="project-tags">
+                <span class="tag featured">FEATURED</span>
+                <span class="tag">16 MAY 2026</span>
+                <span class="tag">AMSTERDAM</span>
+              </div>
+              <h3 class="project-title">Together Together</h3>
+              <p class="project-description">
+                A synchronized lightshow experience for fans. Register your seat and become part of something unforgettable.
+              </p>
+            </div>
+          </a>
+
+          <div class="card text-center">
+            <h3 style="font-size: 2.5rem; margin-bottom: var(--space-lg);">✨</h3>
+            <h3>More Projects Coming</h3>
+            <p style="margin-bottom: var(--space-lg);">Have an idea for your own fan project? We'd love to hear it.</p>
+            <a href="./contact.html" class="btn secondary">Propose a Project</a>
+          </div>
+        </div>
+      </div>
+    </section>
   </main>
 
+  <footer class="footer">
+    <div class="container text-center">
+      <p>&copy; <span id="year"></span> FanProjects. Made by fans, for fans. 💜</p>
+    </div>
+  </footer>
+
   <script src="./js/main.js"></script>
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+  </script>
 </body>
 </html>
-
