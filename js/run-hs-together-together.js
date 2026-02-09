@@ -1,234 +1,687 @@
-// ============================================
-// Run Page - Beat Reactive Visualizer
-// ============================================
-
 (function() {
   'use strict';
 
-  // Get elements
   const startBtn = document.getElementById('startBtn');
   const screen = document.getElementById('screen');
-  
-  // Get join parameters
-  const params = window.FP_JOIN || { level: '', block: '' };
-  
-  // Color schemes based on beat intensity
-  const colorSchemes = {
-    low: ['#a78bfa', '#8b5cf6', '#7c3aed'],      // Purple
-    medium: ['#ff6b9d', '#f43f5e', '#e11d48'],   // Pink/Red
-    high: ['#ffa94d', '#fb923c', '#f97316'],     // Orange
-    ultra: ['#fde047', '#facc15', '#eab308']     // Yellow
+  const runStatus = document.getElementById('runStatus');
+  const runLoader = document.getElementById('runLoader');
+  const loaderStatus = document.getElementById('loaderStatus');
+  const timelineFile = document.getElementById('timelineFile');
+  const seatmapFile = document.getElementById('seatmapFile');
+
+  const state = {
+    timeline: null,
+    seatmap: null,
+    seat: null,
+    startTime: 0,
+    playing: false,
+    durationMs: 60000,
+    background: '#05060b'
   };
 
-  // Audio context and analyzer
-  let audioContext;
-  let analyser;
-  let microphone;
-  let dataArray;
-  let beatDetector;
-  let rafId;
-
-  // Beat detection state
-  let bassHistory = [];
-  const bassHistoryLength = 43;
-  let beatThreshold = 1.3;
-  let lastBeatTime = 0;
-  const beatCooldown = 200; // ms
-
-  // Visual state
-  let currentColor = '#a78bfa';
-  let targetColor = '#a78bfa';
-  let intensity = 0;
-  let pulse = 0;
-
-  // Initialize
-  async function init() {
-    try {
-      // Get microphone access
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        audio: {
-          echoCancellation: false,
-          noiseSuppression: false,
-          autoGainControl: false
-        } 
-      });
-
-      // Create audio context
-      audioContext = new (window.AudioContext || window.webkitAudioContext)();
-      analyser = audioContext.createAnalyser();
-      analyser.fftSize = 2048;
-      analyser.smoothingTimeConstant = 0.8;
-
-      microphone = audioContext.createMediaStreamSource(stream);
-      microphone.connect(analyser);
-
-      // Setup data array
-      const bufferLength = analyser.frequencyBinCount;
-      dataArray = new Uint8Array(bufferLength);
-
-      // Start visualization
-      visualize();
-      
-      console.log('🎵 Beat detector initialized');
-      console.log(`📍 Level: ${params.level}, Block: ${params.block}`);
-      
-    } catch (err) {
-      console.error('Microphone access denied:', err);
-      screen.style.background = 'linear-gradient(135deg, #ff6b9d, #ffa94d)';
-      screen.innerHTML = '<div style="color: white; font-size: 2rem; text-align: center; padding: 2rem;">Please enable microphone access to use the beat visualizer</div>';
-    }
+  function setStatus(message) {
+    if (!runStatus) return;
+    runStatus.textContent = message || '';
   }
 
-  // Detect beat from bass frequencies
-  function detectBeat() {
-    // Get frequency data
-    analyser.getByteFrequencyData(dataArray);
-
-    // Focus on bass frequencies (0-200 Hz roughly maps to bins 0-20)
-    let bassSum = 0;
-    const bassRange = 20;
-    
-    for (let i = 0; i < bassRange; i++) {
-      bassSum += dataArray[i];
-    }
-    
-    const bassAvg = bassSum / bassRange;
-
-    // Add to history
-    bassHistory.push(bassAvg);
-    if (bassHistory.length > bassHistoryLength) {
-      bassHistory.shift();
-    }
-
-    // Calculate average of recent history
-    const historyAvg = bassHistory.reduce((a, b) => a + b, 0) / bassHistory.length;
-
-    // Detect beat if current bass is significantly higher than recent average
-    const now = Date.now();
-    const isBeat = bassAvg > historyAvg * beatThreshold && 
-                   (now - lastBeatTime) > beatCooldown;
-
-    if (isBeat) {
-      lastBeatTime = now;
-      
-      // Determine intensity based on how much it exceeds threshold
-      const beatStrength = (bassAvg / historyAvg) - 1;
-      
-      if (beatStrength > 1.2) {
-        triggerBeat('ultra', beatStrength);
-      } else if (beatStrength > 0.8) {
-        triggerBeat('high', beatStrength);
-      } else if (beatStrength > 0.4) {
-        triggerBeat('medium', beatStrength);
-      } else {
-        triggerBeat('low', beatStrength);
-      }
-    }
-
-    // Calculate overall intensity for ambient effects
-    const overallSum = dataArray.reduce((a, b) => a + b, 0);
-    intensity = Math.min(overallSum / (dataArray.length * 255), 1);
-
-    return isBeat;
-  }
-
-  // Trigger beat effect
-  function triggerBeat(level, strength) {
-    const colors = colorSchemes[level];
-    targetColor = colors[Math.floor(Math.random() * colors.length)];
-    pulse = Math.min(strength, 2);
-    
-    console.log(`💥 Beat detected: ${level} (strength: ${strength.toFixed(2)})`);
-  }
-
-  // Color interpolation
-  function interpolateColor(color1, color2, factor) {
-    const c1 = hexToRgb(color1);
-    const c2 = hexToRgb(color2);
-    
-    const r = Math.round(c1.r + (c2.r - c1.r) * factor);
-    const g = Math.round(c1.g + (c2.g - c1.g) * factor);
-    const b = Math.round(c1.b + (c2.b - c1.b) * factor);
-    
-    return `rgb(${r}, ${g}, ${b})`;
+  function clamp(value, min, max) {
+    return Math.min(Math.max(value, min), max);
   }
 
   function hexToRgb(hex) {
-    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-    return result ? {
-      r: parseInt(result[1], 16),
-      g: parseInt(result[2], 16),
-      b: parseInt(result[3], 16)
-    } : { r: 0, g: 0, b: 0 };
+    const cleaned = hex.replace('#', '').trim();
+    if (cleaned.length === 3) {
+      const r = parseInt(cleaned[0] + cleaned[0], 16);
+      const g = parseInt(cleaned[1] + cleaned[1], 16);
+      const b = parseInt(cleaned[2] + cleaned[2], 16);
+      return [r, g, b];
+    }
+    const r = parseInt(cleaned.slice(0, 2), 16);
+    const g = parseInt(cleaned.slice(2, 4), 16);
+    const b = parseInt(cleaned.slice(4, 6), 16);
+    return [r, g, b];
   }
 
-  // Main visualization loop
-  function visualize() {
-    rafId = requestAnimationFrame(visualize);
-
-    // Detect beat
-    detectBeat();
-
-    // Smooth color transition
-    const colorFactor = 0.1;
-    currentColor = interpolateColor(currentColor, targetColor, colorFactor);
-
-    // Decay pulse
-    pulse *= 0.85;
-
-    // Calculate scale based on pulse
-    const scale = 1 + (pulse * 0.2);
-
-    // Apply visual effects
-    const brightness = 0.5 + (intensity * 0.5);
-    const blur = pulse * 10;
-
-    screen.style.backgroundColor = currentColor;
-    screen.style.transform = `scale(${scale})`;
-    screen.style.filter = `brightness(${brightness}) blur(${blur}px)`;
-    screen.style.boxShadow = `inset 0 0 ${100 + pulse * 100}px rgba(0, 0, 0, ${0.3 - intensity * 0.2})`;
+  function rgbToCss(rgb) {
+    if (!rgb) return '';
+    return `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`;
   }
 
-  // Start button handler
-  startBtn.addEventListener('click', async () => {
-    startBtn.classList.add('hidden');
-    await init();
+  function mixColors(a, b, t) {
+    const clamped = clamp(t, 0, 1);
+    return [
+      Math.round(a[0] + (b[0] - a[0]) * clamped),
+      Math.round(a[1] + (b[1] - a[1]) * clamped),
+      Math.round(a[2] + (b[2] - a[2]) * clamped)
+    ];
+  }
+
+  function hsvToRgb(h, s, v) {
+    const c = v * s;
+    const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
+    const m = v - c;
+    let r = 0;
+    let g = 0;
+    let b = 0;
+    if (h < 60) [r, g, b] = [c, x, 0];
+    else if (h < 120) [r, g, b] = [x, c, 0];
+    else if (h < 180) [r, g, b] = [0, c, x];
+    else if (h < 240) [r, g, b] = [0, x, c];
+    else if (h < 300) [r, g, b] = [x, 0, c];
+    else [r, g, b] = [c, 0, x];
+    return [
+      Math.round((r + m) * 255),
+      Math.round((g + m) * 255),
+      Math.round((b + m) * 255)
+    ];
+  }
+
+  function seatMatchesMask(effect, seat) {
+    if (!effect.mask || effect.mask.type !== 'polygon') return true;
+    const points = effect.mask.points || [];
+    if (points.length < 3) return true;
+    let inside = false;
+    for (let i = 0, j = points.length - 1; i < points.length; j = i++) {
+      const xi = points[i].x;
+      const yi = points[i].y;
+      const xj = points[j].x;
+      const yj = points[j].y;
+      const intersect =
+        (yi > seat.yN) !== (yj > seat.yN) &&
+        seat.xN < ((xj - xi) * (seat.yN - yi)) / (yj - yi + 1e-9) + xi;
+      if (intersect) inside = !inside;
+    }
+    return inside;
+  }
+
+  function samplePalette(palette, t) {
+    if (!palette || palette.length === 0) return null;
+    if (palette.length === 1) return hexToRgb(palette[0]);
+    const clamped = clamp(t, 0, 1);
+    const scaled = clamped * (palette.length - 1);
+    const idx = Math.floor(scaled);
+    const frac = scaled - idx;
+    const colorA = hexToRgb(palette[idx]);
+    const colorB = hexToRgb(palette[Math.min(idx + 1, palette.length - 1)]);
+    return mixColors(colorA, colorB, frac);
+  }
+
+  function rainbowColor(effect, seat, timeMs) {
+    const axis = effect.axis || 'x';
+    const speed = effect.speed || 0.4;
+    const pos = axis === 'y' ? seat.yN : seat.xN;
+    const hue = (pos * 360 + (timeMs / 1000) * speed * 360) % 360;
+    return hsvToRgb(hue, 1, 1);
+  }
+
+  function stableNoise(seed, t) {
+    const value = Math.sin(seed * 12.9898 + t * 78.233) * 43758.5453;
+    return value - Math.floor(value);
+  }
+
+  function outsideColor(effect, colorB) {
+    if (effect.outsideMode === 'secondary') return colorB;
+    return null;
+  }
+
+  function localTimeMs(effect, timeMs) {
+    const base = timeMs - effect.startMs;
+    if (effect.loopMs && effect.loopMs > 0) {
+      return ((base % effect.loopMs) + effect.loopMs) % effect.loopMs;
+    }
+    return base;
+  }
+
+  function sectionIndexFromOrder(effect, section) {
+    if (!effect.sectionOrder || effect.sectionOrder.length === 0) return -1;
+    return effect.sectionOrder.indexOf(section);
+  }
+
+  function paletteSample(effect, seat, timeMs, t) {
+    const palette = effect.palette || [];
+    if (!palette.length) return null;
+    const mode = effect.paletteMode || 'effect';
+    if (mode === 'time') {
+      const speed = effect.paletteSpeed ?? 0.2;
+      const cycle = (timeMs / 1000) * speed;
+      return samplePalette(palette, cycle % 1);
+    }
+    if (mode === 'spatial') {
+      const spatialT = (seat.xN * 0.6 + seat.yN * 0.4) % 1;
+      return samplePalette(palette, spatialT);
+    }
+    return samplePalette(palette, clamp(t ?? 0, 0, 1));
+  }
+
+  function randomIndices(count, total, seed) {
+    const chosen = new Set();
+    let value = seed || 1;
+    while (chosen.size < count && chosen.size < total) {
+      value = (value * 1664525 + 1013904223) % 4294967296;
+      const idx = Math.floor((value / 4294967296) * total);
+      chosen.add(idx);
+    }
+    return chosen;
+  }
+
+  function heartInside(seat, effect, timeMs) {
+    const size = effect.heartSize ?? 0.18;
+    const thickness = effect.heartThickness ?? 0.02;
+    const mode = effect.heartMode || 'blink';
+    let cx = effect.heartCenterX ?? 0.5;
+    let cy = effect.heartCenterY ?? 0.5;
+
+    if (mode === 'fly') {
+      const loopMs = effect.loopMs && effect.loopMs > 0 ? effect.loopMs : effect.durationMs;
+      const t = clamp(localTimeMs(effect, timeMs) / Math.max(loopMs, 1), 0, 1);
+      const sx = effect.heartStartX ?? 0.3;
+      const sy = effect.heartStartY ?? 0.2;
+      const ex = effect.heartEndX ?? 0.7;
+      const ey = effect.heartEndY ?? 0.7;
+      cx = sx + (ex - sx) * t;
+      cy = sy + (ey - sy) * t;
+    }
+
+    const x = (seat.xN - cx) / Math.max(size, 0.01);
+    const y = (seat.yN - cy) / Math.max(size, 0.01);
+    const rotation = (effect.heartRotation || 0) * (Math.PI / 180);
+    const cos = Math.cos(rotation);
+    const sin = Math.sin(rotation);
+    const rx = x * cos - y * sin;
+    const ry = x * sin + y * cos;
+    const yy = -ry;
+    const value = Math.pow(rx * rx + yy * yy - 1, 3) - rx * rx * Math.pow(yy, 3);
+    if (thickness > 0) {
+      return Math.abs(value) <= thickness;
+    }
+    return value <= 0;
+  }
+
+  function isEffectActive(effect, timeMs) {
+    return timeMs >= effect.startMs && timeMs <= effect.startMs + effect.durationMs;
+  }
+
+  function effectProgress(effect, timeMs) {
+    return clamp((timeMs - effect.startMs) / Math.max(effect.durationMs, 1), 0, 1);
+  }
+
+  function resolveSeatColor(effect, seat, timeMs) {
+    const colorA = hexToRgb(effect.color1 || '#ffffff');
+    const colorB = hexToRgb(effect.color2 || '#000000');
+    const localT = localTimeMs(effect, timeMs) / 1000;
+    const palette = effect.palette || [];
+    const colorMode = effect.colorMode || 'dual';
+
+    if (effect.type === 'solid') {
+      if (colorMode === 'rainbow') return rainbowColor(effect, seat, timeMs);
+      if (colorMode === 'palette') return paletteSample(effect, seat, timeMs, 0) || colorA;
+      return colorA;
+    }
+
+    if (effect.type === 'fade') {
+      const prog = clamp(localTimeMs(effect, timeMs) / Math.max(effect.durationMs, 1), 0, 1);
+      const mode = effect.fadeMode || 'in-out';
+      let t = prog;
+      if (mode === 'out') t = 1 - prog;
+      if (mode === 'in-out') t = Math.sin(prog * Math.PI);
+      if (colorMode === 'rainbow') return rainbowColor(effect, seat, timeMs);
+      if (colorMode === 'palette') return paletteSample(effect, seat, timeMs, t) || mixColors(colorB, colorA, t);
+      return mixColors(colorB, colorA, t);
+    }
+
+    if (effect.type === 'wave') {
+      if (colorMode === 'rainbow') return rainbowColor(effect, seat, timeMs);
+      const axis = effect.axis || 'x';
+      const period = Math.max(effect.period || 0.25, 0.01);
+      const speed = effect.speed || 0.4;
+      const pos = axis === 'y' ? seat.yN : seat.xN;
+      const phase = (pos / period + localT * speed) * Math.PI * 2;
+      const mix = (Math.sin(phase) + 1) * 0.5;
+      if (colorMode === 'palette') return paletteSample(effect, seat, timeMs, mix) || mixColors(colorA, colorB, mix);
+      return mixColors(colorA, colorB, mix);
+    }
+
+    if (effect.type === 'gradient') {
+      const axis = effect.axis || 'x';
+      const pos = axis === 'y' ? seat.yN : seat.xN;
+      if (colorMode === 'rainbow') return rainbowColor(effect, seat, timeMs);
+      if (colorMode === 'palette') return paletteSample(effect, seat, timeMs, pos) || mixColors(colorA, colorB, pos);
+      return mixColors(colorA, colorB, pos);
+    }
+
+    if (effect.type === 'split-sweep') {
+      const loopMs = effect.loopMs && effect.loopMs > 0 ? effect.loopMs : effect.durationMs;
+      const prog = clamp(localTimeMs(effect, timeMs) / Math.max(loopMs, 1), 0, 1);
+      const dir = effect.splitDirection || 'edges-to-center';
+      const dist = Math.abs(seat.xN - 0.5);
+      const threshold = 0.5 - prog * 0.5;
+      const active = dir === 'edges-to-center' ? dist >= threshold : dist <= prog * 0.5;
+      if (!active) return outsideColor(effect, colorB);
+      if (colorMode === 'rainbow') return rainbowColor(effect, seat, timeMs);
+      if (colorMode === 'palette') return paletteSample(effect, seat, timeMs, prog) || colorA;
+      return colorA;
+    }
+
+    if (effect.type === 'ripple') {
+      const centerX = effect.centerX ?? 0.5;
+      const centerY = effect.centerY ?? 0.5;
+      const speed = effect.speed || 0.6;
+      const spacing = Math.max(effect.rippleSpacing || 0.2, 0.05);
+      const band = Math.max(effect.band || 0.12, 0.01);
+      const dx = seat.xN - centerX;
+      const dy = seat.yN - centerY;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      const phase = (dist / spacing - localT * speed) % 1;
+      const ring = phase < band;
+      if (!ring) return outsideColor(effect, colorB);
+      if (colorMode === 'rainbow') return rainbowColor(effect, seat, timeMs);
+      if (colorMode === 'palette') return paletteSample(effect, seat, timeMs, phase / band) || colorA;
+      return colorA;
+    }
+
+    if (effect.type === 'radial-fill') {
+      const centerX = effect.centerX ?? 0.5;
+      const centerY = effect.centerY ?? 0.5;
+      const maxRadius = Math.max(
+        Math.hypot(centerX, centerY),
+        Math.hypot(1 - centerX, centerY),
+        Math.hypot(centerX, 1 - centerY),
+        Math.hypot(1 - centerX, 1 - centerY)
+      );
+      const loopMs = effect.loopMs && effect.loopMs > 0 ? effect.loopMs : effect.durationMs;
+      const fillBase = clamp(localTimeMs(effect, timeMs) / Math.max(loopMs, 1), 0, 1);
+      const direction = effect.fillDirection || 'outward';
+      const fill = direction === 'inward' ? fillBase : fillBase;
+      const dx = seat.xN - centerX;
+      const dy = seat.yN - centerY;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      const edge = direction === 'inward'
+        ? dist >= maxRadius * (1 - fill)
+        : dist <= maxRadius * fill;
+      if (colorMode === 'rainbow') return edge ? rainbowColor(effect, seat, timeMs) : outsideColor(effect, colorB);
+      if (colorMode === 'palette') return edge ? samplePalette(palette, fill) || colorA : outsideColor(effect, colorB);
+      return edge ? colorA : outsideColor(effect, colorB);
+    }
+
+    if (effect.type === 'wipe') {
+      const direction = effect.direction || 'left-to-right';
+      const prog = effectProgress(effect, timeMs);
+      const x = seat.xN;
+      const y = seat.yN;
+      let inFront = false;
+      if (direction === 'left-to-right') inFront = x <= prog;
+      if (direction === 'right-to-left') inFront = x >= 1 - prog;
+      if (direction === 'top-to-bottom') inFront = y <= prog;
+      if (direction === 'bottom-to-top') inFront = y >= 1 - prog;
+      if (colorMode === 'rainbow' && inFront) return rainbowColor(effect, seat, timeMs);
+      if (colorMode === 'palette' && inFront) return paletteSample(effect, seat, timeMs, prog) || colorA;
+      return inFront ? colorA : outsideColor(effect, colorB);
+    }
+
+    if (effect.type === 'section-flash') {
+      const intervalMs = Math.max(effect.intervalMs || 800, 100);
+      const holdMs = Math.min(Math.max(effect.holdMs || 400, 50), intervalMs);
+      const step = Math.floor(localTimeMs(effect, timeMs) / intervalMs);
+      let activeIndex = -1;
+      if (effect.sectionMode === 'random') {
+        const seed = effect.seed || 1;
+        const noise = stableNoise(seed, step * 0.13);
+        activeIndex = Math.floor(noise * (effect.sectionOrder?.length || 0));
+      } else {
+        activeIndex = step % (effect.sectionOrder?.length || 1);
+      }
+      const inHold = localTimeMs(effect, timeMs) % intervalMs <= holdMs;
+      const seatIndex = sectionIndexFromOrder(effect, seat.section);
+      if (!inHold || seatIndex < 0) return outsideColor(effect, colorB);
+      const groupSize = Math.max(effect.groupSize || 1, 1);
+      const orderLen = effect.sectionOrder?.length || 1;
+      const mirror = (effect.sectionMode || '').includes('mirror');
+      let active = false;
+      if (effect.sectionMode === 'random') {
+        const seed = (effect.seed || 1) + step * 13;
+        const indices = randomIndices(groupSize, orderLen, seed);
+        if (indices.has(seatIndex)) active = true;
+        if (mirror && !active) {
+          const mirrorIdx = (seatIndex + Math.floor(orderLen / 2)) % orderLen;
+          if (indices.has(mirrorIdx)) active = true;
+        }
+      } else {
+        for (let offset = 0; offset < groupSize; offset += 1) {
+          const idx = (activeIndex + offset) % orderLen;
+          if (seatIndex === idx) {
+            active = true;
+            break;
+          }
+          if (mirror) {
+            const mirrorIdx = (idx + Math.floor(orderLen / 2)) % orderLen;
+            if (seatIndex === mirrorIdx) {
+              active = true;
+              break;
+            }
+          }
+        }
+      }
+      if (!active) return outsideColor(effect, colorB);
+      if (colorMode === 'rainbow') return rainbowColor(effect, seat, timeMs);
+      if (colorMode === 'palette') {
+        const t = orderLen > 1 ? seatIndex / (orderLen - 1) : 0.5;
+        return paletteSample(effect, seat, timeMs, t) || colorA;
+      }
+      return colorA;
+    }
+
+    if (effect.type === 'section-cascade') {
+      const intervalMs = Math.max(effect.intervalMs || 600, 100);
+      const holdMs = Math.min(Math.max(effect.holdMs || 350, 50), intervalMs);
+      const step = Math.floor(localTimeMs(effect, timeMs) / intervalMs);
+      const orderLen = effect.sectionOrder?.length || 1;
+      const activeIndex = step % orderLen;
+      const inHold = localTimeMs(effect, timeMs) % intervalMs <= holdMs;
+      const seatIndex = sectionIndexFromOrder(effect, seat.section);
+      if (!inHold || seatIndex !== activeIndex) return outsideColor(effect, colorB);
+      if (colorMode === 'rainbow') return rainbowColor(effect, seat, timeMs);
+      if (colorMode === 'palette') {
+        const t = orderLen > 1 ? seatIndex / (orderLen - 1) : 0.5;
+        return paletteSample(effect, seat, timeMs, t) || colorA;
+      }
+      return colorA;
+    }
+
+    if (effect.type === 'chase') {
+      const axis = effect.axis || 'x';
+      const speed = effect.speed || 0.5;
+      const band = Math.max(effect.band || 0.12, 0.01);
+      const pos = axis === 'y' ? seat.yN : seat.xN;
+      const phase = (pos + localT * speed) % 1;
+      const inBand = phase <= band;
+      if (!inBand) return outsideColor(effect, colorB);
+      if (colorMode === 'rainbow') return rainbowColor(effect, seat, timeMs);
+      if (colorMode === 'palette') return paletteSample(effect, seat, timeMs, phase / band) || colorA;
+      return colorA;
+    }
+
+    if (effect.type === 'radial') {
+      if (colorMode === 'rainbow') return rainbowColor(effect, seat, timeMs);
+      const centerX = effect.centerX ?? 0.5;
+      const centerY = effect.centerY ?? 0.5;
+      const speed = effect.speed || 0.6;
+      const band = Math.max(effect.band || 0.1, 0.01);
+      const dx = seat.xN - centerX;
+      const dy = seat.yN - centerY;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      const radius = localT * speed;
+      const edge = Math.abs(dist - radius);
+      const mix = clamp(1 - edge / band, 0, 1);
+      if (colorMode === 'palette') return paletteSample(effect, seat, timeMs, mix) || mixColors(colorB, colorA, mix);
+      return mixColors(colorB, colorA, mix);
+    }
+
+    if (effect.type === 'pulse') {
+      const speed = effect.speed || 1;
+      const mix = (Math.sin(localT * speed * Math.PI * 2) + 1) * 0.5;
+      if (colorMode === 'rainbow') return rainbowColor(effect, seat, timeMs);
+      if (colorMode === 'palette') return paletteSample(effect, seat, timeMs, mix) || mixColors(colorA, colorB, mix);
+      return mixColors(colorA, colorB, mix);
+    }
+
+    if (effect.type === 'breathing') {
+      const speed = effect.breatheSpeed || 0.25;
+      const hue = (localT * speed * 360) % 360;
+      if (colorMode === 'rainbow') return hsvToRgb(hue, 1, 1);
+      const mix = (Math.sin(localT * speed * Math.PI * 2) + 1) * 0.5;
+      if (colorMode === 'palette') return paletteSample(effect, seat, timeMs, mix) || mixColors(colorA, colorB, mix);
+      return mixColors(colorA, colorB, mix);
+    }
+
+    if (effect.type === 'strobe') {
+      const intervalMs = Math.max(effect.strobeIntervalMs || 200, 50);
+      const holdMs = Math.min(Math.max(effect.strobeHoldMs || 80, 10), intervalMs);
+      const active = localTimeMs(effect, timeMs) % intervalMs <= holdMs;
+      if (!active) return outsideColor(effect, colorB);
+      if (colorMode === 'rainbow') return rainbowColor(effect, seat, timeMs);
+      if (colorMode === 'palette') return paletteSample(effect, seat, timeMs, 0.5) || colorA;
+      return colorA;
+    }
+
+    if (effect.type === 'glitter') {
+      const density = clamp(effect.glitterDensity ?? 0.15, 0, 1);
+      const speed = effect.glitterSpeed ?? 1;
+      const seed = seat.id.split('').reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
+      const noise = stableNoise(seed, localT * speed * 0.35);
+      if (noise < density) {
+        if (colorMode === 'rainbow') return rainbowColor(effect, seat, timeMs);
+        if (colorMode === 'palette') {
+          return paletteSample(effect, seat, timeMs, noise) || hexToRgb(effect.color1 || '#ffffff');
+        }
+        return colorA;
+      }
+      return outsideColor(effect, colorB);
+    }
+
+    if (effect.type === 'sparkle-field') {
+      const density = clamp(effect.sparkleDensity ?? 0.2, 0, 1);
+      const speed = effect.sparkleSpeed ?? 1.0;
+      const seed = Math.round(seat.xN * 1000 + seat.yN * 10000);
+      const noise = stableNoise(seed, localT * speed * 0.35);
+      if (noise < density) {
+        if (colorMode === 'rainbow') return rainbowColor(effect, seat, timeMs);
+        if (colorMode === 'palette') {
+          return paletteSample(effect, seat, timeMs, noise) || hexToRgb(effect.color1 || '#ffffff');
+        }
+        return colorA;
+      }
+      return outsideColor(effect, colorB);
+    }
+
+    if (effect.type === 'heart') {
+      const inside = heartInside(seat, effect, timeMs);
+      if (!inside) return outsideColor(effect, colorB);
+      const anim = effect.heartAnim || 'static';
+      if (anim === 'blink' || effect.heartMode === 'blink') {
+        const intervalMs = Math.max(effect.loopMs || 1000, 200);
+        const active = localTimeMs(effect, timeMs) % intervalMs <= intervalMs * 0.5;
+        if (!active) return outsideColor(effect, colorB);
+      }
+      if (anim === 'breathe') {
+        const speed = effect.heartBreatheSpeed || 0.4;
+        const pulse = (Math.sin(localT * speed * Math.PI * 2) + 1) * 0.5;
+        if (pulse < 0.35) return outsideColor(effect, colorB);
+      }
+      if (colorMode === 'rainbow') return rainbowColor(effect, seat, timeMs);
+      if (colorMode === 'palette') return paletteSample(effect, seat, timeMs, 0.5) || colorA;
+      return colorA;
+    }
+
+    return colorA;
+  }
+
+  function getSeatFromSelection(seats, selection) {
+    if (!selection || !selection.block) return null;
+    if (selection.tier === 'standing') {
+      const standingSeats = seats.filter(seat => seat.section === selection.block);
+      if (!standingSeats.length) return null;
+      const stored = localStorage.getItem('standingSeatId');
+      if (stored) {
+        const match = standingSeats.find(seat => seat.id === stored);
+        if (match) return match;
+      }
+      const randomSeat = standingSeats[Math.floor(Math.random() * standingSeats.length)];
+      localStorage.setItem('standingSeatId', randomSeat.id);
+      return randomSeat;
+    }
+    return seats.find(seat =>
+      String(seat.section) === String(selection.block) &&
+      String(seat.row) === String(selection.row) &&
+      String(seat.seat) === String(selection.seat)
+    );
+  }
+
+  function getSelection() {
+    const raw = localStorage.getItem('hs_together_seat');
+    if (!raw) return null;
+    try {
+      return JSON.parse(raw);
+    } catch {
+      return null;
+    }
+  }
+
+  function findEffectColor(timeMs) {
+    const effects = (state.timeline && state.timeline.effects) || [];
+    const active = effects
+      .filter(effect => isEffectActive(effect, timeMs))
+      .filter(effect => !effect.sections || effect.sections.length === 0 || effect.sections.includes(state.seat.section))
+      .filter(effect => seatMatchesMask(effect, state.seat));
+
+    active.sort((a, b) => (a.trackIndex ?? 0) - (b.trackIndex ?? 0) || a.startMs - b.startMs);
+
+    for (let i = active.length - 1; i >= 0; i -= 1) {
+      const color = resolveSeatColor(active[i], state.seat, timeMs);
+      if (color) return color;
+    }
+    return null;
+  }
+
+  function renderFrame() {
+    if (!state.playing) return;
+    const now = performance.now();
+    const timeMs = now - state.startTime;
+    if (timeMs > state.durationMs) {
+      state.playing = false;
+      setStatus('Show finished.');
+      startBtn.classList.remove('hidden');
+      return;
+    }
+
+    const color = findEffectColor(timeMs);
+    screen.style.backgroundColor = color ? rgbToCss(color) : state.background;
+
+    requestAnimationFrame(renderFrame);
+  }
+
+  function startShow() {
+    if (!state.seat || !state.timeline) return;
+    state.startTime = performance.now();
+    state.playing = true;
+    setStatus('');
+    renderFrame();
+  }
+
+  function enableStart() {
+    startBtn.disabled = false;
+    startBtn.textContent = 'Start';
+  }
+
+  async function loadJsonWithFallback(paths) {
+    for (const path of paths) {
+      try {
+        const res = await fetch(path);
+        if (res.ok) {
+          return await res.json();
+        }
+      } catch (err) {
+        // ignore
+      }
+    }
+    return null;
+  }
+
+  function checkReady() {
+    if (state.timeline && state.seatmap && state.seat) {
+      enableStart();
+      setStatus('Ready. Press Start when the song begins.');
+      return true;
+    }
+    return false;
+  }
+
+  async function init() {
+    startBtn.disabled = true;
+    startBtn.textContent = 'Loading...';
+
+    const selection = getSelection();
+    if (!selection) {
+      setStatus('No seat selected. Please return and choose a seat first.');
+      return;
+    }
+
+    state.timeline = await loadJsonWithFallback(['./timeline.json', './data/timeline.json']);
+    state.seatmap = await loadJsonWithFallback(['./data/seatmap_mapping.json']);
+
+    if (!state.timeline || !state.seatmap) {
+      runLoader.hidden = false;
+      setStatus('Load timeline.json and seatmap_mapping.json to continue.');
+      return;
+    }
+
+    state.durationMs = Math.max(1000, state.timeline.meta?.durationMs ?? 60000);
+    state.background = state.timeline.meta?.backgroundColor || state.background;
+    state.seat = getSeatFromSelection(state.seatmap.seats || [], selection);
+
+    if (!state.seat) {
+      setStatus('Seat not found. Please re-select your seat.');
+      return;
+    }
+
+    checkReady();
+  }
+
+  function tryManualLoad() {
+    if (!state.timeline || !state.seatmap) return;
+    runLoader.hidden = true;
+    state.durationMs = Math.max(1000, state.timeline.meta?.durationMs ?? 60000);
+    state.background = state.timeline.meta?.backgroundColor || state.background;
+    const selection = getSelection();
+    state.seat = getSeatFromSelection(state.seatmap.seats || [], selection);
+    if (!state.seat) {
+      setStatus('Seat not found. Please re-select your seat.');
+      return;
+    }
+    checkReady();
+  }
+
+  if (timelineFile) {
+    timelineFile.addEventListener('change', (event) => {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          state.timeline = JSON.parse(reader.result);
+          if (loaderStatus) loaderStatus.textContent = 'timeline.json loaded.';
+          tryManualLoad();
+        } catch {
+          alert('Could not read timeline.json');
+        }
+      };
+      reader.readAsText(file);
+    });
+  }
+
+  if (seatmapFile) {
+    seatmapFile.addEventListener('change', (event) => {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          state.seatmap = JSON.parse(reader.result);
+          if (loaderStatus) loaderStatus.textContent = 'seatmap_mapping.json loaded.';
+          tryManualLoad();
+        } catch {
+          alert('Could not read seatmap_mapping.json');
+        }
+      };
+      reader.readAsText(file);
+    });
+  }
+
+  startBtn.addEventListener('click', () => {
+    if (!state.playing) {
+      startBtn.classList.add('hidden');
+      startShow();
+    }
   });
 
-  // Stop on page unload
-  window.addEventListener('beforeunload', () => {
-    if (rafId) {
-      cancelAnimationFrame(rafId);
-    }
-    if (microphone) {
-      microphone.disconnect();
-    }
-    if (audioContext) {
-      audioContext.close();
-    }
-  });
-
-  // Show block info on screen
-  if (params.block) {
-    const info = document.createElement('div');
-    info.style.cssText = `
-      position: fixed;
-      top: 20px;
-      left: 20px;
-      color: rgba(255, 255, 255, 0.6);
-      font-size: 0.875rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      z-index: 100;
-      backdrop-filter: blur(10px);
-      background: rgba(0, 0, 0, 0.3);
-      padding: 0.5rem 1rem;
-      border-radius: 100px;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-    `;
-    info.textContent = `Block ${params.block} • ${params.level}`;
-    document.body.appendChild(info);
-  }
-
+  init();
 })();
