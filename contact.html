@@ -4,15 +4,14 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Contact - FanProjects</title>
-  <meta name="description" content="Request help for planning or running a fan project." />
+  <meta name="description" content="Get in touch with FanProjects. Share your ideas and let's create together." />
   <link rel="stylesheet" href="./css/styles.css" />
 </head>
 
-<body>
-  <header class="site-header">
-    <nav class="nav">
+<body class="project-detail-page">
+  <header class="site-header site-header--transparent">
+    <nav>
       <a class="brand" href="./index.html" aria-label="Home">
-        <img class="brand-logo" src="./assets/logo-nav.png" alt="" aria-hidden="true">
         <span class="brand-name">FanProjects</span>
       </a>
 
@@ -25,66 +24,79 @@
   </header>
 
   <main class="page">
-    <header class="page-head">
-      <h1>Contact</h1>
-      <p class="lead">Send a request if you need help planning or running a fan project.</p>
-    </header>
-
-    <section class="two-col">
-      <div class="panel">
-        <h2 class="h2">How we can help</h2>
-        <ul class="bullets">
-          <li>Project planning and timelines</li>
-          <li>Lightshow setup (shows, timing, instructions)</li>
-          <li>Resource sharing (templates, guides, announcements)</li>
-          <li>Coordination support for larger collabs</li>
-        </ul>
-        <p class="muted">
-          Please include date, venue or city, and what kind of project you are running.
-        </p>
+    <div class="page-header" style="background: transparent; border-bottom: none;">
+      <div class="container">
+        <h1 class="animate-fade-up">Let's Create Together</h1>
+        <p class="animate-fade-up" style="animation-delay: 0.1s;">Have a project idea? Need help planning? Want to get involved? We'd love to hear from you.</p>
       </div>
+    </div>
 
-      <div class="panel">
-        <h2 class="h2">Request form</h2>
+    <section class="section" style="padding-top: 0;">
+      <div class="page-content">
+        <div class="grid two-col animate-fade-up" style="animation-delay: 0.2s;">
+          <div class="project-info-card">
+            <h3>What We Can Help With</h3>
+            <ul class="list">
+              <li><strong>Plan lightshow projects</strong> for concerts and events</li>
+              <li><strong>Coordinate fan experiences</strong> with synchronized moments</li>
+              <li><strong>Provide templates, guides & resources</strong> for your project</li>
+              <li><strong>Connect you with collaborators</strong> who share your vision</li>
+              <li><strong>Turn your creative ideas</strong> into reality together</li>
+            </ul>
+            <p class="text-muted" style="margin-top: auto; font-size: 0.95rem;">
+              Whether you're just starting or have a detailed plan, we're here to support your vision.
+            </p>
+          </div>
 
-        <form class="form" action="#" method="post" data-demo="true">
-          <label>
-            Name
-            <input type="text" name="name" autocomplete="name" required>
-          </label>
+          <div class="project-info-card">
+            <h3>Get in Touch</h3>
+            <form class="form" action="#" method="post" data-demo="true">
+              <div class="form-group">
+                <label for="name">Your Name</label>
+                <input type="text" id="name" name="name" placeholder="What should we call you?" required>
+              </div>
 
-          <label>
-            Email
-            <input type="email" name="email" autocomplete="email" required>
-          </label>
+              <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" name="email" placeholder="your@email.com" required>
+              </div>
 
-          <label>
-            Project type
-            <select name="type" required>
-              <option value="">Select one...</option>
-              <option value="runs-here">Featured (Runs Here)</option>
-              <option value="info-only">Not Featured (Info Only)</option>
-              <option value="other">Other / Collab</option>
-            </select>
-          </label>
+              <div class="form-group">
+                <label for="type">What's Your Interest?</label>
+                <select id="type" name="type" required>
+                  <option value="">Select one...</option>
+                  <option value="lightshow">Create a Lightshow</option>
+                  <option value="coordination">Coordinate an Experience</option>
+                  <option value="volunteer">Volunteer & Help</option>
+                  <option value="other">Something Else</option>
+                </select>
+              </div>
 
-          <label>
-            Message
-            <textarea name="message" rows="6" placeholder="What do you need help with?" required></textarea>
-          </label>
+              <div class="form-group">
+                <label for="message">Tell Us About Your Project</label>
+                <textarea id="message" name="message" placeholder="Share your idea, what you need help with, and any other details..." required></textarea>
+              </div>
 
-          <button class="btn primary" type="submit">Send request</button>
-        </form>
-
-        <p class="note">No spam. We have enough problems already.</p>
+              <button type="submit" class="btn primary form-submit">Send Message</button>
+            </form>
+            <p class="text-muted" style="font-size: 0.85rem; margin-top: 15px; text-align: center;">
+              ✨ We read every message and will get back to you soon!
+            </p>
+          </div>
+        </div>
       </div>
     </section>
-
-    <footer class="footer">
-      <p>(c) <span id="year"></span> FanProjects</p>
-    </footer>
   </main>
 
+  <footer class="footer">
+    <div class="container text-center">
+      <p>&copy; <span id="year"></span> FanProjects. Made by fans, for fans. 💜</p>
+    </div>
+  </footer>
+
   <script src="./js/main.js"></script>
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+  </script>
 </body>
 </html>
