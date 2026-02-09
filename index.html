@@ -3,16 +3,15 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>FanProjects</title>
-  <meta name="description" content="Fan projects by fans, for fans." />
-  <link rel="stylesheet" href="./css/styles.css?v=16" />
+  <title>FanProjects - Fan-Built Community</title>
+  <meta name="description" content="Join thousands of fans creating amazing experiences together. Plan lightshows, coordinate moments, and build something unforgettable." />
+  <link rel="stylesheet" href="./css/styles.css" />
 </head>
 
 <body class="home">
-  <header class="site-header">
-    <nav class="nav">
+  <header class="site-header site-header--transparent">
+    <nav>
       <a class="brand" href="./index.html" aria-label="Home">
-        <img class="brand-logo" src="./assets/logo-nav.png" alt="FanProjects Logo" onerror="this.style.display='none'">
         <span class="brand-name">FanProjects</span>
       </a>
 
@@ -24,37 +23,26 @@
     </nav>
   </header>
 
-  <main class="hero" aria-label="Homepage intro">
-    <div class="bg" aria-hidden="true"></div>
-    <div class="overlay" aria-hidden="true"></div>
-
-    <button class="reveal-btn" id="revealBtn" type="button" aria-controls="heroContent">
-      Enter
-    </button>
-
-    <section class="hero-content" id="heroContent" aria-hidden="true">
-      <p class="hero-kicker">FAN_BUILT CONCERT MOMENTS</p>
-      <h1 class="hero-title">Build the lightshow<br>Sync the crowd</h1>
-      <p class="hero-text">
-        FanProjects is a home for fanmade projects and lightshows.
-        Find your fanproject on this website, or request one!
-      </p>
-
-      <div class="hero-actions">
-        <a class="btn primary" href="./projects.html">Explore Projects</a>
-        <a class="btn" href="./contact.html">Get Help/Contact</a>
+  <main>
+    <section class="home-hero">
+      <video class="home-hero__video" autoplay muted loop playsinline poster="./assets/hs-amsterdam.jpg">
+        <source src="./assets/BackgroundVideo.mp4" type="video/mp4" />
+      </video>
+      <div class="home-hero__overlay"></div>
+      <div class="home-hero__content container">
+        <p class="home-hero__kicker">Fan-Built Community</p>
+        <h1 class="home-hero__title">FAN<br />PROJECTS</h1>
+        <p class="home-hero__subtitle">
+          Join thousands of fans creating amazing experiences together. Plan lightshows, coordinate moments, and build something unforgettable.
+        </p>
+        <div class="home-hero__actions">
+          <a href="./projects.html" class="btn primary">Explore Projects</a>
+          <a href="./contact.html" class="btn secondary">Get Help / Contact</a>
+        </div>
       </div>
-
-      <p class="hero-subhint">
-        Some projects are info only. Others run here with synced phone lightshows.
-      </p>
     </section>
   </main>
 
-  <footer class="footer">
-    <p>(c) <span id="year"></span> FanProjects</p>
-  </footer>
-
-  <script src="./js/main.js?v=16"></script>
+  <script src="./js/main.js"></script>
 </body>
 </html>
