@@ -188,97 +188,100 @@
   </style>
 </head>
 
-<body class="project-page">
-  <header class="site-header">
-    <nav class="nav">
-      <a class="brand" href="./" aria-label="Home">
-        <img class="brand-logo" src="./assets/logo-nav.png" alt="" aria-hidden="true">
+<body class="project-detail-page">
+  <header class="site-header site-header--transparent">
+    <nav>
+      <a class="brand" href="./index.html" aria-label="Home">
         <span class="brand-name">FanProjects</span>
       </a>
 
       <div class="nav-links">
-        <a href="./">Home</a>
+        <a href="./index.html">Home</a>
         <a class="active" href="./projects.html">Projects</a>
         <a href="./contact.html">Contact</a>
       </div>
     </nav>
   </header>
 
-  <main class="page">
-    <section class="seat-shell">
-      <a href="./project-hs-together-together.html" class="back-link">Back to project</a>
+  <main class="project-page-content">
+    <section class="seat-shell animate-fade-up">
+      <a href="./project-hs-together-together.html" class="back-link">← Back to project</a>
 
-      <div class="seat-hero">
-        <h1>Select your seat</h1>
-        <p>Choose your tier, block, row, and seat to join the lightshow.</p>
+      <div class="project-hero">
+        <h1 class="project-detail-title">SELECT YOUR SEAT</h1>
+        <p style="color: rgba(255, 255, 255, 0.9); margin-bottom: 40px;">Choose your tier, block, row, and seat to join the lightshow.</p>
       </div>
 
-      <div class="seat-loader" id="seatLoader">
-        <strong>Seat data not loaded.</strong>
-        <p class="muted">If you opened this file directly (file://), your browser blocks the data file. Please upload the seatmap JSON.</p>
-        <label for="seatFile">Load seatmap_mapping.json</label>
-        <input id="seatFile" type="file" accept="application/json" />
+      <div class="project-info-card" style="max-width: 800px; margin: 0 auto;">
+        <div class="seat-loader" id="seatLoader">
+          <strong>Seat data not loaded.</strong>
+          <p class="muted">If you opened this file directly, your browser blocks the data file. Please upload the seatmap JSON.</p>
+          <label for="seatFile">Load seatmap_mapping.json</label>
+          <input id="seatFile" type="file" accept="application/json" />
+        </div>
+
+        <div class="tier-grid" role="group" aria-label="Choose tier" style="display: flex; gap: 15px; margin-bottom: 30px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 20px;">
+          <button class="tier-card" type="button" data-tier="upper" disabled style="background: transparent; border: none; color: #fff; padding: 10px 20px; font-weight: 600; cursor: pointer; border-radius: 100px; transition: all 0.3s;">Upper tier</button>
+          <button class="tier-card" type="button" data-tier="lower" disabled style="background: transparent; border: none; color: #fff; padding: 10px 20px; font-weight: 600; cursor: pointer; border-radius: 100px; transition: all 0.3s;">Lower tier</button>
+          <button class="tier-card" type="button" data-tier="standing" disabled style="background: transparent; border: none; color: #fff; padding: 10px 20px; font-weight: 600; cursor: pointer; border-radius: 100px; transition: all 0.3s;">Standing</button>
+        </div>
+
+        <form id="seatForm" class="form">
+          <div class="select-row" id="blockRow" style="display: none; margin-bottom: 20px;">
+            <div class="form-group">
+              <label id="blockLabel">Block</label>
+              <select id="blockSelect" disabled></select>
+            </div>
+          </div>
+
+          <div class="select-row" id="rowRow" style="display: none; margin-bottom: 20px;">
+            <div class="form-group">
+              <label>Row</label>
+              <select id="rowSelect" disabled></select>
+            </div>
+          </div>
+
+          <div class="select-row" id="seatRow" style="display: none; margin-bottom: 20px;">
+            <div class="form-group">
+              <label>Seat</label>
+              <select id="seatSelect" disabled></select>
+            </div>
+          </div>
+
+          <div id="selectionSummary" class="selection-summary" style="display: none; margin-top: 30px; padding-top: 20px; border-top: 1px solid rgba(255, 255, 255, 0.1);">
+            <div class="summary-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px;">
+              <div class="summary-item">
+                <div class="summary-label" style="font-size: 0.7rem; color: #00C4CC; text-transform: uppercase;">Tier</div>
+                <div class="summary-value" id="summaryTier" style="font-weight: 600;">-</div>
+              </div>
+              <div class="summary-item">
+                <div class="summary-label" style="font-size: 0.7rem; color: #00C4CC; text-transform: uppercase;">Block</div>
+                <div class="summary-value" id="summaryBlock" style="font-weight: 600;">-</div>
+              </div>
+              <div class="summary-item">
+                <div class="summary-label" style="font-size: 0.7rem; color: #00C4CC; text-transform: uppercase;">Row</div>
+                <div class="summary-value" id="summaryRow" style="font-weight: 600;">-</div>
+              </div>
+              <div class="summary-item">
+                <div class="summary-label" style="font-size: 0.7rem; color: #00C4CC; text-transform: uppercase;">Seat</div>
+                <div class="summary-value" id="summarySeat" style="font-weight: 600;">-</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="seat-actions" style="margin-top: 40px;">
+            <button type="submit" class="btn primary form-submit" id="submitBtn" disabled>Confirm seat</button>
+          </div>
+        </form>
       </div>
-
-      <div class="tier-grid" role="group" aria-label="Choose tier">
-        <button class="tier-card" type="button" data-tier="upper" disabled>Upper tier</button>
-        <button class="tier-card" type="button" data-tier="lower" disabled>Lower tier</button>
-        <button class="tier-card" type="button" data-tier="standing" disabled>Standing</button>
-      </div>
-
-      <form id="seatForm" class="seat-form">
-        <div class="select-row" id="blockRow">
-          <div class="select-wrap">
-            <label for="blockSelect" id="blockLabel">Block</label>
-            <select id="blockSelect" disabled></select>
-          </div>
-        </div>
-
-        <div class="select-row" id="rowRow">
-          <div class="select-wrap">
-            <label for="rowSelect">Row</label>
-            <select id="rowSelect" disabled></select>
-          </div>
-        </div>
-
-        <div class="select-row" id="seatRow">
-          <div class="select-wrap">
-            <label for="seatSelect">Seat</label>
-            <select id="seatSelect" disabled></select>
-          </div>
-        </div>
-
-        <div id="selectionSummary" class="selection-summary">
-          <div class="summary-grid">
-            <div class="summary-item">
-              <div class="summary-label">Tier</div>
-              <div class="summary-value" id="summaryTier">-</div>
-            </div>
-            <div class="summary-item">
-              <div class="summary-label">Block</div>
-              <div class="summary-value" id="summaryBlock">-</div>
-            </div>
-            <div class="summary-item">
-              <div class="summary-label">Row</div>
-              <div class="summary-value" id="summaryRow">-</div>
-            </div>
-            <div class="summary-item">
-              <div class="summary-label">Seat</div>
-              <div class="summary-value" id="summarySeat">-</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="seat-actions">
-          <button type="submit" class="btn primary seat-submit" id="submitBtn" disabled>Confirm seat</button>
-        </div>
-      </form>
     </section>
-
-    <footer class="footer">
-      <p>(c) <span id="year"></span> FanProjects</p>
-    </footer>
   </main>
+
+  <footer class="footer">
+    <div class="container text-center">
+      <p>&copy; <span id="year"></span> FanProjects. Made by fans, for fans.</p>
+    </div>
+  </footer>
 
   <script src="./js/main.js?v=16"></script>
   <script>
@@ -352,7 +355,7 @@
 
       const complete = isStanding ? (state.tier && state.block) : (state.tier && state.block && state.row && state.seat);
       submitBtn.disabled = !complete;
-      summary.classList.toggle('active', complete);
+      summary.style.display = complete ? 'block' : 'none';
     }
 
     function setTier(tier) {
@@ -361,7 +364,11 @@
       state.row = '';
       state.seat = '';
 
-      tierButtons.forEach(btn => btn.classList.toggle('active', btn.dataset.tier === tier));
+      tierButtons.forEach(btn => {
+        const active = btn.dataset.tier === tier;
+        btn.style.background = active ? '#00C4CC' : 'transparent';
+        btn.style.color = active ? '#000' : '#fff';
+      });
 
       resetSelect(blockSelect, tier === 'standing' ? 'Select standing area' : 'Select your block');
       resetSelect(rowSelect, 'Select your row');
@@ -379,9 +386,9 @@
       rowSelect.disabled = true;
       seatSelect.disabled = true;
 
-      blockRow.classList.add('active');
-      rowRow.classList.remove('active');
-      seatRow.classList.remove('active');
+      blockRow.style.display = 'block';
+      rowRow.style.display = 'none';
+      seatRow.style.display = 'none';
 
       updateSummary();
     }
@@ -397,8 +404,8 @@
       if (state.tier === 'standing') {
         rowSelect.disabled = true;
         seatSelect.disabled = true;
-        rowRow.classList.remove('active');
-        seatRow.classList.remove('active');
+        rowRow.style.display = 'none';
+        seatRow.style.display = 'none';
         updateSummary();
         return;
       }
@@ -414,8 +421,8 @@
       rowSelect.disabled = false;
       seatSelect.disabled = true;
 
-      rowRow.classList.add('active');
-      seatRow.classList.remove('active');
+      rowRow.style.display = 'block';
+      seatRow.style.display = 'none';
 
       updateSummary();
     }
@@ -435,7 +442,7 @@
       });
 
       seatSelect.disabled = false;
-      seatRow.classList.add('active');
+      seatRow.style.display = 'block';
 
       updateSummary();
     }
@@ -490,63 +497,3 @@
       state.seat = e.target.value;
       updateSummary();
     });
-
-    seatFile.addEventListener('change', (event) => {
-      const file = event.target.files && event.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = () => {
-        try {
-          const data = JSON.parse(reader.result);
-          initSeatData(data);
-        } catch (err) {
-          alert('Could not read the seatmap JSON.');
-        }
-      };
-      reader.readAsText(file);
-    });
-
-    fetch('./data/seatmap_mapping.json')
-      .then(res => res.json())
-      .then(initSeatData)
-      .catch(err => {
-        console.error('Failed to load seat data:', err);
-        seatLoader.classList.add('active');
-      });
-
-    document.getElementById('seatForm').addEventListener('submit', function(e) {
-      e.preventDefault();
-
-      const isStanding = state.tier === 'standing';
-      if (!state.tier || !state.block) return;
-      if (!isStanding && (!state.row || !state.seat)) return;
-
-      const seatData = {
-        tier: state.tier,
-        block: state.block,
-        blockLabel: labelForSection(state.block),
-        row: isStanding ? null : state.row,
-        seat: isStanding ? null : state.seat,
-        timestamp: new Date().toISOString()
-      };
-
-      localStorage.setItem('hs_together_seat', JSON.stringify(seatData));
-
-      if (isStanding) {
-        alert(`Success! Your standing area has been saved:
-
-${seatData.blockLabel}`);
-      } else {
-        alert(`Success! Your seat has been saved:
-
-${seatData.blockLabel}
-Row ${seatData.row}, Seat ${seatData.seat}`);
-      }
-
-      window.location.href = './run-hs-together-together.html';
-    });
-
-    document.getElementById('year').textContent = new Date().getFullYear();
-  </script>
-</body>
-</html>
