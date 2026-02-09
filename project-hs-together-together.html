@@ -62,6 +62,7 @@
           </p>
           <div class="join-box__cta">
             <a href="./join-hs-together.html" class="btn primary">Select your seat</a>
+            <a href="./helpers.html" class="btn ghost">Volunteer to help</a>
           </div>
         </div>
 
@@ -135,6 +136,10 @@
 
   <script src="./js/main.js?v=15"></script>
   <script>
+    const SUPABASE_URL = 'https://gbbxjjhsdvqcgbeammcr.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_U_Oki3osdN3PZC0fzopyLg_r-B1IxtA';
+    const TABLE = 'helpers_intake';
+
     const helpersCount = document.getElementById('helpersCount');
     const helpersRotator = document.getElementById('helpersRotator');
     const helpersLoader = document.getElementById('helpersLoader');
@@ -165,36 +170,58 @@
       }, 2000);
     }
 
-    function renderHelpers(data) {
+    function renderHelpers(list) {
       if (!helpersCount) return;
-      const helpers = (data.helpers || []).map(name => String(name).trim()).filter(Boolean);
+      const helpers = (list || []).map(item => String(item.name || '').trim()).filter(Boolean);
       helpersCount.textContent = helpers.length === 1 ? '1 helper' : `${helpers.length} helpers`;
       startRotation(helpers);
       if (helpersLoader) helpersLoader.style.display = helpers.length ? 'none' : 'grid';
+    }
+
+    async function fetchSupabaseHelpers() {
+      const url = `${SUPABASE_URL}/rest/v1/${TABLE}?select=name&show_name_public=eq.true&order=created_at.desc`;
+      const res = await fetch(url, {
+        headers: {
+          apikey: SUPABASE_KEY,
+          Authorization: `Bearer ${SUPABASE_KEY}`,
+        },
+      });
+      if (!res.ok) {
+        throw new Error('Failed to fetch helpers');
+      }
+      return res.json();
+    }
+
+    function loadFromFile(file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const data = JSON.parse(reader.result);
+          renderHelpers(data.helpers || []);
+        } catch (err) {
+          alert('Could not read helpers.json');
+        }
+      };
+      reader.readAsText(file);
     }
 
     if (helpersFile) {
       helpersFile.addEventListener('change', (event) => {
         const file = event.target.files && event.target.files[0];
         if (!file) return;
-        const reader = new FileReader();
-        reader.onload = () => {
-          try {
-            const data = JSON.parse(reader.result);
-            renderHelpers(data);
-          } catch (err) {
-            alert('Could not read helpers.json');
-          }
-        };
-        reader.readAsText(file);
+        loadFromFile(file);
       });
     }
 
-    fetch('./data/helpers.json')
-      .then(res => res.json())
+    fetchSupabaseHelpers()
       .then(renderHelpers)
       .catch(() => {
-        if (helpersLoader) helpersLoader.style.display = 'grid';
+        fetch('./data/helpers.json')
+          .then(res => res.json())
+          .then(data => renderHelpers(data.helpers || []))
+          .catch(() => {
+            if (helpersLoader) helpersLoader.style.display = 'grid';
+          });
       });
   </script>
 
