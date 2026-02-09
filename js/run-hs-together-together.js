@@ -559,7 +559,14 @@
     }
 
     const color = findEffectColor(timeMs);
-    screen.style.backgroundColor = color ? rgbToCss(color) : state.background;
+    if (color) {
+      screen.style.backgroundColor = rgbToCss(color);
+      screen.style.opacity = "1";
+    } else {
+      // If no effect color, show the defined background color from timeline
+      screen.style.backgroundColor = state.background;
+      screen.style.opacity = "1";
+    }
 
     requestAnimationFrame(renderFrame);
   }
@@ -587,15 +594,43 @@
     startBtn.textContent = 'Start';
   }
 
-  async function loadJsonWithFallback(paths) {
+  async function loadJsonWithFallback(paths, key) {
     for (const path of paths) {
       try {
-        const res = await fetch(path);
+        console.log(`Versuche zu laden: ${path}`);
+        // Cache-Busting für GitHub Pages
+        const url = window.location.hostname.includes('github') ? `${path}?t=${Date.now()}` : path;
+        const res = await fetch(url);
         if (res.ok) {
-          return await res.json();
+          const data = await res.json();
+          if (key) {
+            try {
+              localStorage.setItem(`cache_${key}`, JSON.stringify(data));
+              console.log(`Cache für ${key} aktualisiert.`);
+            } catch (e) {
+              console.warn('LocalStorage Cache fehlgeschlagen', e);
+            }
+          }
+          console.log(`Erfolgreich geladen: ${path}`);
+          return data;
+        } else {
+          console.warn(`Fetch für ${path} ergab Status: ${res.status}`);
         }
       } catch (err) {
-        // ignore
+        console.error(`Fehler beim Laden von ${path}:`, err);
+      }
+    }
+    
+    if (key) {
+      const cached = localStorage.getItem(`cache_${key}`);
+      if (cached) {
+        console.log(`Nutze Cache für ${key}`);
+        try {
+          const data = JSON.parse(cached);
+          if (data) return data;
+        } catch (e) {
+          console.error(`Fehler beim Parsen des Caches für ${key}`, e);
+        }
       }
     }
     return null;
@@ -612,7 +647,7 @@
 
   async function init() {
     startBtn.disabled = true;
-    startBtn.textContent = 'Loading...';
+    startBtn.textContent = 'Lädt...';
 
     const selection = getSelection();
     if (!selection) {
@@ -620,19 +655,47 @@
       return;
     }
 
-    state.timeline = await loadJsonWithFallback(['data/timeline.json', './data/timeline.json', './timeline.json']);
-    state.seatmap = await loadJsonWithFallback(['data/seatmap_mapping.json', './data/seatmap_mapping.json']);
+    // Absolute Pfade basierend auf der aktuellen URL versuchen
+    const baseUrl = window.location.href.split('/').slice(0, -1).join('/');
+    const timelinePaths = [
+      'data/timeline.json', 
+      './data/timeline.json', 
+      `${baseUrl}/data/timeline.json`,
+      'timeline.json'
+    ];
+    const seatmapPaths = [
+      'data/seatmap_mapping.json', 
+      './data/seatmap_mapping.json', 
+      `${baseUrl}/data/seatmap_mapping.json`,
+      'seatmap_mapping.json'
+    ];
+
+    state.timeline = await loadJsonWithFallback(timelinePaths, 'timeline');
+    state.seatmap = await loadJsonWithFallback(seatmapPaths, 'seatmap');
 
     if (!state.timeline || !state.seatmap) {
-      // Check if we are running locally via file://
-      if (window.location.protocol === 'file:') {
-        runLoader.hidden = false;
-        setStatus('Bitte lade die Dateien manuell, da dein Browser den Zugriff lokal blockiert.');
-      } else {
-        runLoader.hidden = false;
-        setStatus('Dateien konnten nicht automatisch geladen werden.');
+      let missing = [];
+      if (!state.timeline) missing.push('timeline.json');
+      if (!state.seatmap) missing.push('seatmap_mapping.json');
+      
+      console.error('Fehlende Dateien:', missing);
+
+      // Case-Sensitive Fallbacks für GitHub
+      if (window.location.hostname.includes('github')) {
+        console.log("Versuche Case-Sensitive Fallbacks...");
+        if (!state.timeline) state.timeline = await loadJsonWithFallback(['Data/timeline.json'], 'timeline');
+        if (!state.seatmap) state.seatmap = await loadJsonWithFallback(['Data/seatmap_mapping.json'], 'seatmap');
       }
-      return;
+
+      if (!state.timeline || !state.seatmap) {
+        runLoader.hidden = false;
+        if (window.location.protocol === 'file:') {
+          setStatus('Browser blockiert lokale Dateien. Bitte manuell laden.');
+        } else {
+          setStatus(`Dateien konnten nicht automatisch geladen werden.`);
+        }
+        return;
+      }
     }
 
     state.durationMs = Math.max(1000, state.timeline.meta?.durationMs ?? 60000);
@@ -669,6 +732,7 @@
       reader.onload = () => {
         try {
           state.timeline = JSON.parse(reader.result);
+          localStorage.setItem('cache_timeline', reader.result);
           if (loaderStatus) loaderStatus.textContent = 'timeline.json geladen.';
           tryManualLoad();
         } catch {
@@ -687,6 +751,7 @@
       reader.onload = () => {
         try {
           state.seatmap = JSON.parse(reader.result);
+          localStorage.setItem('cache_seatmap', reader.result);
           if (loaderStatus) loaderStatus.textContent = 'seatmap_mapping.json geladen.';
           tryManualLoad();
         } catch {
