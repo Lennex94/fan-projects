@@ -8,95 +8,101 @@
   <link rel="stylesheet" href="./css/styles.css?v=16" />
 </head>
 
-<body class="project-page">
-  <header class="site-header">
-    <nav class="nav">
-      <a class="brand" href="./" aria-label="Home">
-        <img class="brand-logo" src="./assets/logo-nav.png" alt="" aria-hidden="true">
+<body class="project-detail-page">
+  <header class="site-header site-header--transparent">
+    <nav>
+      <a class="brand" href="./index.html" aria-label="Home">
         <span class="brand-name">FanProjects</span>
       </a>
 
       <div class="nav-links">
-        <a href="./">Home</a>
+        <a href="./index.html">Home</a>
         <a class="active" href="./projects.html">Projects</a>
         <a href="./contact.html">Contact</a>
       </div>
     </nav>
   </header>
 
-  <main class="page">
-    <header class="page-head">
-      <h1>Volunteer for the fanproject</h1>
-      <p class="lead">Help us organize the Together, Together lightshow in Amsterdam. We need people in the seating and standing areas.</p>
-    </header>
+  <main class="project-page-content">
+    <section class="project-hero animate-fade-up">
+      <h1 class="project-detail-title">VOLUNTEER</h1>
+      <p class="animate-fade-up" style="animation-delay: 0.1s; color: rgba(255, 255, 255, 0.9); font-size: 1.1rem; max-width: 700px; margin: 0 auto 40px;">
+        Help us organize the Together, Together lightshow in Amsterdam. We need people in the seating and standing areas.
+      </p>
+    </section>
 
-    <section class="two-col">
-      <div class="panel">
-        <h2 class="h2">What we need help with</h2>
-        <ul class="bullets">
+    <div class="project-sections-grid" style="grid-template-columns: 1fr; max-width: 800px; margin: 0 auto; gap: 40px;">
+      <!-- Info Card -->
+      <div class="project-info-card animate-fade-up" style="animation-delay: 0.2s; max-width: 600px; margin: 0 auto; padding: 30px; text-align: center; border-radius: 20px;">
+        <h3 style="font-size: 1rem; margin-bottom: 15px;">WHAT WE NEED HELP WITH</h3>
+        <ul class="list no-arrows" style="font-size: 0.95rem; margin-bottom: 20px;">
           <li>Handing out info sheets in your block or GA area</li>
           <li>Printing 5-8 sheets per block if possible</li>
           <li>Covering nearby blocks if your area is small</li>
+          <li>Coordinate with other fans on-site</li>
         </ul>
-        <p class="muted">Your name can be shown publicly to avoid duplicates. Socials are only used to send you the right materials.</p>
+        <p class="text-muted" style="margin-top: 15px; font-size: 0.85rem; line-height: 1.5;">
+          Your name can be shown publicly to avoid duplicates. Socials are only used to send you the right materials.
+        </p>
       </div>
 
-      <div class="panel">
-        <h2 class="h2">Volunteer form</h2>
+      <!-- Form Card -->
+      <div class="project-info-card animate-fade-up" style="animation-delay: 0.3s;">
+        <h3>VOLUNTEER FORM</h3>
         <form id="helperForm" class="form">
-          <label data-step="1">
-            Are you at the 16 May 2026 Amsterdam show?
+          <div class="form-group">
+            <label>Are you at the 16 May 2026 Amsterdam show?</label>
             <select name="attending" required>
               <option value="">Select one...</option>
               <option value="yes">Yes</option>
               <option value="no">No</option>
             </select>
-          </label>
+          </div>
 
-          <label data-step="2">
-            Do you want to actively help?
+          <div class="form-group">
+            <label>Do you want to actively help?</label>
             <select name="wants_help" required>
               <option value="">Select one...</option>
               <option value="yes">Yes</option>
               <option value="no">No</option>
             </select>
-          </label>
+          </div>
 
-          <label data-step="3">
-            Your name
-            <input type="text" name="name" required />
-          </label>
+          <div class="form-group">
+            <label>Your name</label>
+            <input type="text" name="name" placeholder="How should we call you?" required />
+          </div>
 
-          <label data-step="4">
-            Where are you sitting / standing?
+          <div class="form-group">
+            <label>Where are you sitting / standing?</label>
             <select name="area_type" required>
               <option value="">Select one...</option>
               <option value="seated">Seated (block)</option>
               <option value="standing">Standing (GA)</option>
             </select>
-          </label>
+          </div>
 
-          <label data-step="5">
-            Block or GA area
+          <div class="form-group">
+            <label>Block or GA area</label>
             <input type="text" name="block_or_ga" placeholder="Block 117 or GA Front Left" required />
-          </label>
+          </div>
 
-          <label data-step="6">
-            Can you print flyers? (5-8 per block)
+          <div class="form-group">
+            <label>Can you print flyers? (5-8 per block)</label>
             <select name="can_print" required>
               <option value="">Select one...</option>
               <option value="yes">Yes</option>
               <option value="no">No</option>
             </select>
-          </label>
+          </div>
 
-          <label data-step="7">
-            If you can cover nearby blocks, list them
+          <div class="form-group">
+            <label>If you can cover nearby blocks, list them</label>
             <input type="text" name="extra_blocks" placeholder="Example: 116, 118" />
-          </label>
+          </div>
 
-          <label data-step="8">
-            Which social do you want to share?
+          <div class="form-group">
+            <label>Which social do you want to share?</label>
             <select name="social_platform" required>
               <option value="">Select one...</option>
               <option value="instagram">Instagram</option>
@@ -106,32 +112,34 @@
               <option value="x">X / Twitter</option>
               <option value="other">Other</option>
             </select>
-          </label>
+          </div>
 
-          <label data-step="9">
-            Social handle / contact
+          <div class="form-group">
+            <label>Social handle / contact</label>
             <input type="text" name="socials" placeholder="@username or number" required />
-          </label>
+          </div>
 
-          <label data-step="10">
-            Show my name publicly as a helper
+          <div class="form-group">
+            <label>Show my name publicly as a helper</label>
             <select name="show_name_public" required>
               <option value="">Select one...</option>
               <option value="yes">Yes</option>
               <option value="no">No</option>
             </select>
-          </label>
+          </div>
 
-          <button class="btn primary" type="submit" data-step="11">Submit</button>
-          <p class="muted" id="helperFormStatus"></p>
+          <button class="btn primary form-submit" type="submit">Submit Application</button>
+          <p class="muted" id="helperFormStatus" style="margin-top: 15px; text-align: center;"></p>
         </form>
       </div>
-    </section>
-
-    <footer class="footer">
-      <p>(c) <span id="year"></span> FanProjects</p>
-    </footer>
+    </div>
   </main>
+
+  <footer class="footer">
+    <div class="container text-center">
+      <p>&copy; <span id="year"></span> FanProjects. Made by fans, for fans.</p>
+    </div>
+  </footer>
 
   <script src="./js/main.js?v=16"></script>
   <script src="./js/helpers.js?v=1"></script>
