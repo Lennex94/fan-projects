@@ -172,8 +172,9 @@
     let cy = effect.heartCenterY ?? 0.5;
 
     if (mode === 'fly') {
+      const speed = effect.heartSpeed ?? 0.3;
       const loopMs = effect.loopMs && effect.loopMs > 0 ? effect.loopMs : effect.durationMs;
-      const t = clamp(localTimeMs(effect, timeMs) / Math.max(loopMs, 1), 0, 1);
+      const t = clamp((localTimeMs(effect, timeMs) / 1000 * speed * 1000) / Math.max(loopMs, 1), 0, 1);
       const sx = effect.heartStartX ?? 0.3;
       const sy = effect.heartStartY ?? 0.2;
       const ex = effect.heartEndX ?? 0.7;
@@ -194,7 +195,7 @@
     if (thickness > 0) {
       return Math.abs(value) <= thickness;
     }
-    return value <= 0;
+    return value <= 0.05;
   }
 
   function isEffectActive(effect, timeMs) {
@@ -477,15 +478,18 @@
       const inside = heartInside(seat, effect, timeMs);
       if (!inside) return outsideColor(effect, colorB);
       const anim = effect.heartAnim || 'static';
-      if (anim === 'blink' || effect.heartMode === 'blink') {
+      if (anim === 'blink') {
         const intervalMs = Math.max(effect.loopMs || 1000, 200);
-        const active = localTimeMs(effect, timeMs) % intervalMs <= intervalMs * 0.5;
-        if (!active) return outsideColor(effect, colorB);
+        const prog = (localTimeMs(effect, timeMs) % intervalMs) / intervalMs;
+        if (prog > 0.5) return outsideColor(effect, colorB);
+        const intensity = Math.sin(prog * Math.PI * 2); 
+        return mixColors(colorB, colorA, clamp(intensity * 2, 0, 1));
       }
       if (anim === 'breathe') {
         const speed = effect.heartBreatheSpeed || 0.4;
         const pulse = (Math.sin(localT * speed * Math.PI * 2) + 1) * 0.5;
-        if (pulse < 0.35) return outsideColor(effect, colorB);
+        if (pulse < 0.25) return outsideColor(effect, colorB);
+        return mixColors(colorB, colorA, pulse);
       }
       if (colorMode === 'rainbow') return rainbowColor(effect, seat, timeMs);
       if (colorMode === 'palette') return paletteSample(effect, seat, timeMs, 0.5) || colorA;
@@ -561,6 +565,14 @@
 
   function startShow() {
     if (!state.seat || !state.timeline) return;
+    
+    // Request fullscreen on start for a better experience
+    if (document.documentElement.requestFullscreen) {
+      document.documentElement.requestFullscreen().catch(() => {});
+    } else if (document.documentElement.webkitRequestFullscreen) {
+      document.documentElement.webkitRequestFullscreen();
+    }
+
     state.startTime = performance.now();
     state.playing = true;
     setStatus('');
@@ -605,7 +617,7 @@
       return;
     }
 
-    state.timeline = await loadJsonWithFallback(['./timeline.json', './data/timeline.json']);
+    state.timeline = await loadJsonWithFallback(['./data/timeline.json', './timeline.json']);
     state.seatmap = await loadJsonWithFallback(['./data/seatmap_mapping.json']);
 
     if (!state.timeline || !state.seatmap) {
