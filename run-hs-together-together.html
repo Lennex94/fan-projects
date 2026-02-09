@@ -8,19 +8,22 @@
   <link rel="stylesheet" href="./css/styles.css?v=19" />
 </head>
 
-<body class="run-page">
+<body class="run-page project-detail-page">
   <div id="screen" class="run-screen" aria-hidden="true"></div>
-  <button id="startBtn" class="run-start" type="button">Start</button>
+  <button id="startBtn" class="run-start" type="button" disabled>Loading...</button>
 
   <div id="runLoader" class="run-loader" hidden>
     <div class="run-loader-card">
-      <h2>Load show files</h2>
-      <p class="muted">If you opened this page directly (file://), your browser blocks JSON files. Load them manually.</p>
+      <h2>LOAD PROJECT FILES</h2>
+      <p class="text-muted" style="font-size: 0.9rem; margin-bottom: 25px;">Your browser blocks JSON files when opened locally. Please load them manually to start the lightshow.</p>
+      
       <label for="timelineFile">timeline.json</label>
       <input id="timelineFile" type="file" accept="application/json" />
+      
       <label for="seatmapFile">seatmap_mapping.json</label>
       <input id="seatmapFile" type="file" accept="application/json" />
-      <p class="muted" id="loaderStatus">Waiting for files...</p>
+      
+      <p id="loaderStatus" style="margin-top: 25px; color: #00C4CC; font-weight: 600; font-size: 0.85rem; letter-spacing: 0.05em;">WAITING FOR FILES...</p>
     </div>
   </div>
 
