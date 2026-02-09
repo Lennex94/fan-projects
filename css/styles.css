@@ -71,7 +71,7 @@ html {
 
 body {
   font-family: var(--font-body);
-  background: var(--bg-dark);
+  background: #000;
   color: var(--text-light);
   line-height: 1.6;
   min-height: 100vh;
@@ -294,7 +294,7 @@ a:hover {
    ============================================ */
 
 .projects-page-body {
-  background: url('../assets/FAN PROJECTS.png') no-repeat center center;
+  background: #000 url('../assets/FAN PROJECTS.png') no-repeat center center;
   background-size: cover;
   background-attachment: fixed;
 }
@@ -302,6 +302,7 @@ a:hover {
 @media (max-width: 1024px) {
   .projects-page-body {
     background-attachment: scroll;
+    background-image: url('../assets/logo-bg-mobile.png');
   }
 }
 
@@ -924,7 +925,8 @@ a:hover {
 }
 
 .run-page {
-  background: #000;
+  background: #000 url('../assets/logo-bg-mobile.png') no-repeat center center;
+  background-size: cover;
   color: #fff;
   height: 100vh;
   width: 100vw;
@@ -936,10 +938,17 @@ a:hover {
   position: relative;
 }
 
+@media (min-width: 1025px) {
+  .run-page {
+    background-image: url('../assets/Harry.png');
+    background-attachment: fixed;
+  }
+}
+
 .run-screen {
   position: absolute;
   inset: 0;
-  background-color: #000;
+  background-color: transparent;
   transition: background-color 0.1s ease;
   z-index: 1;
 }
@@ -1109,7 +1118,7 @@ a:hover {
    ============================================ */
 
 .project-detail-page {
-  background: url('../assets/Harry.png') no-repeat center center;
+  background: #000 url('../assets/Harry.png') no-repeat center center;
   background-size: cover;
   background-attachment: fixed;
   color: #fff;
@@ -1118,6 +1127,7 @@ a:hover {
 @media (max-width: 1024px) {
   .project-detail-page {
     background-attachment: scroll;
+    background-image: url('../assets/logo-bg-mobile.png');
   }
 }
 
