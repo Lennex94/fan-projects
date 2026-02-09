@@ -948,6 +948,10 @@ body.home {
   z-index: 1200;
 }
 
+.run-loader[hidden] {
+  display: none;
+}
+
 .run-loader-card {
   width: min(90%, 480px);
   background: rgba(8, 10, 18, 0.85);
