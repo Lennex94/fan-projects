@@ -1007,6 +1007,10 @@ a:hover {
   backdrop-filter: blur(10px);
 }
 
+.run-loader[hidden] {
+  display: none !important;
+}
+
 .run-loader-card {
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
