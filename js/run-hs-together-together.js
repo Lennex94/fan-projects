@@ -657,13 +657,17 @@
     state.timeline = await loadJsonWithFallback(possibleTimelinePaths, 'timeline');
     state.seatmap = await loadJsonWithFallback(possibleSeatmapPaths, 'seatmap');
 
+    console.log('Timeline loaded:', !!state.timeline);
+    console.log('Seatmap loaded:', !!state.seatmap);
+    console.log('Selection:', selection);
+
     if (!state.timeline || !state.seatmap) {
       const missing = [];
       if (!state.timeline) missing.push('timeline.json');
       if (!state.seatmap) missing.push('seatmap_mapping.json');
-      
+
       console.error('Auto-load failed for:', missing);
-      
+
       // Update UI with specific failure info
       if (loaderStatus) {
         loaderStatus.style.color = "#ff4d6d";
@@ -671,8 +675,8 @@
       }
 
       runLoader.hidden = false;
-      setStatus(window.location.protocol === 'file:' 
-        ? 'Lokal blockiert. Bitte Dateien manuell wählen.' 
+      setStatus(window.location.protocol === 'file:'
+        ? 'Lokal blockiert. Bitte Dateien manuell wählen.'
         : 'Dateien im "data" Ordner nicht gefunden.');
       return;
     }
@@ -681,11 +685,20 @@
     state.background = state.timeline.meta?.backgroundColor || state.background;
     state.seat = getSeatFromSelection(state.seatmap.seats || [], selection);
 
+    console.log('Seat found:', !!state.seat);
+    if (state.seat) {
+      console.log('Seat details:', state.seat);
+    } else {
+      console.error('Seat not found! Selection:', selection);
+      console.log('Available seats sample:', state.seatmap.seats?.slice(0, 3));
+    }
+
     if (!state.seat) {
       setStatus('Sitzplatz nicht gefunden. Bitte wähle deinen Sitzplatz erneut aus.');
       return;
     }
 
+    console.log('Ready to start!');
     checkReady();
   }
 
