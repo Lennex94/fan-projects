@@ -553,7 +553,7 @@
     if (timeMs > state.durationMs) {
       state.playing = false;
       document.body.classList.remove('playing');
-      setStatus('Show beendet.');
+      setStatus('Show finished.');
       startBtn.classList.remove('hidden');
       return;
     }
@@ -625,7 +625,7 @@
     if (state.timeline && state.seatmap && state.seat) {
       runLoader.hidden = true;
       enableStart();
-      setStatus('Bereit. Drücke Start, sobald der Song beginnt.');
+      setStatus('Ready. Press Start when "Aperture" begins.');
       return true;
     }
     return false;
@@ -633,11 +633,11 @@
 
   async function init() {
     startBtn.disabled = true;
-    startBtn.textContent = 'Lädt...';
+    startBtn.textContent = 'Loading...';
 
     const selection = getSelection();
     if (!selection) {
-      setStatus('Kein Sitzplatz ausgewählt. Bitte wähle zuerst einen Platz aus.');
+      setStatus('No seat selected. Please select your seat first.');
       return;
     }
 
@@ -672,13 +672,13 @@
       // Update UI with specific failure info
       if (loaderStatus) {
         loaderStatus.style.color = "#ff4d6d";
-        loaderStatus.textContent = `FEHLER: ${missing.join(' & ')} nicht gefunden.`;
+        loaderStatus.textContent = `ERROR: ${missing.join(' & ')} not found.`;
       }
 
       runLoader.hidden = false;
       setStatus(window.location.protocol === 'file:'
-        ? 'Lokal blockiert. Bitte Dateien manuell wählen.'
-        : 'Dateien im "data" Ordner nicht gefunden.');
+        ? 'Locally blocked. Please select files manually.'
+        : 'Files not found in "data" folder.');
       return;
     }
 
@@ -695,7 +695,7 @@
     }
 
     if (!state.seat) {
-      setStatus('Sitzplatz nicht gefunden. Bitte wähle deinen Sitzplatz erneut aus.');
+      setStatus('Seat not found. Please select your seat again.');
       return;
     }
 
@@ -711,7 +711,7 @@
     const selection = getSelection();
     state.seat = getSeatFromSelection(state.seatmap.seats || [], selection);
     if (!state.seat) {
-      setStatus('Sitzplatz nicht gefunden. Bitte wähle deinen Sitzplatz erneut aus.');
+      setStatus('Seat not found. Please select your seat again.');
       return;
     }
     checkReady();
@@ -725,10 +725,10 @@
       reader.onload = () => {
         try {
           state.timeline = JSON.parse(reader.result);
-          if (loaderStatus) loaderStatus.textContent = 'timeline.json geladen.';
+          if (loaderStatus) loaderStatus.textContent = 'timeline.json loaded.';
           tryManualLoad();
         } catch {
-          alert('timeline.json konnte nicht gelesen werden.');
+          alert('timeline.json could not be read.');
         }
       };
       reader.readAsText(file);
@@ -743,10 +743,10 @@
       reader.onload = () => {
         try {
           state.seatmap = JSON.parse(reader.result);
-          if (loaderStatus) loaderStatus.textContent = 'seatmap_mapping.json geladen.';
+          if (loaderStatus) loaderStatus.textContent = 'seatmap_mapping.json loaded.';
           tryManualLoad();
         } catch {
-          alert('seatmap_mapping.json konnte nicht gelesen werden.');
+          alert('seatmap_mapping.json could not be read.');
         }
       };
       reader.readAsText(file);
