@@ -609,15 +609,6 @@
         if (res.ok) {
           const data = await res.json();
           console.log(`Erfolgreich geladen: ${path}`);
-          
-          if (key) {
-            try {
-              localStorage.setItem(`cache_${key}`, JSON.stringify(data));
-              console.log(`Cache für ${key} aktualisiert.`);
-            } catch (e) {
-              console.warn('LocalStorage Cache fehlgeschlagen', e);
-            }
-          }
           return data;
         } else {
           console.warn(`Fetch für ${path} ergab Status: ${res.status}`);
@@ -627,21 +618,6 @@
       }
     }
     
-    // Check cache as absolute last resort
-    if (key) {
-      const cached = localStorage.getItem(`cache_${key}`);
-      if (cached) {
-        try {
-          const data = JSON.parse(cached);
-          if (data) {
-            console.log(`Nutze Cache für ${key} als Fallback.`);
-            return data;
-          }
-        } catch (e) {
-          console.error(`Fehler beim Parsen des Caches für ${key}`, e);
-        }
-      }
-    }
     return null;
   }
 
@@ -666,45 +642,16 @@
 
     // Build a list of possible paths
     const possibleTimelinePaths = [
-      './data/timeline.json',
-      'data/timeline.json',
       '/data/timeline.json',
-      'timeline.json',
-      '../data/timeline.json'
+      './data/timeline.json',
+      'data/timeline.json'
     ];
-
-    // Add path based on current folder name to handle GitHub project subfolders
-    const currentFolder = window.location.pathname.split('/').slice(0, -1).join('/');
-    if (currentFolder) {
-      possibleTimelinePaths.push(`${currentFolder}/data/timeline.json`);
-    }
-
-    // Add GitHub Pages specific path
-    if (window.location.hostname.includes('github.io')) {
-      const basePath = window.location.pathname.split('/')[1];
-      if (basePath) {
-        possibleTimelinePaths.unshift(`/${basePath}/data/timeline.json`);
-      }
-    }
 
     const possibleSeatmapPaths = [
-      './data/seatmap_mapping.json',
-      'data/seatmap_mapping.json',
       '/data/seatmap_mapping.json',
-      'seatmap_mapping.json',
-      '../data/seatmap_mapping.json'
+      './data/seatmap_mapping.json',
+      'data/seatmap_mapping.json'
     ];
-    if (currentFolder) {
-      possibleSeatmapPaths.push(`${currentFolder}/data/seatmap_mapping.json`);
-    }
-
-    // Add GitHub Pages specific path
-    if (window.location.hostname.includes('github.io')) {
-      const basePath = window.location.pathname.split('/')[1];
-      if (basePath) {
-        possibleSeatmapPaths.unshift(`/${basePath}/data/seatmap_mapping.json`);
-      }
-    }
 
     console.log("Starting automatic file discovery...");
     state.timeline = await loadJsonWithFallback(possibleTimelinePaths, 'timeline');
@@ -764,7 +711,6 @@
       reader.onload = () => {
         try {
           state.timeline = JSON.parse(reader.result);
-          localStorage.setItem('cache_timeline', reader.result);
           if (loaderStatus) loaderStatus.textContent = 'timeline.json geladen.';
           tryManualLoad();
         } catch {
@@ -783,7 +729,6 @@
       reader.onload = () => {
         try {
           state.seatmap = JSON.parse(reader.result);
-          localStorage.setItem('cache_seatmap', reader.result);
           if (loaderStatus) loaderStatus.textContent = 'seatmap_mapping.json geladen.';
           tryManualLoad();
         } catch {
