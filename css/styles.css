@@ -303,6 +303,7 @@ a:hover {
   .projects-page-body {
     background-attachment: scroll;
     background-image: url('../assets/logo-bg-mobile.png');
+    background-position: center top;
   }
 }
 
@@ -1132,6 +1133,7 @@ a:hover {
   .project-detail-page {
     background-attachment: scroll;
     background-image: url('../assets/logo-bg-mobile.png');
+    background-position: center top;
   }
 }
 
@@ -1280,6 +1282,7 @@ a:hover {
   .site-header nav {
     flex-direction: column;
     gap: var(--space-md);
+    padding: var(--space-md);
   }
 
   .nav-links {
@@ -1331,6 +1334,7 @@ a:hover {
 
   .home-hero__content {
     max-width: 100%;
+    padding: 0 var(--space-md);
   }
 
   .home-hero__subtitle {
@@ -1348,6 +1352,46 @@ a:hover {
 
   .home-hero__decor {
     display: none;
+  }
+
+  .project-hero {
+    padding: var(--space-3xl) var(--space-md) var(--space-xl);
+  }
+
+  .project-detail-title {
+    font-size: clamp(2rem, 8vw, 3rem);
+    text-align: center;
+  }
+
+  .project-badges {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+
+  .project-info-card {
+    padding: var(--space-lg);
+  }
+
+  .project-info-card h3 {
+    font-size: 1.3rem;
+  }
+
+  .project-sections-grid {
+    padding: 0 var(--space-md);
+  }
+
+  .hero-projects__title {
+    font-size: clamp(2rem, 8vw, 3.5rem);
+    padding: 0 var(--space-md);
+  }
+
+  .hero-projects__info {
+    padding: 0 var(--space-md);
+  }
+
+  .page-content {
+    padding: 0 var(--space-md);
   }
 }
 
@@ -1424,5 +1468,56 @@ a:hover {
 
   .list li {
     padding-left: 1.5rem;
+  }
+
+  .project-detail-title {
+    font-size: clamp(1.8rem, 10vw, 2.5rem);
+  }
+
+  .project-info-card {
+    padding: var(--space-md);
+  }
+
+  .project-info-card h3 {
+    font-size: 1.1rem;
+  }
+
+  .project-info-card p {
+    font-size: 0.9rem;
+  }
+
+  .action-buttons-container .btn {
+    width: 100%;
+    padding: 0.85rem 1.25rem;
+  }
+
+  .social-icons-row {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .social-icon-btn {
+    width: 50px;
+    height: 50px;
+  }
+
+  .hero-projects__title {
+    font-size: clamp(1.8rem, 10vw, 2.5rem);
+  }
+
+  .project-card-image {
+    height: 250px;
+  }
+
+  .project-card-overlay {
+    padding: var(--space-md);
+  }
+
+  .project-title {
+    font-size: 1.5rem;
+  }
+
+  .project-description {
+    font-size: 0.85rem;
   }
 }
