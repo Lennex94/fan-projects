@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Join Project - Together, Together - FanProjects</title>
   <meta name="description" content="Select your seat to join the Harry Styles fanproject 'Together, Together' (Amsterdam, 16 May 2026)." />
-  <link rel="stylesheet" href="./css/styles.css?v=16" />
+  <link rel="stylesheet" href="./css/styles.css?v=21" />
   <style>
     .seat-shell {
       max-width: 860px;
@@ -270,7 +270,7 @@
           </div>
 
           <div class="seat-actions" style="margin-top: 40px;">
-            <button type="submit" class="btn primary form-submit" id="submitBtn" disabled>Confirm seat</button>
+            <button type="button" class="btn primary form-submit" id="submitBtn" disabled>Confirm seat</button>
           </div>
         </form>
       </div>
@@ -535,7 +535,7 @@
         }
       });
 
-    document.getElementById('seatForm').addEventListener('submit', function(e) {
+    document.getElementById('submitBtn').addEventListener('click', function(e) {
       e.preventDefault();
 
       const isStanding = state.tier === 'standing';
@@ -553,17 +553,10 @@
 
       localStorage.setItem('hs_together_seat', JSON.stringify(seatData));
 
-      if (isStanding) {
-        alert(`Success! Your standing area has been saved:
+      console.log('Seat saved:', seatData);
+      console.log('Redirecting to run page...');
 
-${seatData.blockLabel}`);
-      } else {
-        alert(`Success! Your seat has been saved:
-
-${seatData.blockLabel}
-Row ${seatData.row}, Seat ${seatData.seat}`);
-      }
-
+      // Direct redirect without alert
       window.location.href = './run-hs-together-together.html';
     });
 
