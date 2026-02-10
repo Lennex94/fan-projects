@@ -623,6 +623,7 @@
 
   function checkReady() {
     if (state.timeline && state.seatmap && state.seat) {
+      runLoader.hidden = true;
       enableStart();
       setStatus('Bereit. Drücke Start, sobald der Song beginnt.');
       return true;
