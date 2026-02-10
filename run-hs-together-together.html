@@ -3,32 +3,571 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Run - Together, Together</title>
-  <meta name="description" content="Fullscreen timeline playback for the fan lightshow." />
+  <title>Join Project - Together, Together - FanProjects</title>
+  <meta name="description" content="Select your seat to join the Harry Styles fanproject 'Together, Together' (Amsterdam, 16 May 2026)." />
   <link rel="stylesheet" href="./css/styles.css?v=21" />
+  <style>
+    .seat-shell {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 2.5rem 1.25rem 4rem;
+    }
+
+    .seat-hero {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .seat-hero h1 {
+      font-size: 2.4rem;
+      margin-bottom: 0.35rem;
+    }
+
+    .seat-hero p {
+      color: var(--text-secondary);
+      margin: 0;
+    }
+
+    .seat-loader {
+      display: none;
+      margin: 1.5rem 0 2rem;
+      padding: 1rem 0;
+      border-top: 1px solid rgba(255, 255, 255, 0.2);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .seat-loader.active {
+      display: grid;
+      gap: 0.75rem;
+    }
+
+    .seat-loader label {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--text-muted);
+    }
+
+    .tier-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin: 2rem 0 2.5rem;
+    }
+
+    .tier-card {
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 0.75rem 0;
+      color: var(--text-primary);
+      font-weight: 600;
+      text-align: left;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .tier-card:hover:not(:disabled) {
+      color: var(--primary-light);
+      border-color: rgba(255, 255, 255, 0.45);
+    }
+
+    .tier-card.active {
+      color: var(--primary-light);
+      border-color: var(--primary-light);
+    }
+
+    .tier-card:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .seat-form {
+      display: grid;
+      gap: 1.5rem;
+    }
+
+    .select-row {
+      display: none;
+      gap: 0.5rem;
+    }
+
+    .select-row.active {
+      display: grid;
+    }
+
+    .select-wrap {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+      padding-bottom: 1.25rem;
+    }
+
+    .select-wrap label {
+      display: block;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--text-muted);
+      margin-bottom: 0.5rem;
+    }
+
+    .select-wrap select {
+      width: 100%;
+      padding: 0.6rem 0.4rem;
+      border: none;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.35);
+      background: rgba(5, 6, 11, 0.65);
+      color: var(--text-primary);
+      font-size: 1rem;
+      border-radius: 6px;
+    }
+
+    .select-wrap select option {
+      background: #0a0d16;
+      color: #f9f7f3;
+    }
+
+    .select-wrap select:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+
+    .selection-summary {
+      display: none;
+      padding-top: 1.5rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .selection-summary.active {
+      display: block;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 0.75rem;
+    }
+
+    .summary-item {
+      padding: 0.5rem 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+    }
+
+    .summary-label {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    .summary-value {
+      font-weight: 600;
+      margin-top: 0.35rem;
+    }
+
+    .seat-actions {
+      display: flex;
+      justify-content: flex-start;
+      margin-top: 1rem;
+    }
+
+    .seat-submit {
+      min-width: 220px;
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--text-secondary);
+      margin-bottom: 1.5rem;
+    }
+
+    .back-link:hover {
+      color: var(--text-primary);
+    }
+  </style>
 </head>
 
-<body class="run-page project-detail-page">
-  <div id="screen" class="run-screen" aria-hidden="true"></div>
-  <button id="startBtn" class="run-start" type="button" disabled>Loading...</button>
+<body class="project-detail-page">
+  <header class="site-header site-header--transparent">
+    <nav>
+      <a class="brand" href="./index.html" aria-label="Home">
+        <span class="brand-name">FanProjects</span>
+      </a>
 
-  <div id="runLoader" class="run-loader" hidden>
-    <div class="run-loader-card">
-      <h2>PROJECT FILES COULD NOT BE LOADED</h2>
-      <p class="text-muted" style="font-size: 0.9rem; margin-bottom: 25px;">The files could not be loaded automatically from the server. Please upload them manually.</p>
+      <div class="nav-links">
+        <a href="./index.html">Home</a>
+        <a class="active" href="./projects.html">Projects</a>
+        <a href="./contact.html">Contact</a>
+      </div>
+    </nav>
+  </header>
 
-      <label for="timelineFile">timeline.json</label>
-      <input id="timelineFile" type="file" accept="application/json" />
+  <main class="project-page-content">
+    <section class="seat-shell animate-fade-up">
+      <a href="./project-hs-together-together.html" class="back-link">← Back to project</a>
 
-      <label for="seatmapFile">seatmap_mapping.json</label>
-      <input id="seatmapFile" type="file" accept="application/json" />
+      <div class="project-hero">
+        <h1 class="project-detail-title">SELECT YOUR SEAT</h1>
+        <p style="color: rgba(255, 255, 255, 0.9); margin-bottom: 40px;">Choose your tier, block, row, and seat to join the lightshow.</p>
+      </div>
 
-      <p id="loaderStatus" style="margin-top: 25px; color: #00C4CC; font-weight: 600; font-size: 0.85rem; letter-spacing: 0.05em;">WAITING FOR FILES...</p>
+      <div class="project-info-card" style="max-width: 800px; margin: 0 auto;">
+        <div class="seat-loader" id="seatLoader">
+          <strong>Seat data not loaded.</strong>
+          <p class="muted">If you opened this file directly, your browser blocks the data file. Please upload the seatmap JSON.</p>
+          <label for="seatFile">Load seatmap_mapping.json</label>
+          <input id="seatFile" type="file" accept="application/json" />
+        </div>
+
+        <div class="tier-grid" role="group" aria-label="Choose tier" style="display: flex; gap: 15px; margin-bottom: 30px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 20px;">
+          <button class="tier-card" type="button" data-tier="upper" disabled style="background: transparent; border: none; color: #fff; padding: 10px 20px; font-weight: 600; cursor: pointer; border-radius: 100px; transition: all 0.3s; flex: 1;">Upper tier</button>
+          <button class="tier-card" type="button" data-tier="lower" disabled style="background: transparent; border: none; color: #fff; padding: 10px 20px; font-weight: 600; cursor: pointer; border-radius: 100px; transition: all 0.3s; flex: 1;">Lower tier</button>
+          <button class="tier-card" type="button" data-tier="standing" disabled style="background: transparent; border: none; color: #fff; padding: 10px 20px; font-weight: 600; cursor: pointer; border-radius: 100px; transition: all 0.3s; flex: 1;">Standing</button>
+        </div>
+
+        <form id="seatForm" class="form">
+          <div class="select-row" id="blockRow" style="display: none; margin-bottom: 20px;">
+            <div class="form-group">
+              <label id="blockLabel">Block</label>
+              <select id="blockSelect" disabled></select>
+            </div>
+          </div>
+
+          <div class="select-row" id="rowRow" style="display: none; margin-bottom: 20px;">
+            <div class="form-group">
+              <label>Row</label>
+              <select id="rowSelect" disabled></select>
+            </div>
+          </div>
+
+          <div class="select-row" id="seatRow" style="display: none; margin-bottom: 20px;">
+            <div class="form-group">
+              <label>Seat</label>
+              <select id="seatSelect" disabled></select>
+            </div>
+          </div>
+
+          <div id="selectionSummary" class="selection-summary" style="display: none; margin-top: 30px; padding-top: 20px; border-top: 1px solid rgba(255, 255, 255, 0.1);">
+            <div class="summary-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px;">
+              <div class="summary-item">
+                <div class="summary-label" style="font-size: 0.7rem; color: #00C4CC; text-transform: uppercase;">Tier</div>
+                <div class="summary-value" id="summaryTier" style="font-weight: 600;">-</div>
+              </div>
+              <div class="summary-item">
+                <div class="summary-label" style="font-size: 0.7rem; color: #00C4CC; text-transform: uppercase;">Block</div>
+                <div class="summary-value" id="summaryBlock" style="font-weight: 600;">-</div>
+              </div>
+              <div class="summary-item">
+                <div class="summary-label" style="font-size: 0.7rem; color: #00C4CC; text-transform: uppercase;">Row</div>
+                <div class="summary-value" id="summaryRow" style="font-weight: 600;">-</div>
+              </div>
+              <div class="summary-item">
+                <div class="summary-label" style="font-size: 0.7rem; color: #00C4CC; text-transform: uppercase;">Seat</div>
+                <div class="summary-value" id="summarySeat" style="font-weight: 600;">-</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="seat-actions" style="margin-top: 40px;">
+            <button type="submit" class="btn primary form-submit" id="submitBtn" disabled>Confirm seat</button>
+          </div>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container text-center">
+      <p>&copy; <span id="year"></span> FanProjects. Made by fans, for fans.</p>
     </div>
-  </div>
+  </footer>
 
-  <div id="runStatus" class="run-status"></div>
+  <script src="./js/main.js?v=16"></script>
+  <script>
+    const tierButtons = Array.from(document.querySelectorAll('.tier-card'));
+    const blockRow = document.getElementById('blockRow');
+    const rowRow = document.getElementById('rowRow');
+    const seatRow = document.getElementById('seatRow');
+    const blockSelect = document.getElementById('blockSelect');
+    const rowSelect = document.getElementById('rowSelect');
+    const seatSelect = document.getElementById('seatSelect');
+    const submitBtn = document.getElementById('submitBtn');
+    const summary = document.getElementById('selectionSummary');
+    const seatLoader = document.getElementById('seatLoader');
+    const seatFile = document.getElementById('seatFile');
+    const blockLabel = document.getElementById('blockLabel');
 
-  <script src="./js/run-hs-together-together.js?v=6"></script>
+    const summaryTier = document.getElementById('summaryTier');
+    const summaryBlock = document.getElementById('summaryBlock');
+    const summaryRow = document.getElementById('summaryRow');
+    const summarySeat = document.getElementById('summarySeat');
+
+    const standingNames = {
+      'GA-FRONT-L': 'Front GA Left',
+      'GA-FRONT-R': 'Front GA Right',
+      'GA-REAR': 'Rear GA',
+      'GA-CIRCLE': 'Circle',
+      'GA-KISS': 'Kiss',
+      'GA-DISCO': 'Disco',
+      'GA-SQUARE': 'Square'
+    };
+
+    const state = {
+      tiers: { upper: [], lower: [], standing: [] },
+      sections: {},
+      tier: '',
+      block: '',
+      row: '',
+      seat: ''
+    };
+
+    const valueSort = (a, b) => {
+      const na = Number(a);
+      const nb = Number(b);
+      if (!Number.isNaN(na) && !Number.isNaN(nb)) {
+        return na - nb;
+      }
+      return String(a).localeCompare(String(b));
+    };
+
+    const labelForSection = (name) => {
+      if (name.startsWith('GA-')) return standingNames[name] || name.replace('GA-', '').replace(/-/g, ' ');
+      if (name.startsWith('1-')) return name.slice(2);
+      if (name.startsWith('2-')) return name.slice(2);
+      return name;
+    };
+
+    function resetSelect(select, placeholder) {
+      select.innerHTML = '';
+      const opt = document.createElement('option');
+      opt.value = '';
+      opt.textContent = placeholder;
+      select.appendChild(opt);
+    }
+
+    function updateSummary() {
+      const isStanding = state.tier === 'standing';
+      summaryTier.textContent = state.tier ? state.tier.charAt(0).toUpperCase() + state.tier.slice(1) + ' tier' : '-';
+      summaryBlock.textContent = state.block ? labelForSection(state.block) : '-';
+      summaryRow.textContent = isStanding ? 'Standing' : (state.row || '-');
+      summarySeat.textContent = isStanding ? 'N/A' : (state.seat || '-');
+
+      const complete = isStanding ? (state.tier && state.block) : (state.tier && state.block && state.row && state.seat);
+      submitBtn.disabled = !complete;
+      summary.style.display = complete ? 'block' : 'none';
+    }
+
+    function setTier(tier) {
+      state.tier = tier;
+      state.block = '';
+      state.row = '';
+      state.seat = '';
+
+      tierButtons.forEach(btn => {
+        const active = btn.dataset.tier === tier;
+        btn.style.background = active ? '#00C4CC' : 'transparent';
+        btn.style.color = active ? '#000' : '#fff';
+      });
+
+      resetSelect(blockSelect, tier === 'standing' ? 'Select standing area' : 'Select your block');
+      resetSelect(rowSelect, 'Select your row');
+      resetSelect(seatSelect, 'Select your seat');
+
+      state.tiers[tier].forEach(sectionName => {
+        const option = document.createElement('option');
+        option.value = sectionName;
+        option.textContent = labelForSection(sectionName);
+        blockSelect.appendChild(option);
+      });
+
+      blockLabel.textContent = tier === 'standing' ? 'Standing area' : 'Block';
+      blockSelect.disabled = false;
+      rowSelect.disabled = true;
+      seatSelect.disabled = true;
+
+      blockRow.style.display = 'block';
+      rowRow.style.display = 'none';
+      seatRow.style.display = 'none';
+
+      updateSummary();
+    }
+
+    function setBlock(blockName) {
+      state.block = blockName;
+      state.row = '';
+      state.seat = '';
+
+      resetSelect(rowSelect, 'Select your row');
+      resetSelect(seatSelect, 'Select your seat');
+
+      if (state.tier === 'standing') {
+        rowSelect.disabled = true;
+        seatSelect.disabled = true;
+        rowRow.style.display = 'none';
+        seatRow.style.display = 'none';
+        updateSummary();
+        return;
+      }
+
+      const rows = Object.keys(state.sections[blockName]?.rows || {}).sort(valueSort);
+      rows.forEach(row => {
+        const option = document.createElement('option');
+        option.value = row;
+        option.textContent = row;
+        rowSelect.appendChild(option);
+      });
+
+      rowSelect.disabled = false;
+      seatSelect.disabled = true;
+
+      rowRow.style.display = 'block';
+      seatRow.style.display = 'none';
+
+      updateSummary();
+    }
+
+    function setRow(row) {
+      state.row = row;
+      state.seat = '';
+
+      resetSelect(seatSelect, 'Select your seat');
+
+      const seats = (state.sections[state.block]?.rows[row] || []).slice().sort(valueSort);
+      seats.forEach(seat => {
+        const option = document.createElement('option');
+        option.value = seat;
+        option.textContent = seat;
+        seatSelect.appendChild(option);
+      });
+
+      seatSelect.disabled = false;
+      seatRow.style.display = 'block';
+
+      updateSummary();
+    }
+
+    function enableTiers() {
+      tierButtons.forEach(btn => {
+        btn.disabled = false;
+      });
+    }
+
+    function initSeatData(data) {
+      if (!data || !data.seats) {
+        console.error('Invalid data format: missing seats array');
+        return;
+      }
+      const sections = {};
+      data.seats.forEach(seat => {
+        const section = seat.section;
+        if (!section) return;
+        if (!sections[section]) {
+          sections[section] = { rows: {} };
+        }
+        const rowKey = String(seat.row || '');
+        const seatKey = String(seat.seat || '');
+        if (!sections[section].rows[rowKey]) {
+          sections[section].rows[rowKey] = [];
+        }
+        if (!sections[section].rows[rowKey].includes(seatKey)) {
+          sections[section].rows[rowKey].push(seatKey);
+        }
+      });
+
+      state.sections = sections;
+      const sectionNames = Object.keys(sections);
+      state.tiers.upper = sectionNames.filter(name => /^2-\d{3}$/.test(name)).sort();
+      state.tiers.lower = sectionNames.filter(name => /^1-\d{3}$/.test(name)).sort();
+      state.tiers.standing = sectionNames.filter(name => name.startsWith('GA-')).sort();
+
+      enableTiers();
+      seatLoader.classList.remove('active');
+      console.log('Seat data initialized:', sectionNames.length, 'sections');
+    }
+
+    tierButtons.forEach(btn => {
+      btn.addEventListener('click', () => setTier(btn.dataset.tier));
+    });
+
+    blockSelect.addEventListener('change', (e) => {
+      if (!e.target.value) return;
+      setBlock(e.target.value);
+    });
+
+    rowSelect.addEventListener('change', (e) => {
+      if (!e.target.value) return;
+      setRow(e.target.value);
+    });
+
+    seatSelect.addEventListener('change', (e) => {
+      state.seat = e.target.value;
+      updateSummary();
+    });
+
+    seatFile.addEventListener('change', (event) => {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const data = JSON.parse(reader.result);
+          initSeatData(data);
+        } catch (err) {
+          alert('Could not read the seatmap JSON.');
+        }
+      };
+      reader.readAsText(file);
+    });
+
+    fetch('./data/seatmap_mapping.json')
+      .then(res => {
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return res.json();
+      })
+      .then(initSeatData)
+      .catch(err => {
+        console.error('Failed to load seat data:', err);
+        seatLoader.classList.add('active');
+        // Falls der fetch fehlschlägt, prüfen wir ob wir lokal auf dem Dateisystem sind
+        if (window.location.protocol === 'file:') {
+          console.warn('CORS blocks fetch on file:// protocol. Please use a local server or upload the file manually.');
+        }
+      });
+
+    document.getElementById('seatForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      const isStanding = state.tier === 'standing';
+      if (!state.tier || !state.block) return;
+      if (!isStanding && (!state.row || !state.seat)) return;
+
+      const seatData = {
+        tier: state.tier,
+        block: state.block,
+        blockLabel: labelForSection(state.block),
+        row: isStanding ? null : state.row,
+        seat: isStanding ? null : state.seat,
+        timestamp: new Date().toISOString()
+      };
+
+      localStorage.setItem('hs_together_seat', JSON.stringify(seatData));
+
+      if (isStanding) {
+        alert(`Success! Your standing area has been saved:
+
+${seatData.blockLabel}`);
+      } else {
+        alert(`Success! Your seat has been saved:
+
+${seatData.blockLabel}
+Row ${seatData.row}, Seat ${seatData.seat}`);
+      }
+
+      window.location.href = './run-hs-together-together.html';
+    });
+
+    document.getElementById('year').textContent = new Date().getFullYear();
+  </script>
 </body>
 </html>
