@@ -598,11 +598,18 @@
     for (const path of paths) {
       try {
         console.log(`Versuche zu laden: ${path}`);
-        // Cache-Busting für GitHub Pages
-        const url = window.location.hostname.includes('github') ? `${path}?t=${Date.now()}` : path;
+        
+        // Construct URL
+        let url = path;
+        if (window.location.hostname.includes('github')) {
+          url = `${path}?t=${Date.now()}`;
+        }
+        
         const res = await fetch(url);
         if (res.ok) {
           const data = await res.json();
+          console.log(`Erfolgreich geladen: ${path}`);
+          
           if (key) {
             try {
               localStorage.setItem(`cache_${key}`, JSON.stringify(data));
@@ -611,7 +618,6 @@
               console.warn('LocalStorage Cache fehlgeschlagen', e);
             }
           }
-          console.log(`Erfolgreich geladen: ${path}`);
           return data;
         } else {
           console.warn(`Fetch für ${path} ergab Status: ${res.status}`);
@@ -621,13 +627,16 @@
       }
     }
     
+    // Check cache as absolute last resort
     if (key) {
       const cached = localStorage.getItem(`cache_${key}`);
       if (cached) {
-        console.log(`Nutze Cache für ${key}`);
         try {
           const data = JSON.parse(cached);
-          if (data) return data;
+          if (data) {
+            console.log(`Nutze Cache für ${key} als Fallback.`);
+            return data;
+          }
         } catch (e) {
           console.error(`Fehler beim Parsen des Caches für ${key}`, e);
         }
@@ -655,47 +664,70 @@
       return;
     }
 
-    // Absolute Pfade basierend auf der aktuellen URL versuchen
-    const baseUrl = window.location.href.split('/').slice(0, -1).join('/');
-    const timelinePaths = [
-      'data/timeline.json', 
-      './data/timeline.json', 
-      `${baseUrl}/data/timeline.json`,
-      'timeline.json'
-    ];
-    const seatmapPaths = [
-      'data/seatmap_mapping.json', 
-      './data/seatmap_mapping.json', 
-      `${baseUrl}/data/seatmap_mapping.json`,
-      'seatmap_mapping.json'
+    // Build a list of possible paths
+    const possibleTimelinePaths = [
+      './data/timeline.json',
+      'data/timeline.json',
+      '/data/timeline.json',
+      'timeline.json',
+      '../data/timeline.json'
     ];
 
-    state.timeline = await loadJsonWithFallback(timelinePaths, 'timeline');
-    state.seatmap = await loadJsonWithFallback(seatmapPaths, 'seatmap');
+    // Add path based on current folder name to handle GitHub project subfolders
+    const currentFolder = window.location.pathname.split('/').slice(0, -1).join('/');
+    if (currentFolder) {
+      possibleTimelinePaths.push(`${currentFolder}/data/timeline.json`);
+    }
+
+    // Add GitHub Pages specific path
+    if (window.location.hostname.includes('github.io')) {
+      const basePath = window.location.pathname.split('/')[1];
+      if (basePath) {
+        possibleTimelinePaths.unshift(`/${basePath}/data/timeline.json`);
+      }
+    }
+
+    const possibleSeatmapPaths = [
+      './data/seatmap_mapping.json',
+      'data/seatmap_mapping.json',
+      '/data/seatmap_mapping.json',
+      'seatmap_mapping.json',
+      '../data/seatmap_mapping.json'
+    ];
+    if (currentFolder) {
+      possibleSeatmapPaths.push(`${currentFolder}/data/seatmap_mapping.json`);
+    }
+
+    // Add GitHub Pages specific path
+    if (window.location.hostname.includes('github.io')) {
+      const basePath = window.location.pathname.split('/')[1];
+      if (basePath) {
+        possibleSeatmapPaths.unshift(`/${basePath}/data/seatmap_mapping.json`);
+      }
+    }
+
+    console.log("Starting automatic file discovery...");
+    state.timeline = await loadJsonWithFallback(possibleTimelinePaths, 'timeline');
+    state.seatmap = await loadJsonWithFallback(possibleSeatmapPaths, 'seatmap');
 
     if (!state.timeline || !state.seatmap) {
-      let missing = [];
+      const missing = [];
       if (!state.timeline) missing.push('timeline.json');
       if (!state.seatmap) missing.push('seatmap_mapping.json');
       
-      console.error('Fehlende Dateien:', missing);
-
-      // Case-Sensitive Fallbacks für GitHub
-      if (window.location.hostname.includes('github')) {
-        console.log("Versuche Case-Sensitive Fallbacks...");
-        if (!state.timeline) state.timeline = await loadJsonWithFallback(['Data/timeline.json'], 'timeline');
-        if (!state.seatmap) state.seatmap = await loadJsonWithFallback(['Data/seatmap_mapping.json'], 'seatmap');
+      console.error('Auto-load failed for:', missing);
+      
+      // Update UI with specific failure info
+      if (loaderStatus) {
+        loaderStatus.style.color = "#ff4d6d";
+        loaderStatus.textContent = `FEHLER: ${missing.join(' & ')} nicht gefunden.`;
       }
 
-      if (!state.timeline || !state.seatmap) {
-        runLoader.hidden = false;
-        if (window.location.protocol === 'file:') {
-          setStatus('Browser blockiert lokale Dateien. Bitte manuell laden.');
-        } else {
-          setStatus(`Dateien konnten nicht automatisch geladen werden.`);
-        }
-        return;
-      }
+      runLoader.hidden = false;
+      setStatus(window.location.protocol === 'file:' 
+        ? 'Lokal blockiert. Bitte Dateien manuell wählen.' 
+        : 'Dateien im "data" Ordner nicht gefunden.');
+      return;
     }
 
     state.durationMs = Math.max(1000, state.timeline.meta?.durationMs ?? 60000);
