@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Admin – Show Sync</title>
+  <link rel="stylesheet" href="./css/styles.css" />
+  <style>
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #05060b;
+      font-family: 'ITC Franklin Gothic LT Medium', sans-serif;
+      color: #f9f7f3;
+    }
+
+    .admin-wrap {
+      width: 100%;
+      max-width: 480px;
+      padding: 2rem 1.5rem;
+    }
+
+    .admin-title {
+      font-size: 1.1rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: rgba(249,247,243,0.4);
+      margin-bottom: 0.5rem;
+    }
+
+    .admin-headline {
+      font-size: 2rem;
+      font-weight: 700;
+      margin: 0 0 2rem 0;
+    }
+
+    /* PIN-Eingabe */
+    #pinSection {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    #pinSection label {
+      font-size: 0.85rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: rgba(249,247,243,0.5);
+    }
+
+    #pinInput {
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid rgba(255,255,255,0.3);
+      color: #f9f7f3;
+      font-size: 1.5rem;
+      letter-spacing: 0.3em;
+      padding: 0.5rem 0;
+      width: 100%;
+      text-align: center;
+      outline: none;
+    }
+
+    #pinInput:focus {
+      border-bottom-color: #ff3d7f;
+    }
+
+    /* Hauptbereich */
+    #mainSection {
+      display: none;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .status-box {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 4px;
+      padding: 1.25rem;
+      font-size: 1.1rem;
+      font-weight: 600;
+      min-height: 3.5rem;
+      display: flex;
+      align-items: center;
+    }
+
+    .status-box.running {
+      border-color: #00C4CC;
+      color: #00C4CC;
+    }
+
+    .status-box.waiting {
+      color: rgba(249,247,243,0.6);
+    }
+
+    .status-box.error {
+      border-color: #ff4d6d;
+      color: #ff4d6d;
+    }
+
+    .btn-start {
+      background: #ff3d7f;
+      color: #fff;
+      font-size: 1.8rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      padding: 1.25rem 2rem;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      width: 100%;
+      transition: opacity 0.2s, transform 0.1s;
+      text-transform: uppercase;
+    }
+
+    .btn-start:hover:not(:disabled) {
+      opacity: 0.9;
+    }
+
+    .btn-start:active:not(:disabled) {
+      transform: scale(0.98);
+    }
+
+    .btn-start:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .btn-reset {
+      background: transparent;
+      color: rgba(249,247,243,0.4);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 4px;
+      padding: 0.75rem;
+      width: 100%;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: all 0.2s;
+    }
+
+    .btn-reset:hover {
+      color: rgba(249,247,243,0.8);
+      border-color: rgba(255,255,255,0.35);
+    }
+
+    .info-row {
+      font-size: 0.8rem;
+      color: rgba(249,247,243,0.3);
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .btn-confirm {
+      background: #ff3d7f;
+      color: #fff;
+      font-size: 1rem;
+      padding: 0.75rem 1.5rem;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      width: 100%;
+    }
+  </style>
+</head>
+<body>
+  <div class="admin-wrap">
+    <p class="admin-title">FanProjects</p>
+    <h1 class="admin-headline">Show Admin</h1>
+
+    <!-- PIN-Schutz -->
+    <div id="pinSection">
+      <label for="pinInput">Admin-PIN eingeben</label>
+      <input
+        id="pinInput"
+        type="password"
+        inputmode="numeric"
+        maxlength="6"
+        placeholder="••••"
+        autocomplete="off"
+      />
+      <button class="btn-confirm" id="pinConfirm">Weiter →</button>
+      <p id="pinError" style="color:#ff4d6d; font-size:0.85rem; min-height:1.2em;"></p>
+    </div>
+
+    <!-- Hauptbereich (nach PIN) -->
+    <div id="mainSection">
+      <div id="statusBox" class="status-box waiting">Verbinde mit Server...</div>
+
+      <button id="btnStart" class="btn-start" disabled>
+        ▶ SHOW STARTEN
+      </button>
+
+      <button id="btnReset" class="btn-reset">
+        ↺ Show zurücksetzen (Stop)
+      </button>
+
+      <div class="info-row">
+        <span id="offsetInfo">Offset: –</span>
+        <span id="pollInfo">Letzter Check: –</span>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="./js/admin.js"></script>
+</body>
+</html>
