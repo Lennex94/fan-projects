@@ -5,16 +5,673 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Together, Together - FanProjects</title>
   <meta name="description" content="A synchronized lightshow experience for Harry Styles fans. Register your seat and be part of something unforgettable." />
-  <link rel="stylesheet" href="./css/styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --black: #05060A;
+      --deep: #0A0C14;
+      --surface: #0F1120;
+      --card: #111428;
+      --border: rgba(255,255,255,0.08);
+      --pink: #FF3D7F;
+      --teal: #00E5D6;
+      --purple: #B44FFF;
+      --amber: #FFB830;
+      --text: #F0EEF8;
+      --text-dim: rgba(240,238,248,0.55);
+      --text-dimmer: rgba(240,238,248,0.32);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background-color: var(--black);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 16px;
+      line-height: 1.65;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 70% 50% at 20% 10%, rgba(180,79,255,0.13) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 40% at 80% 85%, rgba(255,61,127,0.10) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 60% at 60% 40%, rgba(0,229,214,0.06) 0%, transparent 60%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    body > * { position: relative; z-index: 1; }
+
+    /* ── Nav ── */
+    .site-header {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      padding: 0 2rem;
+      background: rgba(5,6,10,0.75);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .site-header nav {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 64px;
+    }
+
+    .brand { text-decoration: none; }
+
+    .brand-name {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.4rem;
+      letter-spacing: 0.08em;
+      color: var(--text);
+    }
+
+    .nav-links { display: flex; gap: 2rem; }
+
+    .nav-links a {
+      text-decoration: none;
+      color: var(--text-dim);
+      font-size: 0.875rem;
+      font-weight: 500;
+      letter-spacing: 0.03em;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover { color: var(--text); }
+    .nav-links a.active { color: var(--pink); }
+
+    /* ── Layout ── */
+    .project-page-content {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 2rem 7rem;
+    }
+
+    /* ── Hero ── */
+    .project-hero {
+      padding-top: 140px;
+      padding-bottom: 4rem;
+      text-align: center;
+    }
+
+    .project-badges {
+      display: flex;
+      gap: 0.75rem;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 1.5rem;
+    }
+
+    .project-badge {
+      font-size: 0.68rem;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      padding: 0.35rem 0.9rem;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.04);
+      color: var(--text-dim);
+    }
+
+    .project-badge:first-child {
+      border-color: rgba(255,61,127,0.4);
+      color: var(--pink);
+      background: rgba(255,61,127,0.08);
+    }
+
+    .project-detail-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(4rem, 12vw, 9rem);
+      letter-spacing: 0.04em;
+      line-height: 0.95;
+      text-shadow:
+        0 0 60px rgba(255,61,127,0.35),
+        0 0 120px rgba(180,79,255,0.2);
+      margin-bottom: 1.1rem;
+    }
+
+    .hero-subtitle {
+      font-size: 1rem;
+      color: var(--text-dim);
+      font-weight: 300;
+      letter-spacing: 0.04em;
+      max-width: 480px;
+      margin: 0 auto;
+    }
+
+    /* ── Grid ── */
+    .project-sections-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.25rem;
+      margin-bottom: 1.25rem;
+    }
+
+    /* ── Cards ── */
+    .project-info-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 1.875rem;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.3s, transform 0.3s, box-shadow 0.3s;
+    }
+
+    .project-info-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.025) 0%, transparent 55%);
+      pointer-events: none;
+      border-radius: inherit;
+    }
+
+    .project-info-card:hover {
+      border-color: rgba(255,255,255,0.13);
+      transform: translateY(-2px);
+    }
+
+    .project-info-card.accent-pink   { border-top: 2px solid var(--pink); }
+    .project-info-card.accent-teal   { border-top: 2px solid var(--teal); }
+    .project-info-card.accent-purple { border-top: 2px solid var(--purple); }
+    .project-info-card.accent-amber  { border-top: 2px solid var(--amber); }
+
+    .project-info-card.accent-pink:hover   { box-shadow: 0 0 40px rgba(255,61,127,0.09); }
+    .project-info-card.accent-teal:hover   { box-shadow: 0 0 40px rgba(0,229,214,0.09); }
+    .project-info-card.accent-purple:hover { box-shadow: 0 0 40px rgba(180,79,255,0.09); }
+    .project-info-card.accent-amber:hover  { box-shadow: 0 0 40px rgba(255,184,48,0.09); }
+
+    /* ── Card heading ── */
+    .card-heading {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.3rem;
+      letter-spacing: 0.08em;
+      color: var(--text);
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.55rem;
+    }
+
+    .dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      display: inline-block;
+      flex-shrink: 0;
+    }
+
+    .dot-pink   { background: var(--pink);   box-shadow: 0 0 8px var(--pink); }
+    .dot-teal   { background: var(--teal);   box-shadow: 0 0 8px var(--teal); }
+    .dot-purple { background: var(--purple); box-shadow: 0 0 8px var(--purple); }
+    .dot-amber  { background: var(--amber);  box-shadow: 0 0 8px var(--amber); }
+
+    .card-text {
+      color: var(--text-dim);
+      font-size: 0.9375rem;
+      line-height: 1.72;
+      margin-bottom: 0.875rem;
+    }
+
+    .card-text:last-of-type { margin-bottom: 0; }
+
+    /* ── Steps ── */
+    .steps-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.875rem;
+    }
+
+    .steps-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.875rem;
+      color: var(--text-dim);
+      font-size: 0.9375rem;
+      line-height: 1.65;
+    }
+
+    .step-num {
+      flex-shrink: 0;
+      width: 24px; height: 24px;
+      border-radius: 50%;
+      background: rgba(0,229,214,0.1);
+      border: 1px solid rgba(0,229,214,0.3);
+      color: var(--teal);
+      font-size: 0.7rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 0.15rem;
+    }
+
+    .steps-list strong { color: var(--text); }
+
+    /* ── Help list ── */
+    .help-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.625rem;
+      margin-bottom: 1.1rem;
+    }
+
+    .help-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.625rem;
+      color: var(--text-dim);
+      font-size: 0.9375rem;
+      line-height: 1.65;
+    }
+
+    .help-list li::before {
+      content: '→';
+      color: var(--pink);
+      flex-shrink: 0;
+      font-size: 0.85rem;
+      margin-top: 0.1rem;
+    }
+
+    /* ── Status pill ── */
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(180,79,255,0.1);
+      border: 1px solid rgba(180,79,255,0.3);
+      border-radius: 999px;
+      padding: 0.3rem 0.875rem;
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--purple);
+      margin-bottom: 1rem;
+    }
+
+    .status-pulse {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--purple);
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 0 0 rgba(180,79,255,0.5); }
+      50% { opacity: 0.8; transform: scale(0.9); box-shadow: 0 0 0 5px rgba(180,79,255,0); }
+    }
+
+    /* ── Progress ── */
+    .progress-wrap { margin: 1.25rem 0; }
+
+    .progress-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.75rem;
+      color: var(--text-dimmer);
+      margin-bottom: 0.4rem;
+      font-weight: 500;
+    }
+
+    .progress-bar {
+      height: 5px;
+      background: rgba(255,255,255,0.06);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, var(--purple), var(--pink));
+      width: 0%;
+      transition: width 1.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .progress-fill.animated { width: 85%; }
+
+    /* ── Social ── */
+    .social-icons-row {
+      display: flex;
+      gap: 0.75rem;
+      margin: 1rem 0 1.25rem;
+      flex-wrap: wrap;
+    }
+
+    .social-icon-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 50px; height: 50px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      transition: background 0.2s, border-color 0.2s, transform 0.2s;
+      text-decoration: none;
+    }
+
+    .social-icon-btn:hover {
+      background: rgba(255,255,255,0.1);
+      border-color: rgba(255,255,255,0.18);
+      transform: translateY(-3px);
+    }
+
+    .social-icon-btn img { width: 24px; height: 24px; object-fit: contain; }
+
+    /* ── Buttons ── */
+    .action-buttons-container {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      margin-top: 1.375rem;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.7rem 1.4rem;
+      border-radius: 12px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.875rem;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      text-decoration: none;
+      transition: all 0.25s;
+      border: none;
+      cursor: pointer;
+    }
+
+    .btn.primary {
+      background: linear-gradient(135deg, var(--pink), #c0286a);
+      color: #fff;
+      box-shadow: 0 4px 20px rgba(255,61,127,0.3);
+    }
+
+    .btn.primary:hover {
+      box-shadow: 0 6px 30px rgba(255,61,127,0.5);
+      transform: translateY(-2px);
+    }
+
+    .btn.secondary {
+      background: rgba(255,255,255,0.05);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .btn.secondary:hover {
+      background: rgba(255,255,255,0.09);
+      border-color: rgba(255,255,255,0.18);
+      transform: translateY(-2px);
+    }
+
+    .drive-link {
+      color: var(--teal);
+      text-decoration: none;
+      font-weight: 500;
+      border-bottom: 1px solid rgba(0,229,214,0.3);
+      transition: border-color 0.2s;
+    }
+
+    .drive-link:hover { border-color: var(--teal); }
+
+    /* ── Right column stack ── */
+    .right-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    /* ── Sneak Peek ── */
+    .sneak-peek-section {
+      margin-top: 1.25rem;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 2.75rem 2.5rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .sneak-peek-section::before {
+      content: '';
+      position: absolute;
+      top: -80px; right: -80px;
+      width: 320px; height: 320px;
+      background: radial-gradient(circle, rgba(255,61,127,0.1) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .sneak-peek-section::after {
+      content: '';
+      position: absolute;
+      bottom: -60px; left: -60px;
+      width: 280px; height: 280px;
+      background: radial-gradient(circle, rgba(0,229,214,0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .sneak-peek-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-bottom: 0.875rem;
+    }
+
+    .sneak-peek-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2.5rem;
+      letter-spacing: 0.06em;
+      line-height: 1;
+    }
+
+    .preview-disclaimer {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: rgba(255,184,48,0.1);
+      border: 1px solid rgba(255,184,48,0.25);
+      border-radius: 999px;
+      padding: 0.3rem 0.875rem;
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--amber);
+      flex-shrink: 0;
+    }
+
+    .sneak-peek-description {
+      color: var(--text-dim);
+      font-size: 0.9375rem;
+      max-width: 620px;
+      margin-bottom: 2rem;
+      line-height: 1.72;
+      position: relative;
+    }
+
+    .video-placeholder {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      background: linear-gradient(135deg, #0c0e1c 0%, #10122a 100%);
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.07);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.3s;
+    }
+
+    .video-placeholder:hover { border-color: rgba(255,61,127,0.3); }
+
+    .video-placeholder::before {
+      content: '';
+      position: absolute;
+      inset: -60%;
+      background: conic-gradient(
+        from 0deg,
+        transparent 0deg,   rgba(255,61,127,0.035) 15deg,
+        transparent 30deg,  rgba(180,79,255,0.03) 60deg,
+        transparent 75deg,  rgba(0,229,214,0.03) 120deg,
+        transparent 135deg, rgba(255,61,127,0.03) 180deg,
+        transparent 195deg, rgba(180,79,255,0.025) 240deg,
+        transparent 255deg, rgba(0,229,214,0.025) 300deg,
+        transparent 315deg
+      );
+      animation: ray-spin 24s linear infinite;
+    }
+
+    @keyframes ray-spin {
+      from { transform: rotate(0deg); }
+      to   { transform: rotate(360deg); }
+    }
+
+    .play-btn {
+      position: relative;
+      width: 72px; height: 72px;
+      border-radius: 50%;
+      background: rgba(255,61,127,0.15);
+      border: 2px solid rgba(255,61,127,0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1rem;
+      transition: all 0.3s;
+    }
+
+    .video-placeholder:hover .play-btn {
+      background: rgba(255,61,127,0.25);
+      border-color: var(--pink);
+      box-shadow: 0 0 30px rgba(255,61,127,0.35);
+      transform: scale(1.06);
+    }
+
+    .play-icon {
+      width: 0; height: 0;
+      border-top: 12px solid transparent;
+      border-bottom: 12px solid transparent;
+      border-left: 20px solid var(--pink);
+      margin-left: 4px;
+    }
+
+    .video-placeholder-label {
+      position: relative;
+      text-align: center;
+    }
+
+    .video-placeholder-label strong {
+      display: block;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 0.3rem;
+    }
+
+    .video-placeholder-label span {
+      font-size: 0.78rem;
+      color: var(--text-dimmer);
+    }
+
+    .light-dots {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .light-dot {
+      position: absolute;
+      border-radius: 50%;
+      animation: dot-twinkle var(--d, 3s) ease-in-out infinite;
+      animation-delay: var(--dl, 0s);
+    }
+
+    @keyframes dot-twinkle {
+      0%, 100% { opacity: 0.2; transform: scale(1); }
+      50%       { opacity: 1;   transform: scale(1.6); }
+    }
+
+    /* ── Footer ── */
+    .footer {
+      border-top: 1px solid var(--border);
+      padding: 2rem;
+      text-align: center;
+    }
+
+    .footer p {
+      color: var(--text-dimmer);
+      font-size: 0.825rem;
+      letter-spacing: 0.03em;
+    }
+
+    /* ── Animations ── */
+    .animate-fade-up {
+      opacity: 0;
+      transform: translateY(24px);
+      animation: fade-up 0.7s ease forwards;
+    }
+
+    @keyframes fade-up {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    [data-reveal] {
+      opacity: 0;
+      transform: translateY(22px);
+      transition: opacity 0.65s ease, transform 0.65s ease;
+    }
+
+    [data-reveal].revealed {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 768px) {
+      .project-sections-grid { grid-template-columns: 1fr; }
+      .project-page-content { padding: 0 1.25rem 4rem; }
+      .sneak-peek-section { padding: 2rem 1.5rem; }
+      .nav-links { gap: 1.25rem; }
+      .project-detail-title { font-size: clamp(3.5rem, 18vw, 5rem); }
+    }
+
+    @media (max-width: 480px) {
+      .nav-links a { font-size: 0.8rem; }
+    }
+  </style>
 </head>
 
 <body class="project-detail-page">
+
   <header class="site-header site-header--transparent">
     <nav>
       <a class="brand" href="./index.html" aria-label="Home">
         <span class="brand-name">FanProjects</span>
       </a>
-
       <div class="nav-links">
         <a href="./index.html">Home</a>
         <a class="active" href="./projects.html">Projects</a>
@@ -24,6 +681,8 @@
   </header>
 
   <main class="project-page-content">
+
+    <!-- ── Hero ── -->
     <section class="project-hero animate-fade-up">
       <div class="project-badges">
         <span class="project-badge">FEATURED</span>
@@ -31,57 +690,132 @@
         <span class="project-badge">AMSTERDAM</span>
       </div>
       <h1 class="project-detail-title">TOGETHER TOGETHER</h1>
+      <p class="hero-subtitle">A fan-powered lightshow — thousands of phones, one unforgettable moment.</p>
     </section>
 
-    <div class="project-sections-grid">
-      <!-- Plan & Help Card -->
-      <div class="project-info-card animate-fade-up" style="animation-delay: 0.1s;">
-        <h3>WHAT'S THE PLAN?</h3>
-        <p>
-          Thousands of phone screens lighting up in perfect synchronization. 
-          Your seat location determines your unique light pattern, turning the entire venue into a living, breathing lightshow.
-        </p>
+    <!-- ── Row 1: Plan + How it works ── -->
+    <div class="project-sections-grid" data-reveal>
 
-        <h3>HOW YOU CAN HELP</h3>
-        <ul class="list">
-          <li>Register your seat to get your personalized animation</li>
-          <li>Join the team – designers, developers, and coordinators</li>
-          <li>Share with friends on social media</li>
-          <li>Contribute ideas & volunteer your time</li>
+      <div class="project-info-card accent-pink">
+        <h3 class="card-heading"><span class="dot dot-pink"></span>WHAT'S THE PLAN?</h3>
+        <p class="card-text">
+          During "Coming Up Roses," we want to transform the entire stadium into a breathtaking, colorful lightshow. Every phone screen in the venue becomes its own animated LED-style light — just like what you see at Coldplay concerts.
+        </p>
+        <p class="card-text">
+          The difference? No wristbands. No special hardware. Just your phone. Each person's screen displays a unique animation based on their location in the stadium — together creating one massive, synchronized, living canvas of color and light.
+        </p>
+      </div>
+
+      <div class="project-info-card accent-teal">
+        <h3 class="card-heading"><span class="dot dot-teal"></span>HOW IT'S GONNA WORK</h3>
+        <ol class="steps-list">
+          <li><span class="step-num">1</span>On the day of the concert, volunteers will hand out flyers with a QR code at the venue.</li>
+          <li><span class="step-num">2</span>Scanning the code takes you to our website, where you enter your location in the stadium.</li>
+          <li><span class="step-num">3</span>Choose whether you're in the seated section or the standing area.</li>
+          <li><span class="step-num">4</span>If seated, enter your exact row and seat number.</li>
+          <li><span class="step-num">5</span>Once confirmed, you're redirected to the live page. Keep this tab open in the background — you can still use other apps normally, the browser just needs to stay open.</li>
+          <li><span class="step-num">6</span>When "Coming Up Roses" begins, switch back to the browser and tap <strong>Start</strong> — and you're part of the show.</li>
+        </ol>
+      </div>
+
+    </div>
+
+    <!-- ── Row 2: Help + Status/Community ── -->
+    <div class="project-sections-grid" data-reveal style="transition-delay: 0.1s;">
+
+      <div class="project-info-card accent-amber">
+        <h3 class="card-heading"><span class="dot dot-amber"></span>HOW YOU CAN HELP</h3>
+        <ul class="help-list">
+          <li>Register your seat to receive your personalized animation</li>
+          <li>Join the team — designers, developers, and coordinators welcome</li>
+          <li>Share the project with friends on social media</li>
+          <li>Contribute ideas and volunteer your time</li>
         </ul>
-        <p>
-          All key project materials are in our <a href="https://drive.google.com/drive/folders/1D2qNqXDvaZ40UAOZ1V0ReKWNU5j0B6iW?usp=sharing" target="_blank" rel="noopener">Google Drive folder</a>: volunteer list, project info, printable info sheets for distribution, and images that can be freely used to promote the project.
+        <p class="card-text">
+          All key project materials — volunteer list, info sheets, and shareable images — are available in our
+          <a href="https://drive.google.com/drive/folders/1D2qNqXDvaZ40UAOZ1V0ReKWNU5j0B6iW?usp=sharing" target="_blank" rel="noopener" class="drive-link">Google Drive folder</a>.
         </p>
         <div class="action-buttons-container">
           <a href="./helpers.html" class="btn secondary">Become a Helper</a>
         </div>
       </div>
 
-      <!-- Status & Community Card -->
-      <div class="project-info-card animate-fade-up" style="animation-delay: 0.2s;">
-        <h3>CURRENT STATUS</h3>
-        <p>
-          We're in the planning & design phase, crafting technical details and light animations. Major updates coming soon!
-        </p>
+      <div class="right-stack">
 
-        <h3>JOIN OUR COMMUNITY</h3>
-        <div class="social-icons-row">
-          <a href="https://www.instagram.com/togethertogetherfanprojects/" target="_blank" class="social-icon-btn" aria-label="Instagram">
-            <img src="./assets/InstagramIcon.png" alt="Instagram">
-          </a>
-          <a href="https://www.tiktok.com/@hsfanprojektamsterdam" target="_blank" class="social-icon-btn" aria-label="TikTok">
-            <img src="./assets/TiktokIcon.png" alt="TikTok">
-          </a>
-          <a href="https://chat.whatsapp.com/GdYZPWDXeBdItVI70OFyV7" target="_blank" class="social-icon-btn" aria-label="WhatsApp">
-            <img src="./assets/WhatsAppIcon.png" alt="WhatsApp">
-          </a>
+        <!-- Status -->
+        <div class="project-info-card accent-purple">
+          <h3 class="card-heading"><span class="dot dot-purple"></span>CURRENT STATUS</h3>
+          <div class="status-pill">
+            <span class="status-pulse"></span>
+            Final Refinements
+          </div>
+          <p class="card-text">
+            The project is nearly complete. We're currently working on the final polish — the core structure is fully built and ready to go.
+          </p>
+          <div class="progress-wrap">
+            <div class="progress-label">
+              <span>Overall Progress</span>
+              <span>85%</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" id="progressFill"></div>
+            </div>
+          </div>
         </div>
 
-        <div class="action-buttons-container">
-          <a href="./join-hs-together.html" class="btn primary">Join Project Live</a>
+        <!-- Community -->
+        <div class="project-info-card">
+          <h3 class="card-heading">JOIN OUR COMMUNITY</h3>
+          <p class="card-text" style="margin-bottom: 0.25rem;">Stay updated and connect with other fans.</p>
+          <div class="social-icons-row">
+            <a href="https://www.instagram.com/togethertogetherfanprojects/" target="_blank" class="social-icon-btn" aria-label="Instagram">
+              <img src="./assets/InstagramIcon.png" alt="Instagram">
+            </a>
+            <a href="https://www.tiktok.com/@hsfanprojektamsterdam" target="_blank" class="social-icon-btn" aria-label="TikTok">
+              <img src="./assets/TiktokIcon.png" alt="TikTok">
+            </a>
+            <a href="https://chat.whatsapp.com/GdYZPWDXeBdItVI70OFyV7" target="_blank" class="social-icon-btn" aria-label="WhatsApp">
+              <img src="./assets/WhatsAppIcon.png" alt="WhatsApp">
+            </a>
+          </div>
+          <div class="action-buttons-container">
+            <a href="./join-hs-together.html" class="btn primary">Join Project Live</a>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── Sneak Peek ── -->
+    <div class="sneak-peek-section" data-reveal style="transition-delay: 0.2s;">
+      <div class="sneak-peek-header">
+        <h2 class="sneak-peek-title">SNEAK PEEK</h2>
+        <span class="preview-disclaimer">⚠ Early Preview — Not Final</span>
+      </div>
+      <p class="sneak-peek-description">
+        Want to get a feel for what this could look like? Here's an early preview of the concept in action.
+        Keep in mind — this is just a rough glimpse of the idea. The final result will be far more polished,
+        and most importantly, it'll be created by all of us together.
+      </p>
+
+      <!--
+        VIDEO PLACEHOLDER
+        Replace this entire <div class="video-placeholder"> with:
+          <video src="your-video.mp4" controls poster="thumbnail.jpg"></video>
+        or an <iframe> embed when your preview video is ready.
+      -->
+      <div class="video-placeholder" role="img" aria-label="Project preview video placeholder">
+        <div class="light-dots" id="lightDots" aria-hidden="true"></div>
+        <div class="play-btn">
+          <div class="play-icon"></div>
+        </div>
+        <div class="video-placeholder-label">
+          <strong>Preview video coming soon</strong>
+          <span>Replace this block with your &lt;video&gt; or &lt;iframe&gt; when ready</span>
         </div>
       </div>
     </div>
+
   </main>
 
   <footer class="footer">
@@ -90,10 +824,53 @@
     </div>
   </footer>
 
-  <script src="./js/main.js"></script>
   <script>
     document.getElementById('year').textContent = new Date().getFullYear();
+
+    // Scroll reveal
+    const reveals = document.querySelectorAll('[data-reveal]');
+    const revealObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('revealed');
+          revealObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.08 });
+    reveals.forEach(el => revealObserver.observe(el));
+
+    // Animate progress bar on scroll
+    const progressFill = document.getElementById('progressFill');
+    const progressObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          setTimeout(() => progressFill.classList.add('animated'), 300);
+          progressObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.3 });
+    if (progressFill) progressObserver.observe(progressFill);
+
+    // Generate twinkling dots in video placeholder
+    const dotsContainer = document.getElementById('lightDots');
+    if (dotsContainer) {
+      const colors = ['#FF3D7F','#00E5D6','#B44FFF','#FFB830','rgba(255,255,255,0.8)'];
+      for (let i = 0; i < 45; i++) {
+        const dot = document.createElement('div');
+        dot.className = 'light-dot';
+        const size = 2 + Math.random() * 3;
+        dot.style.cssText = `
+          left:${Math.random()*100}%;
+          top:${Math.random()*100}%;
+          width:${size}px;
+          height:${size}px;
+          background:${colors[Math.floor(Math.random()*colors.length)]};
+          --d:${2+Math.random()*4}s;
+          --dl:${Math.random()*3}s;
+        `;
+        dotsContainer.appendChild(dot);
+      }
+    }
   </script>
 </body>
 </html>
-
