@@ -21,9 +21,34 @@ const btnReset     = document.getElementById('btnReset');
 const offsetInfo   = document.getElementById('offsetInfo');
 const pollInfo     = document.getElementById('pollInfo');
 
-let clockOffset  = 0;      // Unterschied zwischen lokaler und Server-Uhr
-let pollInterval = null;   // Timer für regelmäßige Datenbankabfragen
-let isRunning    = false;  // Läuft die Show gerade?
+let clockOffset   = 0;      // Unterschied zwischen lokaler und Server-Uhr
+let pollInterval  = null;   // Timer für regelmäßige Datenbankabfragen
+let isRunning     = false;  // Läuft die Show gerade?
+let durationMs    = 60000;  // Wird aus timeline.json geladen
+let autoResetDone = false;  // Verhindert mehrfachen Auto-Reset pro Show
+
+// -------------------------------------------------------
+// Timeline laden (für durationMs)
+// -------------------------------------------------------
+
+async function loadDuration() {
+  try {
+    const paths = ['/data/timeline.json', './data/timeline.json', 'data/timeline.json'];
+    for (const path of paths) {
+      const res = await fetch(path);
+      if (res.ok) {
+        const data = await res.json();
+        if (data?.meta?.durationMs) {
+          durationMs = data.meta.durationMs;
+          console.log('[Admin] Show duration loaded:', durationMs, 'ms');
+        }
+        return;
+      }
+    }
+  } catch (err) {
+    console.warn('[Admin] timeline.json not found – using default 60s:', err.message);
+  }
+}
 
 // -------------------------------------------------------
 // PIN-Prüfung
@@ -32,11 +57,11 @@ let isRunning    = false;  // Läuft die Show gerade?
 function checkPin() {
   const entered = pinInput.value.trim();
   if (entered === ADMIN_PIN) {
-    pinSection.style.display = 'none';
+    pinSection.style.display  = 'none';
     mainSection.style.display = 'flex';
     startAdminSession();
   } else {
-    pinError.textContent = 'Falscher PIN. Bitte nochmal versuchen.';
+    pinError.textContent = 'Wrong PIN. Please try again.';
     pinInput.value = '';
     pinInput.focus();
   }
@@ -52,19 +77,30 @@ pinInput.addEventListener('keydown', (e) => {
 // -------------------------------------------------------
 
 async function startAdminSession() {
-  setStatus('⏳ Messe Server-Zeit...', 'waiting');
+  setStatus('⏳ Connecting...', 'waiting');
 
-  // Clock-Offset messen (Uhren-Abgleich)
+  await loadDuration();
+
   clockOffset = await measureClockOffset();
-  offsetInfo.textContent = `Server-Offset: ${clockOffset >= 0 ? '+' : ''}${clockOffset}ms`;
+  offsetInfo.textContent = `Server offset: ${clockOffset >= 0 ? '+' : ''}${clockOffset}ms`;
 
-  // Ersten Status laden
   await poll();
 
-  // Alle 5 Sekunden automatisch aktualisieren
   pollInterval = setInterval(poll, 5000);
-
   btnStart.disabled = false;
+}
+
+// -------------------------------------------------------
+// UI in Bereitschaftszustand setzen
+// (nach Show-Ende oder manuellem Reset)
+// -------------------------------------------------------
+
+function resetAdminUI() {
+  isRunning     = false;
+  autoResetDone = false;
+  setStatus('⏸ Ready – press ▶ to start the show', 'waiting');
+  btnStart.textContent = '▶ SHOW STARTEN';
+  btnStart.disabled    = false;
 }
 
 // -------------------------------------------------------
@@ -74,51 +110,68 @@ async function startAdminSession() {
 async function poll() {
   try {
     const state = await fetchSyncState();
-    pollInfo.textContent = `Check: ${new Date().toLocaleTimeString('de-DE')}`;
+    pollInfo.textContent = `Last check: ${new Date().toLocaleTimeString('de-DE')}`;
 
     if (state && state.start_epoch !== null && state.start_epoch !== undefined) {
-      // Show läuft
       const correctedNow = Date.now() + clockOffset;
-      const elapsedMs = correctedNow - state.start_epoch;
-      const elapsedSec = (elapsedMs / 1000).toFixed(1);
-      const totalSec = Math.round(state.start_epoch / 1000);
+      const elapsedMs    = correctedNow - state.start_epoch;
+      const elapsedSec   = (elapsedMs / 1000).toFixed(1);
 
+      // Show ist abgelaufen → automatisch zurücksetzen
+      if (elapsedMs > durationMs && !autoResetDone) {
+        autoResetDone = true;
+        console.log('[Admin] Show finished – auto-reset');
+        try {
+          await resetShow();
+        } catch (err) {
+          console.error('[Admin] Auto-reset failed:', err.message);
+        }
+        resetAdminUI();
+        return;
+      }
+
+      // Show läuft noch
       isRunning = true;
-      setStatus(`🟢 SHOW LÄUFT – ${elapsedSec}s vergangen`, 'running');
-      btnStart.textContent = '▶ NOCHMAL STARTEN (Reset + Start)';
+      const remaining = Math.max(0, Math.round((durationMs - elapsedMs) / 1000));
+      setStatus(`🟢 SHOW RUNNING – ${elapsedSec}s elapsed (${remaining}s left)`, 'running');
+      btnStart.textContent = '▶ RESTART (Reset + Start)';
+
     } else {
-      // Show noch nicht gestartet
+      // Keine aktive Show
+      if (isRunning) {
+        // War vorher running → wurde extern resettet
+        resetAdminUI();
+      } else {
+        setStatus('⏸ Ready – press ▶ to start the show', 'waiting');
+        btnStart.textContent = '▶ SHOW STARTEN';
+      }
       isRunning = false;
-      setStatus('⏸ Wartet auf Start', 'waiting');
-      btnStart.textContent = '▶ SHOW STARTEN';
     }
   } catch (err) {
-    setStatus('⚠️ Verbindung verloren – prüfe WLAN', 'error');
+    setStatus('⚠️ Connection lost – check WiFi', 'error');
   }
 }
 
 // -------------------------------------------------------
-// START-Knopf
+// START-Knopf (kein confirm-Dialog – direkt loslegen)
 // -------------------------------------------------------
 
 btnStart.addEventListener('click', async () => {
-  if (!confirm('Show jetzt starten? Diese Aktion syncronisiert alle Teilnehmer.')) return;
-
   btnStart.disabled = true;
-  setStatus('⏳ Starte...', 'waiting');
+  setStatus('⏳ Starting...', 'waiting');
+  autoResetDone = false;
 
   try {
-    // Aktuelle (korrigierte) Zeit als Startzeit setzen
     const startEpoch = Date.now() + clockOffset;
     await setStartEpoch(startEpoch);
 
-    setStatus('🟢 GESTARTET! Alle Teilnehmer werden jetzt synchronisiert.', 'running');
     isRunning = true;
+    setStatus('🟢 STARTED! All participants are now synced.', 'running');
+    btnStart.textContent = '▶ RESTART (Reset + Start)';
 
-    // Status nach kurzer Pause aktualisieren
     setTimeout(poll, 1500);
   } catch (err) {
-    setStatus('❌ Fehler beim Starten: ' + err.message, 'error');
+    setStatus('❌ Start failed: ' + err.message, 'error');
     console.error(err);
   } finally {
     btnStart.disabled = false;
@@ -130,15 +183,13 @@ btnStart.addEventListener('click', async () => {
 // -------------------------------------------------------
 
 btnReset.addEventListener('click', async () => {
-  if (!confirm('Show wirklich zurücksetzen? Alle Teilnehmer-Animationen stoppen.')) return;
+  if (!confirm('Reset show? All participant animations will stop.')) return;
 
   try {
     await resetShow();
-    isRunning = false;
-    setStatus('⏸ Zurückgesetzt – bereit für neuen Start', 'waiting');
-    btnStart.textContent = '▶ SHOW STARTEN';
+    resetAdminUI();
   } catch (err) {
-    setStatus('❌ Fehler beim Zurücksetzen: ' + err.message, 'error');
+    setStatus('❌ Reset failed: ' + err.message, 'error');
   }
 });
 
@@ -148,5 +199,5 @@ btnReset.addEventListener('click', async () => {
 
 function setStatus(message, type) {
   statusBox.textContent = message;
-  statusBox.className = 'status-box ' + (type || 'waiting');
+  statusBox.className   = 'status-box ' + (type || 'waiting');
 }
