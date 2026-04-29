@@ -512,19 +512,16 @@ function renderFrame() {
   // Show noch nicht gestartet → Wartebildschirm
   if (timeMs < 0) {
     const remaining = Math.ceil(-timeMs / 1000);
-    setStatus(`Show startet in ${remaining}s...`);
+    setStatus(`Show starts in ${remaining}s...`);
     screen.style.backgroundColor = state.background;
     requestAnimationFrame(renderFrame);
     return;
   }
 
-  // Show beendet
+  // Show beendet → zurück in Wartezustand (kein "Show ended" für Zuschauer)
   if (timeMs > state.durationMs) {
-    state.playing = false;
-    document.body.classList.remove('playing');
-    setStatus('Show beendet.');
-    startBtn.classList.remove('hidden');
     stopSyncPolling();
+    resetToWaiting();
     return;
   }
 
@@ -567,17 +564,10 @@ async function syncCheck() {
     const syncData = await fetchSyncState();
 
     if (!syncData || syncData.start_epoch === null || syncData.start_epoch === undefined) {
-      // Admin hat noch nicht gestartet
-      if (state.playing) {
-        // Show lief lokal, wurde aber zurückgesetzt → stoppen
-        state.playing    = false;
-        state.startEpoch = null;
-        state.waitMode   = false;
-        document.body.classList.remove('playing');
-        setStatus('Show wurde zurückgesetzt. Warte auf neues Signal...');
-        startBtn.classList.remove('hidden');
-        startBtn.textContent = 'Start';
-        startBtn.disabled    = false;
+      // Admin hat noch nicht gestartet oder hat resettet
+      if (state.playing || state.waitMode) {
+        // Show lief lokal, wurde aber zurückgesetzt → zurück in Wartezustand
+        resetToWaiting();
       }
       return;
     }
@@ -649,7 +639,7 @@ async function startShow() {
 
   // Startzeit noch nicht bekannt? → Einmal direkt nachfragen
   if (!state.startEpoch) {
-    setStatus('Verbinde...');
+    setStatus('Connecting...');
     try {
       const syncData = await fetchSyncState();
       if (syncData && syncData.start_epoch) {
@@ -666,13 +656,13 @@ async function startShow() {
     const elapsed      = correctedNow - state.startEpoch;
 
     if (elapsed > state.durationMs) {
-      setStatus('Die Show ist bereits beendet.');
-      startBtn.classList.remove('hidden');
+      // Show schon vorbei → zurück in Wartezustand, nicht "beendet" zeigen
+      resetToWaiting();
       return;
     }
 
     if (elapsed > 0) {
-      setStatus(`Einsteigen... (Show läuft seit ${Math.round(elapsed / 1000)}s)`);
+      setStatus(`Joining... (show running for ${Math.round(elapsed / 1000)}s)`);
     }
 
     beginAnimation();
@@ -680,7 +670,7 @@ async function startShow() {
   } else {
     // ⏳ Fall B: Admin hat noch NICHT gestartet → Wartemodus
     state.waitMode = true;
-    setStatus('⏳ Warte auf Start-Signal vom Admin...');
+    setStatus("⏳ Waiting for show signal...");
     screen.style.backgroundColor = state.background;
 
     // Alle 3 Sekunden nachfragen (engeres Polling im Wartemodus)
@@ -720,14 +710,9 @@ async function handleReturnToForeground() {
       const elapsed      = correctedNow - state.startEpoch;
 
       if (elapsed > state.durationMs) {
-        // Show schon vorbei
-        if (state.playing) {
-          state.playing = false;
-          document.body.classList.remove('playing');
-          setStatus('Show beendet.');
-          startBtn.classList.remove('hidden');
-          stopSyncPolling();
-        }
+        // Show schon vorbei → zurück in Wartezustand
+        stopSyncPolling();
+        resetToWaiting();
         return;
       }
 
@@ -750,12 +735,7 @@ async function handleReturnToForeground() {
       // Admin hat noch nicht gestartet oder zurückgesetzt
       state.startEpoch = null;
       if (state.playing) {
-        state.playing = false;
-        document.body.classList.remove('playing');
-        setStatus('Show wurde zurückgesetzt.');
-        startBtn.classList.remove('hidden');
-        startBtn.textContent = 'Start';
-        stopSyncPolling();
+        resetToWaiting();
       }
     }
 
@@ -789,7 +769,25 @@ document.addEventListener('visibilitychange', () => {
 
 function enableStart() {
   startBtn.disabled    = false;
-  startBtn.textContent = 'Start';
+  startBtn.textContent = "Press Start when 'Coming Up Roses' begins";
+}
+
+/**
+ * Setzt die Run-Seite in den Wartezustand zurück.
+ * Wird nach Show-Ende, Reset oder Fehler aufgerufen –
+ * Zuschauer sehen NIEMALS "Show ended".
+ */
+function resetToWaiting() {
+  state.playing    = false;
+  state.startEpoch = null;
+  state.waitMode   = false;
+  document.body.classList.remove('playing');
+  setStatus('Show begins soon');
+  startBtn.classList.remove('hidden');
+  startBtn.textContent = "Press Start when 'Coming Up Roses' begins";
+  startBtn.disabled    = false;
+  // Langsames Polling: warten auf nächstes Admin-Start-Signal
+  startSyncPolling(5000);
 }
 
 async function loadJsonWithFallback(paths) {
@@ -817,16 +815,16 @@ function checkReady() {
     const correctedNow = Date.now() + state.clockOffset;
     const elapsed      = correctedNow - state.startEpoch;
     if (elapsed > 0 && elapsed < state.durationMs) {
-      setStatus(`Show läuft bereits (${Math.round(elapsed / 1000)}s). Drück Start zum Einsteigen.`);
+      setStatus(`Show already running (${Math.round(elapsed / 1000)}s). Press Start to join.`);
     } else if (elapsed <= 0) {
-      setStatus('Show startet gleich. Drück Start.');
+      setStatus("Show starts soon. Press Start when 'Coming Up Roses' begins.");
     } else {
-      setStatus('Show bereits beendet.');
-      startBtn.disabled    = true;
-      startBtn.textContent = 'Beendet';
+      // Show ist schon vorbei → Wartezustand, nicht "beendet"
+      resetToWaiting();
+      return true;
     }
   } else {
-    setStatus('Bereit. Warte auf Start-Signal...');
+    setStatus('Show begins soon');
   }
   return true;
 }
@@ -837,11 +835,11 @@ function checkReady() {
 
 async function init() {
   startBtn.disabled    = true;
-  startBtn.textContent = 'Lädt...';
+  startBtn.textContent = 'Loading...';
 
   const selection = getSelection();
   if (!selection) {
-    setStatus('Kein Sitzplatz ausgewählt. Bitte zuerst Platz wählen.');
+    setStatus('No seat selected. Please choose your seat first.');
     return;
   }
 
@@ -879,8 +877,8 @@ async function init() {
     }
     runLoader.hidden = false;
     setStatus(window.location.protocol === 'file:'
-      ? 'Lokal blockiert. Bitte Dateien manuell hochladen.'
-      : 'Dateien nicht im "data"-Ordner gefunden.');
+      ? 'Blocked locally. Please upload the files manually.'
+      : 'Files not found in "data" folder.');
     return;
   }
 
@@ -889,7 +887,7 @@ async function init() {
   state.seat       = getSeatFromSelection(state.seatmap.seats || [], selection);
 
   if (!state.seat) {
-    setStatus('Sitzplatz nicht gefunden. Bitte nochmal auswählen.');
+    setStatus('Seat not found. Please select your seat again.');
     return;
   }
 
@@ -906,7 +904,7 @@ function tryManualLoad() {
   state.durationMs = Math.max(1000, state.timeline.meta?.durationMs ?? 60000);
   state.background = state.timeline.meta?.backgroundColor || state.background;
   state.seat       = getSeatFromSelection(state.seatmap.seats || [], getSelection());
-  if (!state.seat) { setStatus('Sitzplatz nicht gefunden.'); return; }
+  if (!state.seat) { setStatus('Seat not found.'); return; }
   checkReady();
 }
 
