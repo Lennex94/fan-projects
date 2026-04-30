@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Message Sent - FanProjects</title>
+  <meta name="description" content="Thanks for reaching out to FanProjects." />
+  <link rel="stylesheet" href="./css/styles.css" />
+  <style>
+    .thanks-shell {
+      min-height: 80vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      text-align: center;
+    }
+
+    .thanks-card {
+      max-width: 520px;
+      width: 100%;
+    }
+
+    .thanks-icon {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: rgba(0, 196, 204, 0.1);
+      border: 1px solid rgba(0, 196, 204, 0.35);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 2rem;
+    }
+
+    .thanks-icon svg {
+      width: 28px;
+      height: 28px;
+      stroke: #00C4CC;
+      fill: none;
+      stroke-width: 2.5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .thanks-title {
+      font-size: clamp(2rem, 6vw, 3rem);
+      font-weight: 900;
+      color: #00C4CC;
+      margin-bottom: 1rem;
+      letter-spacing: -0.02em;
+      text-transform: uppercase;
+      background: none;
+      -webkit-text-fill-color: #00C4CC;
+    }
+
+    .thanks-text {
+      color: rgba(255, 255, 255, 0.65);
+      font-size: 1rem;
+      line-height: 1.7;
+      margin-bottom: 2.5rem;
+    }
+  </style>
+</head>
+
+<body class="project-detail-page">
+  <header class="site-header site-header--transparent">
+    <nav>
+      <a class="brand" href="./index.html" aria-label="Home">
+        <span class="brand-name">FanProjects</span>
+      </a>
+      <div class="nav-links">
+        <a href="./index.html">Home</a>
+        <a href="./projects.html">Projects</a>
+        <a class="active" href="./contact.html">Contact</a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <div class="thanks-shell animate-fade-up">
+      <div class="thanks-card">
+        <div class="thanks-icon">
+          <svg viewBox="0 0 24 24">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+        </div>
+        <h1 class="thanks-title">Message Sent</h1>
+        <p class="thanks-text">
+          Thanks for reaching out! We read every message and will get back to you as soon as possible.
+        </p>
+        <a href="./index.html" class="btn primary">Back to Home</a>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="container text-center">
+      <p>&copy; <span id="year"></span> FanProjects. Made by fans, for fans.</p>
+    </div>
+  </footer>
+
+  <script src="./js/main.js"></script>
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>
