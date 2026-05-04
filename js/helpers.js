@@ -6,29 +6,15 @@ const SUPABASE_URL = 'https://gbbxjjhsdvqcgbeammcr.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_U_Oki3osdN3PZC0fzopyLg_r-B1IxtA';
 const TABLE = 'helpers_intake';
 
-// ── Arena structure ────────────────────────────────────────
 const UPPER_TIER = Array.from({ length: 30 }, (_, i) => String(401 + i));
 const LOWER_TIER = Array.from({ length: 29 }, (_, i) => String(101 + i));
-const STANDING = [
-  'FRONT GA LEFT',
-  'FRONT GA RIGHT',
-  'CIRCLE',
-  'KISS',
-  'SQUARE',
-  'DISCO',
-  'REAR GA',
-];
+const STANDING = ['FRONT GA LEFT','FRONT GA RIGHT','CIRCLE','KISS','SQUARE','DISCO','REAR GA'];
 
-// ── Supabase helpers ───────────────────────────────────────
+// ── Supabase ───────────────────────────────────────────────
 async function fetchVolunteers() {
   const res = await fetch(
-    `${SUPABASE_URL}/rest/v1/${TABLE}?select=block_or_ga,name,show_name_public`,
-    {
-      headers: {
-        apikey: SUPABASE_KEY,
-        Authorization: `Bearer ${SUPABASE_KEY}`,
-      },
-    }
+    `${SUPABASE_URL}/rest/v1/${TABLE}?select=block_or_ga,name,show_name_public,can_print,socials`,
+    { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` } }
   );
   if (!res.ok) throw new Error('Could not load volunteers');
   return res.json();
@@ -45,30 +31,90 @@ async function submitHelper(payload) {
     },
     body: JSON.stringify(payload),
   });
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(text || 'Failed to submit');
-  }
+  if (!res.ok) throw new Error((await res.text()) || 'Failed to submit');
 }
 
-// ── Normalise block identifier for matching ────────────────
 function normalise(str) {
-  return String(str || '')
-    .trim()
-    .toUpperCase()
-    .replace(/^BLOCK\s*/i, '');
+  return String(str || '').trim().toUpperCase().replace(/^BLOCK\s*/i, '');
 }
 
-// ── Build the overview ─────────────────────────────────────
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+// ── Detail popup ───────────────────────────────────────────
+function ensureOverlay() {
+  if (document.getElementById('blockPopupOverlay')) return;
+  const overlay = document.createElement('div');
+  overlay.id = 'blockPopupOverlay';
+  overlay.style.cssText = [
+    'display:none','position:fixed','inset:0','z-index:9999',
+    'background:rgba(0,0,0,0.75)','backdrop-filter:blur(5px)',
+    'align-items:center','justify-content:center','padding:20px',
+  ].join(';');
+  overlay.innerHTML = '<div id="blockPopupBox" style="' + [
+    'background:#111','border:1px solid rgba(168,85,247,0.4)',
+    'border-radius:16px','padding:24px 24px 20px','max-width:360px',
+    'width:100%','font-family:var(--font-body,sans-serif)',
+    'color:#fff','position:relative','max-height:80vh','overflow-y:auto',
+  ].join(';') + '"></div>';
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) closePopup(); });
+  document.body.appendChild(overlay);
+}
+
+function closePopup() {
+  const o = document.getElementById('blockPopupOverlay');
+  if (o) o.style.display = 'none';
+}
+
+function showBlockDetail(block, vols, isGA) {
+  ensureOverlay();
+  const box = document.getElementById('blockPopupBox');
+  const canPrintAny = vols.some((v) => v.can_print);
+
+  box.innerHTML = `
+    <button onclick="closePopup()" style="position:absolute;top:14px;right:14px;
+      background:none;border:none;color:rgba(255,255,255,0.35);font-size:1.1rem;cursor:pointer;">✕</button>
+
+    <div style="font-size:0.68rem;letter-spacing:.1em;color:rgba(255,255,255,0.35);text-transform:uppercase;margin-bottom:2px;">
+      ${isGA ? 'Standing / GA' : 'Block'}
+    </div>
+    <div style="font-size:1.5rem;font-weight:700;color:#c084fc;margin-bottom:6px;">${escapeHtml(block)}</div>
+    <div style="font-size:0.8rem;color:rgba(255,255,255,0.4);margin-bottom:18px;">
+      ${vols.length} helper${vols.length !== 1 ? 's' : ''}
+      ${canPrintAny ? ' &nbsp;·&nbsp; <span style="color:#6ee7ff;">🖨 Can print</span>' : ''}
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      ${vols.map((v) => `
+        <div style="background:rgba(255,255,255,0.05);border-radius:10px;padding:10px 14px;">
+          <div style="font-size:0.9rem;font-weight:600;margin-bottom:2px;display:flex;align-items:center;gap:8px;">
+            ${v.show_name_public && v.name
+              ? `<span>${escapeHtml(v.name)}</span>`
+              : `<span style="color:rgba(255,255,255,0.3);font-style:italic;font-weight:400;">Anonymous</span>`}
+            ${v.can_print ? `<span style="font-size:0.75rem;color:#6ee7ff;" title="Can print">🖨</span>` : ''}
+          </div>
+          ${v.show_name_public && v.socials
+            ? `<div style="font-size:0.78rem;color:rgba(255,255,255,0.4);">${escapeHtml(v.socials)}</div>`
+            : ''}
+        </div>
+      `).join('')}
+    </div>
+  `;
+
+  document.getElementById('blockPopupOverlay').style.display = 'flex';
+}
+
+// ── Build the chip grid ────────────────────────────────────
 function buildOverview(volunteers) {
-  // Build a map: normalised block → array of public names
   const takenMap = {};
   for (const v of volunteers) {
     const key = normalise(v.block_or_ga);
     if (!key) continue;
     if (!takenMap[key]) takenMap[key] = [];
-    if (v.show_name_public && v.name) takenMap[key].push(v.name);
-    else if (!v.show_name_public) takenMap[key].push(null); // taken but anonymous
+    takenMap[key].push(v);
   }
 
   const container = document.getElementById('overviewContainer');
@@ -86,42 +132,52 @@ function buildOverview(volunteers) {
 
     for (const block of blocks) {
       const key = normalise(block);
-      const names = takenMap[key] || null;
-      const isTaken = names !== null && names.length > 0;
+      const vols = takenMap[key] || [];
+      const isTaken = vols.length > 0;
 
       const chip = document.createElement('div');
       chip.className = `block-chip${isGA ? ' ga-chip' : ''} ${isTaken ? 'taken' : 'open'}`;
+      chip.style.cursor = 'pointer';
 
+      // Number / label
       const numEl = document.createElement('div');
       numEl.className = 'chip-number';
       numEl.textContent = block;
       chip.appendChild(numEl);
 
       if (isTaken) {
-        // Show first public name, truncated
-        const publicName = names.find(Boolean);
-        if (publicName) {
-          const nameEl = document.createElement('div');
-          nameEl.className = 'chip-name';
-          nameEl.textContent = publicName.split(' ')[0]; // first name only
-          chip.appendChild(nameEl);
+        // Name: first name of first public volunteer, + count if more
+        const publicVols = vols.filter((v) => v.show_name_public && v.name);
+        const nameEl = document.createElement('div');
+        nameEl.className = 'chip-name';
+
+        if (publicVols.length > 0) {
+          const firstName = publicVols[0].name.split(/[\s,+&]/)[0].trim();
+          nameEl.textContent = vols.length > 1 ? `${firstName} +${vols.length - 1}` : firstName;
         } else {
-          const takenEl = document.createElement('div');
-          takenEl.className = 'chip-name';
-          takenEl.textContent = '✓';
-          chip.appendChild(takenEl);
+          nameEl.textContent = vols.length > 1 ? `${vols.length}×` : '✓';
         }
-        // Badge dot
-        const badge = document.createElement('div');
-        badge.className = 'chip-badge';
-        chip.appendChild(badge);
+        chip.appendChild(nameEl);
+
+        // Printer icon badge
+        if (vols.some((v) => v.can_print)) {
+          const printBadge = document.createElement('div');
+          printBadge.className = 'chip-print-badge';
+          printBadge.textContent = '🖨';
+          chip.appendChild(printBadge);
+        }
+
+        // Cyan dot
+        const dot = document.createElement('div');
+        dot.className = 'chip-badge';
+        chip.appendChild(dot);
+
+        chip.addEventListener('click', () => showBlockDetail(block, vols, isGA));
       } else {
         const freeEl = document.createElement('div');
         freeEl.className = 'chip-name';
         freeEl.textContent = 'OPEN';
         chip.appendChild(freeEl);
-
-        // Clicking an open block pre-fills the form
         chip.addEventListener('click', () => prefillBlock(block, isGA));
       }
 
@@ -135,51 +191,32 @@ function buildOverview(volunteers) {
   renderTier('Lower Tier — Seated', LOWER_TIER);
   renderTier('Standing / GA', STANDING, true);
 
-  // Show legend
   const legend = document.getElementById('overviewLegend');
   if (legend) legend.style.display = 'flex';
 }
 
-// ── Pre-fill form from block chip click ───────────────────
+// ── Pre-fill form ──────────────────────────────────────────
 function prefillBlock(block, isGA) {
   const input = document.getElementById('blockOrGaInput');
   const areaSelect = document.querySelector('select[name="area_type"]');
   const hint = document.getElementById('prefillHint');
 
-  if (input) {
-    input.value = isGA ? block : block;
-    input.dispatchEvent(new Event('input'));
-  }
+  if (input) { input.value = block; input.dispatchEvent(new Event('input')); }
+  if (areaSelect) { areaSelect.value = isGA ? 'standing' : 'seated'; areaSelect.dispatchEvent(new Event('change')); }
+  if (hint) { hint.textContent = `Signing up for: ${isGA ? '' : 'Block '}${block}`; hint.classList.add('visible'); }
 
-  if (areaSelect) {
-    areaSelect.value = isGA ? 'standing' : 'seated';
-    areaSelect.dispatchEvent(new Event('change'));
-  }
-
-  if (hint) {
-    hint.textContent = `Signing up for: ${isGA ? '' : 'Block '}${block}`;
-    hint.classList.add('visible');
-  }
-
-  // Scroll to form and show all steps
   const formCard = document.getElementById('formCard');
-  if (formCard) {
-    formCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }
-
-  // Make all form steps visible so the user can fill them in
+  if (formCard) formCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
   showAllSteps();
 }
 
 function showAllSteps() {
   const form = document.getElementById('helperForm');
   if (!form) return;
-  form.querySelectorAll('[data-step]').forEach((el) => {
-    el.style.display = '';
-  });
+  form.querySelectorAll('[data-step]').forEach((el) => (el.style.display = ''));
 }
 
-// ── Step-by-step form flow ─────────────────────────────────
+// ── Step flow ──────────────────────────────────────────────
 function initStepFlow() {
   const form = document.getElementById('helperForm');
   if (!form) return;
@@ -187,56 +224,35 @@ function initStepFlow() {
   const steps = Array.from(form.querySelectorAll('[data-step]'))
     .sort((a, b) => Number(a.dataset.step) - Number(b.dataset.step));
 
-  // Hide everything after step 1 initially
-  steps.forEach((el, index) => {
-    if (index > 0) el.style.display = 'none';
-  });
+  steps.forEach((el, i) => { if (i > 0) el.style.display = 'none'; });
 
-  const showStep = (idx) => {
-    if (steps[idx]) steps[idx].style.display = '';
-  };
-
-  const advanceIfReady = (currentIndex) => {
-    const current = steps[currentIndex];
-    if (!current) return;
-    const input = current.querySelector('input, select, textarea');
-    if (!input) return;
-    const value = String(input.value || '').trim();
-    if (!value) return;
-    showStep(currentIndex + 1);
-  };
-
-  steps.forEach((step, index) => {
+  steps.forEach((step, i) => {
     const input = step.querySelector('input, select, textarea');
     if (!input) return;
-    input.addEventListener('change', () => advanceIfReady(index));
-    input.addEventListener('input', () => advanceIfReady(index));
+    const advance = () => {
+      if (!String(input.value || '').trim()) return;
+      if (steps[i + 1]) steps[i + 1].style.display = '';
+    };
+    input.addEventListener('change', advance);
+    input.addEventListener('input', advance);
   });
 
-  // Social platform → placeholder
   const socialSelect = form.querySelector('select[name="social_platform"]');
   const socialsInput = form.querySelector('input[name="socials"]');
   if (socialSelect && socialsInput) {
     socialSelect.addEventListener('change', () => {
-      const map = {
-        instagram: '@username',
-        tiktok: '@username',
-        whatsapp: '+31 6 12345678',
-        email: 'name@email.com',
-        x: '@username',
-        other: 'Your contact',
-      };
+      const map = { instagram:'@username', tiktok:'@username', whatsapp:'+31 6 12345678', email:'name@email.com', x:'@username', other:'Your contact' };
       socialsInput.placeholder = map[socialSelect.value] || 'Your contact';
     });
   }
 }
 
-// ── Status message ─────────────────────────────────────────
+// ── Status ─────────────────────────────────────────────────
 const statusEl = document.getElementById('helperFormStatus');
-function setStatus(message, isError = false) {
+function setStatus(msg, isError = false) {
   if (!statusEl) return;
-  statusEl.textContent = message;
-  statusEl.style.color = isError ? '#ff7a59' : 'rgba(249, 247, 243, 0.72)';
+  statusEl.textContent = msg;
+  statusEl.style.color = isError ? '#ff7a59' : 'rgba(249,247,243,0.72)';
 }
 
 // ── Form submit ────────────────────────────────────────────
@@ -244,21 +260,21 @@ const form = document.getElementById('helperForm');
 if (form) {
   initStepFlow();
 
-  form.addEventListener('submit', async (event) => {
-    event.preventDefault();
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
     const data = new FormData(form);
-    const socialPlatform = String(data.get('social_platform') || '').trim();
-    const socialHandle = String(data.get('socials') || '').trim();
+    const platform = String(data.get('social_platform') || '').trim();
+    const handle   = String(data.get('socials') || '').trim();
 
     const payload = {
-      attending: data.get('attending') === 'yes',
-      wants_help: data.get('wants_help') === 'yes',
-      name: String(data.get('name') || '').trim(),
-      area_type: data.get('area_type'),
-      block_or_ga: String(data.get('block_or_ga') || '').trim(),
-      can_print: data.get('can_print') === 'yes',
-      extra_blocks: String(data.get('extra_blocks') || '').trim(),
-      socials: socialPlatform ? `${socialPlatform}: ${socialHandle}` : socialHandle,
+      attending:        data.get('attending') === 'yes',
+      wants_help:       data.get('wants_help') === 'yes',
+      name:             String(data.get('name') || '').trim(),
+      area_type:        data.get('area_type'),
+      block_or_ga:      String(data.get('block_or_ga') || '').trim(),
+      can_print:        data.get('can_print') === 'yes',
+      extra_blocks:     String(data.get('extra_blocks') || '').trim(),
+      socials:          platform ? `${platform}: ${handle}` : handle,
       show_name_public: data.get('show_name_public') === 'yes',
     };
 
@@ -273,12 +289,8 @@ if (form) {
       setStatus('Thanks! Your response has been saved. 💜');
       form.reset();
       initStepFlow();
-
-      // Hide prefill hint
       const hint = document.getElementById('prefillHint');
       if (hint) hint.classList.remove('visible');
-
-      // Reload overview after a short delay
       setTimeout(() => loadOverview(), 800);
     } catch (err) {
       console.error(err);
@@ -287,14 +299,13 @@ if (form) {
   });
 }
 
-// ── Load overview on page ready ────────────────────────────
+// ── Init ───────────────────────────────────────────────────
 async function loadOverview() {
   try {
-    const volunteers = await fetchVolunteers();
-    buildOverview(volunteers);
+    buildOverview(await fetchVolunteers());
   } catch (err) {
-    const loading = document.getElementById('overviewLoading');
-    if (loading) loading.textContent = 'Could not load current overview.';
+    const el = document.getElementById('overviewLoading');
+    if (el) el.textContent = 'Could not load current overview.';
     console.error(err);
   }
 }
