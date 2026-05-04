@@ -188,6 +188,25 @@
       display: block;
     }
 
+    .radio-pill {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 99px;
+      cursor: pointer;
+      font-size: 0.88rem;
+      color: rgba(255,255,255,0.6);
+      transition: all 0.2s;
+    }
+    .radio-pill input { accent-color: var(--primary); }
+    .radio-pill:has(input:checked) {
+      border-color: var(--primary);
+      background: rgba(168,85,247,0.12);
+      color: #fff;
+    }
+
     @media (max-width: 480px) {
       .block-chip { width: 54px; min-height: 48px; }
       .block-chip.ga-chip { min-width: 80px; }
@@ -251,89 +270,38 @@
 
       <!-- ── FORM CARD ── -->
       <div class="project-info-card animate-fade-up" style="animation-delay: 0.3s;" id="formCard">
-        <h3>VOLUNTEER FORM</h3>
+        <h3>SIGN UP</h3>
         <div class="form-prefill-hint" id="prefillHint"></div>
         <form id="helperForm" class="form">
 
-          <div class="form-group" data-step="1">
-            <label>Are you at the 16 May 2026 Amsterdam show?</label>
-            <select name="attending" required>
-              <option value="">Select one...</option>
-              <option value="yes">Yes</option>
-              <option value="no">No</option>
-            </select>
-          </div>
-
-          <div class="form-group" data-step="2">
-            <label>Do you want to actively help?</label>
-            <select name="wants_help" required>
-              <option value="">Select one...</option>
-              <option value="yes">Yes</option>
-              <option value="no">No</option>
-            </select>
-          </div>
-
-          <div class="form-group" data-step="3">
+          <div class="form-group">
             <label>Your name</label>
-            <input type="text" name="name" placeholder="How should we call you?" required />
+            <input type="text" name="name" id="nameInput" placeholder="How should we call you?" required />
           </div>
 
-          <div class="form-group" data-step="4">
-            <label>Where are you sitting / standing?</label>
-            <select name="area_type" required>
-              <option value="">Select one...</option>
-              <option value="seated">Seated (block)</option>
-              <option value="standing">Standing (GA)</option>
-            </select>
-          </div>
-
-          <div class="form-group" data-step="5">
+          <div class="form-group">
             <label>Block or GA area</label>
-            <input type="text" name="block_or_ga" id="blockOrGaInput" placeholder="Block 117 or GA Front Left" required />
+            <input type="text" name="block_or_ga" id="blockOrGaInput" placeholder="e.g. 117 or FRONT GA LEFT" required />
           </div>
 
-          <div class="form-group" data-step="6">
-            <label>Can you print flyers? (5–8 per block)</label>
-            <select name="can_print" required>
-              <option value="">Select one...</option>
-              <option value="yes">Yes</option>
-              <option value="no">No</option>
-            </select>
+          <div class="form-group">
+            <label>Can you print flyers? <span style="color:rgba(255,255,255,0.35);font-size:0.82rem;">(5–8 per block)</span></label>
+            <div style="display:flex;gap:10px;margin-top:6px;">
+              <label class="radio-pill">
+                <input type="radio" name="can_print" value="yes" required /> Yes
+              </label>
+              <label class="radio-pill">
+                <input type="radio" name="can_print" value="no" /> No
+              </label>
+            </div>
           </div>
 
-          <div class="form-group" data-step="7">
-            <label>If you can cover nearby blocks, list them</label>
-            <input type="text" name="extra_blocks" placeholder="Example: 116, 118" />
+          <div class="form-group">
+            <label>Contact <span style="color:rgba(255,255,255,0.35);font-size:0.82rem;">(optional — so we can send you materials)</span></label>
+            <input type="text" name="socials" placeholder="@instagram, WhatsApp number, email…" />
           </div>
 
-          <div class="form-group" data-step="8">
-            <label>Which social do you want to share?</label>
-            <select name="social_platform" required>
-              <option value="">Select one...</option>
-              <option value="instagram">Instagram</option>
-              <option value="tiktok">TikTok</option>
-              <option value="whatsapp">WhatsApp</option>
-              <option value="email">Email</option>
-              <option value="x">X / Twitter</option>
-              <option value="other">Other</option>
-            </select>
-          </div>
-
-          <div class="form-group" data-step="9">
-            <label>Social handle / contact</label>
-            <input type="text" name="socials" placeholder="@username or number" required />
-          </div>
-
-          <div class="form-group" data-step="10">
-            <label>Show my name publicly as a helper</label>
-            <select name="show_name_public" required>
-              <option value="">Select one...</option>
-              <option value="yes">Yes</option>
-              <option value="no">No</option>
-            </select>
-          </div>
-
-          <button class="btn primary form-submit" type="submit">Submit Application</button>
+          <button class="btn primary form-submit" type="submit" style="margin-top:8px;">Sign me up 💜</button>
           <p class="muted" id="helperFormStatus" style="margin-top: 15px; text-align: center;"></p>
         </form>
       </div>
