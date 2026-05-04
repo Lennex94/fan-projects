@@ -44,6 +44,14 @@ function escapeHtml(str) {
     .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
+// Hide anything that looks like a phone number
+function formatSocial(str) {
+  if (!str) return '';
+  // If it contains 5+ consecutive digits → treat as phone number
+  if (/\d{5,}/.test(str)) return '📱 Private contact';
+  return escapeHtml(str);
+}
+
 // ── Detail popup ───────────────────────────────────────────
 function ensureOverlay() {
   if (document.getElementById('blockPopupOverlay')) return;
@@ -95,7 +103,7 @@ function showBlockDetail(block, vols, isGA) {
             ${v.can_print ? `<span style="font-size:0.75rem;color:#6ee7ff;">🖨</span>` : ''}
           </div>
           ${v.show_name_public && v.socials
-            ? `<div style="font-size:0.78rem;color:rgba(255,255,255,0.4);">${escapeHtml(v.socials)}</div>`
+            ? `<div style="font-size:0.78rem;color:rgba(255,255,255,0.4);">${formatSocial(v.socials)}</div>`
             : ''}
         </div>
       `).join('')}
