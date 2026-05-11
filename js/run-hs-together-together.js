@@ -863,14 +863,18 @@ async function init() {
   state.timeline = await loadJsonWithFallback([
     '/data/timeline.json', './data/timeline.json', 'data/timeline.json'
   ]);
+
+  const sectionPath = encodeURIComponent(selection.block);
   state.seatmap = await loadJsonWithFallback([
-    '/data/seatmap_mapping.json', './data/seatmap_mapping.json', 'data/seatmap_mapping.json'
+    `/data/seats/${sectionPath}.json`,
+    `./data/seats/${sectionPath}.json`,
+    `data/seats/${sectionPath}.json`
   ]);
 
   if (!state.timeline || !state.seatmap) {
     const missing = [];
     if (!state.timeline) missing.push('timeline.json');
-    if (!state.seatmap)  missing.push('seatmap_mapping.json');
+    if (!state.seatmap)  missing.push('seat section file');
     if (loaderStatus) {
       loaderStatus.style.color = '#ff4d6d';
       loaderStatus.textContent = `FEHLER: ${missing.join(' & ')} nicht gefunden.`;
