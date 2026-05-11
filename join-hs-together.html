@@ -311,7 +311,7 @@
 
           <div id="standingLocationPicker" style="display: none; margin-top: 30px; padding-top: 20px; border-top: 1px solid rgba(255, 255, 255, 0.1);">
             <div id="standingInstruction" style="text-align: center; color: #00C4CC; font-weight: 600; margin-bottom: 20px; display: none;"></div>
-            <canvas id="standingCanvas" width="400" height="300" style="width: 100%; max-width: 400px; height: auto; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 6px; display: block; margin: 0 auto;"></canvas>
+            <canvas id="standingCanvas" width="500" height="280" style="width: 100%; max-width: 500px; height: auto; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 6px; display: block; margin: 0 auto; cursor: crosshair;"></canvas>
           </div>
 
           <div class="seat-actions" style="margin-top: 40px;">
@@ -490,20 +490,36 @@
       throw new Error('Section data not found: ' + sectionName);
     }
 
-    let standingAreas = [];
+    // Hardcoded fallback — bounds derived from the real seatmap_mapping.json.
+    // The JSON fetch in loadStandingAreas() overwrites this if it succeeds.
+    const STANDING_AREAS_FALLBACK = [
+      { name: 'GA-FRONT-L', label: 'Front GA Left',  minX: 0.40, maxX: 0.56, minY: 0.52, maxY: 0.66 },
+      { name: 'GA-FRONT-R', label: 'Front GA Right', minX: 0.40, maxX: 0.56, minY: 0.34, maxY: 0.48 },
+      { name: 'GA-REAR',    label: 'Rear GA',        minX: 0.56, maxX: 0.68, minY: 0.36, maxY: 0.64 },
+      { name: 'GA-CIRCLE',  label: 'Circle',         minX: 0.47, maxX: 0.53, minY: 0.46, maxY: 0.52 },
+      { name: 'GA-KISS',    label: 'Kiss',           minX: 0.53, maxX: 0.59, minY: 0.44, maxY: 0.50 },
+      { name: 'GA-DISCO',   label: 'Disco',          minX: 0.47, maxX: 0.53, minY: 0.40, maxY: 0.46 },
+      { name: 'GA-SQUARE',  label: 'Square',         minX: 0.53, maxX: 0.59, minY: 0.38, maxY: 0.44 }
+    ];
+
+    // Pre-populate synchronously so the picker works even before loadStandingAreas() returns
+    let standingAreas = STANDING_AREAS_FALLBACK.slice();
     let selectedStandingLocation = null;
 
     async function loadStandingAreas() {
-      try {
-        const res = await fetch('./data/standing_areas.json');
-        if (res.ok) {
+      const paths = ['./data/standing_areas.json', '/data/standing_areas.json', 'data/standing_areas.json'];
+      for (const path of paths) {
+        try {
+          const res = await fetch(path);
+          if (!res.ok) continue;
           const data = await res.json();
-          standingAreas = data.areas || [];
-        }
-      } catch (err) {
-        console.warn('Failed to load standing areas:', err);
-        standingAreas = [];
+          if (Array.isArray(data.areas) && data.areas.length > 0) {
+            standingAreas = data.areas;
+          }
+          return;
+        } catch { /* try next path */ }
       }
+      // If all paths fail, the hardcoded fallback remains active — no action needed
     }
 
     async function setBlock(blockName) {
@@ -555,8 +571,10 @@
       updateSummary();
     }
 
-    // Viewport: normalized [0,1] region shown on canvas
-    const VIEW = { minX: 0.14, maxX: 0.81, minY: 0.19, maxY: 0.81 };
+    // Viewport maps the normalized coordinate space to the canvas.
+    // Stage is at low xN (left), Rear GA at high xN (right).
+    // Front GA Right is at low yN (top), Front GA Left at high yN (bottom).
+    const VIEW = { minX: 0.16, maxX: 0.75, minY: 0.27, maxY: 0.73 };
 
     function normToCanvas(xN, yN, cw, ch) {
       return {
@@ -572,6 +590,27 @@
       };
     }
 
+    function drawAreaBox(ctx, p1, p2, sel, label) {
+      const aw = p2.x - p1.x, ah = p2.y - p1.y;
+      ctx.fillStyle = sel ? 'rgba(0,196,204,0.3)' : 'rgba(255,255,255,0.06)';
+      ctx.fillRect(p1.x, p1.y, aw, ah);
+      ctx.strokeStyle = sel ? '#00C4CC' : 'rgba(255,255,255,0.25)';
+      ctx.lineWidth = sel ? 2 : 1;
+      ctx.strokeRect(p1.x, p1.y, aw, ah);
+      // Fit label: reduce font until it fits, min 7px
+      const maxFs = 11, minFs = 7;
+      let fs = maxFs;
+      ctx.font = `${sel ? 'bold ' : ''}${fs}px sans-serif`;
+      while (fs > minFs && ctx.measureText(label).width > aw - 4) {
+        fs--;
+        ctx.font = `${sel ? 'bold ' : ''}${fs}px sans-serif`;
+      }
+      ctx.fillStyle = sel ? '#00C4CC' : 'rgba(255,255,255,0.5)';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(label, p1.x + aw / 2, p1.y + ah / 2);
+    }
+
     function drawVenueMap(canvas, selectedAreaName) {
       const ctx = canvas.getContext('2d');
       const W = canvas.width, H = canvas.height;
@@ -580,40 +619,31 @@
       ctx.fillStyle = '#05060b';
       ctx.fillRect(0, 0, W, H);
 
-      // Stage placeholder (left of all GA areas)
-      const s1 = normToCanvas(0.20, 0.38, W, H);
-      const s2 = normToCanvas(0.40, 0.62, W, H);
-      ctx.fillStyle = 'rgba(255,255,255,0.06)';
-      ctx.fillRect(s1.x, s1.y, s2.x - s1.x, s2.y - s1.y);
-      ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+      // Stage — narrow vertical bar on the left, matching real layout
+      const sA = normToCanvas(0.22, 0.30, W, H);
+      const sB = normToCanvas(0.38, 0.70, W, H);
+      ctx.fillStyle = 'rgba(255,255,255,0.07)';
+      ctx.fillRect(sA.x, sA.y, sB.x - sA.x, sB.y - sA.y);
+      ctx.strokeStyle = 'rgba(255,255,255,0.18)';
       ctx.lineWidth = 1;
-      ctx.strokeRect(s1.x, s1.y, s2.x - s1.x, s2.y - s1.y);
-      ctx.fillStyle = 'rgba(255,255,255,0.28)';
-      ctx.font = 'bold 10px sans-serif';
+      ctx.strokeRect(sA.x, sA.y, sB.x - sA.x, sB.y - sA.y);
+      // Rotated "STAGE" label
+      ctx.save();
+      ctx.translate((sA.x + sB.x) / 2, (sA.y + sB.y) / 2);
+      ctx.rotate(-Math.PI / 2);
+      ctx.fillStyle = 'rgba(255,255,255,0.32)';
+      ctx.font = 'bold 9px sans-serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText('STAGE', (s1.x + s2.x) / 2, (s1.y + s2.y) / 2);
+      ctx.fillText('STAGE', 0, 0);
+      ctx.restore();
 
       // All GA areas
       for (const area of standingAreas) {
         const sel = area.name === selectedAreaName;
         const p1 = normToCanvas(area.minX, area.minY, W, H);
         const p2 = normToCanvas(area.maxX, area.maxY, W, H);
-        const aw = p2.x - p1.x, ah = p2.y - p1.y;
-
-        ctx.fillStyle = sel ? 'rgba(0,196,204,0.28)' : 'rgba(255,255,255,0.05)';
-        ctx.fillRect(p1.x, p1.y, aw, ah);
-        ctx.strokeStyle = sel ? '#00C4CC' : 'rgba(255,255,255,0.22)';
-        ctx.lineWidth = sel ? 2 : 1;
-        ctx.strokeRect(p1.x, p1.y, aw, ah);
-
-        const charWidth = 6.5;
-        const fs = Math.max(7, Math.min(10, aw / Math.max(area.label.length * charWidth / 10, 1)));
-        ctx.font = `${sel ? 'bold ' : ''}${fs}px sans-serif`;
-        ctx.fillStyle = sel ? '#00C4CC' : 'rgba(255,255,255,0.45)';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(area.label, p1.x + aw / 2, p1.y + ah / 2);
+        drawAreaBox(ctx, p1, p2, sel, area.label);
       }
 
       // Picked point
