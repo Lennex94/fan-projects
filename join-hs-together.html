@@ -571,84 +571,57 @@
       updateSummary();
     }
 
-    // Fixed schematic positions (px on 500×280 canvas) matching the real venue plan:
-    // Stage left | Front GA Right (top) | Circle/Kiss over Disco/Square (centre) | Front GA Left (bottom) | Rear GA (right)
-    // These are display-only — actual xN/yN are still derived from the real coordinate bounds.
-    const AREA_DISPLAY = {
-      'GA-FRONT-R': { x: 60,  y: 5,   w: 190, h: 103 },
-      'GA-CIRCLE':  { x: 60,  y: 113, w: 93,  h: 42  },
-      'GA-KISS':    { x: 157, y: 113, w: 93,  h: 42  },
-      'GA-DISCO':   { x: 60,  y: 160, w: 93,  h: 42  },
-      'GA-SQUARE':  { x: 157, y: 160, w: 93,  h: 42  },
-      'GA-FRONT-L': { x: 60,  y: 207, w: 190, h: 68  },
-      'GA-REAR':    { x: 255, y: 5,   w: 240, h: 270 }
-    };
+    const CANVAS_PAD = 24;
 
     function drawVenueMap(canvas, selectedAreaName) {
       const ctx = canvas.getContext('2d');
       const W = canvas.width, H = canvas.height;
+      const P = CANVAS_PAD;
 
       ctx.clearRect(0, 0, W, H);
       ctx.fillStyle = '#05060b';
       ctx.fillRect(0, 0, W, H);
 
-      // Stage bar — narrow vertical rectangle on the left
-      ctx.fillStyle = 'rgba(255,255,255,0.07)';
-      ctx.fillRect(8, 20, 46, 240);
-      ctx.strokeStyle = 'rgba(255,255,255,0.15)';
-      ctx.lineWidth = 1;
-      ctx.strokeRect(8, 20, 46, 240);
-      ctx.save();
-      ctx.translate(31, 140);
-      ctx.rotate(-Math.PI / 2);
-      ctx.fillStyle = 'rgba(255,255,255,0.35)';
-      ctx.font = 'bold 9px sans-serif';
+      const area = standingAreas.find(a => a.name === selectedAreaName);
+      if (!area) return;
+
+      // The entire padded canvas represents the selected area
+      const aW = W - 2 * P, aH = H - 2 * P;
+
+      ctx.fillStyle = 'rgba(0,196,204,0.15)';
+      ctx.fillRect(P, P, aW, aH);
+      ctx.strokeStyle = '#00C4CC';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(P, P, aW, aH);
+
+      // Area label (top)
+      ctx.fillStyle = 'rgba(0,196,204,0.85)';
+      ctx.font = 'bold 15px sans-serif';
       ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText('STAGE', 0, 0);
-      ctx.restore();
+      ctx.textBaseline = 'top';
+      ctx.fillText(area.label, W / 2, P + 10);
 
-      // All GA areas using the schematic positions
-      for (const area of standingAreas) {
-        const disp = AREA_DISPLAY[area.name];
-        if (!disp) continue;
-        const sel = area.name === selectedAreaName;
-
-        ctx.fillStyle = sel ? 'rgba(0,196,204,0.3)' : 'rgba(255,255,255,0.06)';
-        ctx.fillRect(disp.x, disp.y, disp.w, disp.h);
-        ctx.strokeStyle = sel ? '#00C4CC' : 'rgba(255,255,255,0.22)';
-        ctx.lineWidth = sel ? 2 : 1;
-        ctx.strokeRect(disp.x, disp.y, disp.w, disp.h);
-
-        let fs = 11;
-        ctx.font = `${sel ? 'bold ' : ''}${fs}px sans-serif`;
-        while (fs > 7 && ctx.measureText(area.label).width > disp.w - 6) {
-          fs--;
-          ctx.font = `${sel ? 'bold ' : ''}${fs}px sans-serif`;
-        }
-        ctx.fillStyle = sel ? '#00C4CC' : 'rgba(255,255,255,0.5)';
-        ctx.textAlign = 'center';
+      // Hint when no location picked yet
+      if (!selectedStandingLocation) {
+        ctx.fillStyle = 'rgba(255,255,255,0.35)';
+        ctx.font = '12px sans-serif';
         ctx.textBaseline = 'middle';
-        ctx.fillText(area.label, disp.x + disp.w / 2, disp.y + disp.h / 2);
+        ctx.fillText('Tap to pin your location', W / 2, H / 2);
       }
 
-      // Picked point — position derived from the fraction within the selected area's display rect
+      // Picked point
       if (selectedStandingLocation) {
-        const area = standingAreas.find(a => a.name === selectedAreaName);
-        const disp = AREA_DISPLAY[selectedAreaName];
-        if (area && disp) {
-          const fracX = (selectedStandingLocation.xN - area.minX) / (area.maxX - area.minX);
-          const fracY = (selectedStandingLocation.yN - area.minY) / (area.maxY - area.minY);
-          const dotX = disp.x + Math.max(0, Math.min(1, fracX)) * disp.w;
-          const dotY = disp.y + Math.max(0, Math.min(1, fracY)) * disp.h;
-          ctx.fillStyle = '#ff3d7f';
-          ctx.beginPath();
-          ctx.arc(dotX, dotY, 7, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.strokeStyle = '#fff';
-          ctx.lineWidth = 1.5;
-          ctx.stroke();
-        }
+        const fracX = (selectedStandingLocation.xN - area.minX) / (area.maxX - area.minX);
+        const fracY = (selectedStandingLocation.yN - area.minY) / (area.maxY - area.minY);
+        const dotX = P + Math.max(0, Math.min(1, fracX)) * aW;
+        const dotY = P + Math.max(0, Math.min(1, fracY)) * aH;
+        ctx.fillStyle = '#ff3d7f';
+        ctx.beginPath();
+        ctx.arc(dotX, dotY, 8, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 2;
+        ctx.stroke();
       }
     }
 
@@ -658,22 +631,18 @@
       const canvas = document.getElementById('standingCanvas');
       if (!canvas) return;
       const area = standingAreas.find(a => a.name === state.block);
-      const disp = AREA_DISPLAY[state.block];
-      if (!area || !disp) return;
+      if (!area) return;
 
+      const P = CANVAS_PAD;
       const rect = canvas.getBoundingClientRect();
       const scaleX = canvas.width / rect.width;
       const scaleY = canvas.height / rect.height;
       const cx = (clientX - rect.left) * scaleX;
       const cy = (clientY - rect.top) * scaleY;
 
-      // Clamp click to the selected area's schematic display rect
-      const clampedX = Math.max(disp.x, Math.min(disp.x + disp.w, cx));
-      const clampedY = Math.max(disp.y, Math.min(disp.y + disp.h, cy));
-
-      // Map fraction within the display rect to the area's actual coordinate bounds
-      const fracX = (clampedX - disp.x) / disp.w;
-      const fracY = (clampedY - disp.y) / disp.h;
+      const aW = canvas.width - 2 * P, aH = canvas.height - 2 * P;
+      const fracX = Math.max(0, Math.min(1, (cx - P) / aW));
+      const fracY = Math.max(0, Math.min(1, (cy - P) / aH));
       const xN = area.minX + fracX * (area.maxX - area.minX);
       const yN = area.minY + fracY * (area.maxY - area.minY);
 
