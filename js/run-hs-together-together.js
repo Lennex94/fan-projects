@@ -806,7 +806,7 @@ async function loadJsonWithFallback(paths) {
 }
 
 function checkReady() {
-  if (!state.timeline || !state.seatmap || !state.seat) return false;
+  if (!state.timeline || !state.seat) return false;
 
   runLoader.hidden = true;
   enableStart();
@@ -843,6 +843,17 @@ async function init() {
     return;
   }
 
+  // Validate standing coordinates before doing any loading
+  if (selection.type === 'standing') {
+    const xN = Number(selection.xN);
+    const yN = Number(selection.yN);
+    if (!Number.isFinite(xN) || !Number.isFinite(yN)) {
+      setStatus('Location not saved correctly. Returning to seat selection...');
+      setTimeout(() => { window.location.href = './join-hs-together.html'; }, 3000);
+      return;
+    }
+  }
+
   // 1. Uhr mit Server abgleichen
   state.clockOffset = await measureClockOffset();
   console.log('[Sync] Clock-Offset:', state.clockOffset, 'ms');
@@ -859,25 +870,15 @@ async function init() {
     console.warn('[Sync] Init-Sync fehlgeschlagen – kein Netz?', err.message);
   }
 
-  // 3. Timeline und Seatmap laden
+  // 3. Timeline laden
   state.timeline = await loadJsonWithFallback([
     '/data/timeline.json', './data/timeline.json', 'data/timeline.json'
   ]);
 
-  const sectionPath = encodeURIComponent(selection.block);
-  state.seatmap = await loadJsonWithFallback([
-    `/data/seats/${sectionPath}.json`,
-    `./data/seats/${sectionPath}.json`,
-    `data/seats/${sectionPath}.json`
-  ]);
-
-  if (!state.timeline || !state.seatmap) {
-    const missing = [];
-    if (!state.timeline) missing.push('timeline.json');
-    if (!state.seatmap)  missing.push('seat section file');
+  if (!state.timeline) {
     if (loaderStatus) {
       loaderStatus.style.color = '#ff4d6d';
-      loaderStatus.textContent = `FEHLER: ${missing.join(' & ')} nicht gefunden.`;
+      loaderStatus.textContent = 'FEHLER: timeline.json nicht gefunden.';
     }
     runLoader.hidden = false;
     setStatus(window.location.protocol === 'file:'
@@ -886,14 +887,46 @@ async function init() {
     return;
   }
 
+  // 4. Seat-Objekt aufbauen — stehend: synthetisch, sitzend: aus Sektion-JSON
+  if (selection.type === 'standing') {
+    const xN = Number(selection.xN);
+    const yN = Number(selection.yN);
+    state.seat = {
+      id:      `standing-${selection.area}-${xN.toFixed(4)}-${yN.toFixed(4)}`,
+      section: selection.area,
+      xN,
+      yN
+    };
+  } else {
+    const sectionPath = encodeURIComponent(selection.block);
+    state.seatmap = await loadJsonWithFallback([
+      `/data/seats/${sectionPath}.json`,
+      `./data/seats/${sectionPath}.json`,
+      `data/seats/${sectionPath}.json`
+    ]);
+
+    if (!state.seatmap) {
+      if (loaderStatus) {
+        loaderStatus.style.color = '#ff4d6d';
+        loaderStatus.textContent = 'FEHLER: seat section file nicht gefunden.';
+      }
+      runLoader.hidden = false;
+      setStatus(window.location.protocol === 'file:'
+        ? 'Blocked locally. Please upload the files manually.'
+        : 'Files not found in "data" folder.');
+      return;
+    }
+
+    state.seat = getSeatFromSelection(state.seatmap.seats || [], selection);
+
+    if (!state.seat) {
+      setStatus('Seat not found. Please select your seat again.');
+      return;
+    }
+  }
+
   state.durationMs = Math.max(1000, state.timeline.meta?.durationMs ?? 60000);
   state.background = state.timeline.meta?.backgroundColor || state.background;
-  state.seat       = getSeatFromSelection(state.seatmap.seats || [], selection);
-
-  if (!state.seat) {
-    setStatus('Seat not found. Please select your seat again.');
-    return;
-  }
 
   checkReady();
 }
@@ -903,11 +936,24 @@ async function init() {
 // =============================================================
 
 function tryManualLoad() {
-  if (!state.timeline || !state.seatmap) return;
+  const selection = getSelection();
+  if (!state.timeline) return;
+  if (selection?.type !== 'standing' && !state.seatmap) return;
   runLoader.hidden = true;
   state.durationMs = Math.max(1000, state.timeline.meta?.durationMs ?? 60000);
   state.background = state.timeline.meta?.backgroundColor || state.background;
-  state.seat       = getSeatFromSelection(state.seatmap.seats || [], getSelection());
+  if (selection?.type === 'standing') {
+    const xN = Number(selection.xN);
+    const yN = Number(selection.yN);
+    state.seat = {
+      id:      `standing-${selection.area}-${xN.toFixed(4)}-${yN.toFixed(4)}`,
+      section: selection.area,
+      xN,
+      yN
+    };
+  } else {
+    state.seat = getSeatFromSelection(state.seatmap.seats || [], selection);
+  }
   if (!state.seat) { setStatus('Seat not found.'); return; }
   checkReady();
 }
