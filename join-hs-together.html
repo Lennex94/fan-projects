@@ -309,6 +309,11 @@
             </div>
           </div>
 
+          <div id="standingLocationPicker" style="display: none; margin-top: 30px; padding-top: 20px; border-top: 1px solid rgba(255, 255, 255, 0.1);">
+            <div id="standingInstruction" style="text-align: center; color: #00C4CC; font-weight: 600; margin-bottom: 20px; display: none;"></div>
+            <canvas id="standingCanvas" width="400" height="300" style="width: 100%; max-width: 400px; height: auto; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 6px; display: block; margin: 0 auto;"></canvas>
+          </div>
+
           <div class="seat-actions" style="margin-top: 40px;">
             <button type="button" class="btn primary form-submit" id="submitBtn" disabled>Confirm seat</button>
           </div>
@@ -394,7 +399,9 @@
       summaryRow.textContent = isStanding ? 'Standing' : (state.row || '-');
       summarySeat.textContent = isStanding ? 'N/A' : (state.seat || '-');
 
-      const complete = isStanding ? (state.tier && state.block) : (state.tier && state.block && state.row && state.seat);
+      const complete = isStanding
+        ? (state.tier && state.block && selectedStandingLocation !== null)
+        : (state.tier && state.block && state.row && state.seat);
       submitBtn.disabled = !complete;
       summary.style.display = complete ? 'block' : 'none';
     }
@@ -404,6 +411,12 @@
       state.block = '';
       state.row = '';
       state.seat = '';
+      selectedStandingLocation = null;
+
+      const _pic = document.getElementById('standingLocationPicker');
+      if (_pic) _pic.style.display = 'none';
+      const _ins = document.getElementById('standingInstruction');
+      if (_ins) _ins.style.display = 'none';
 
       tierButtons.forEach(btn => {
         const active = btn.dataset.tier === tier;
@@ -434,60 +447,6 @@
       updateSummary();
     }
 
-    function setBlock(blockName) {
-      state.block = blockName;
-      state.row = '';
-      state.seat = '';
-
-      resetSelect(rowSelect, 'Select your row');
-      resetSelect(seatSelect, 'Select your seat');
-
-      if (state.tier === 'standing') {
-        rowSelect.disabled = true;
-        seatSelect.disabled = true;
-        rowRow.style.display = 'none';
-        seatRow.style.display = 'none';
-        updateSummary();
-        return;
-      }
-
-      const rows = Object.keys(state.sections[blockName]?.rows || {}).sort(valueSort);
-      rows.forEach(row => {
-        const option = document.createElement('option');
-        option.value = row;
-        option.textContent = row;
-        rowSelect.appendChild(option);
-      });
-
-      rowSelect.disabled = false;
-      seatSelect.disabled = true;
-
-      rowRow.style.display = 'block';
-      seatRow.style.display = 'none';
-
-      updateSummary();
-    }
-
-    function setRow(row) {
-      state.row = row;
-      state.seat = '';
-
-      resetSelect(seatSelect, 'Select your seat');
-
-      const seats = (state.sections[state.block]?.rows[row] || []).slice().sort(valueSort);
-      seats.forEach(seat => {
-        const option = document.createElement('option');
-        option.value = seat;
-        option.textContent = seat;
-        seatSelect.appendChild(option);
-      });
-
-      seatSelect.disabled = false;
-      seatRow.style.display = 'block';
-
-      updateSummary();
-    }
-
     function enableTiers() {
       tierButtons.forEach(btn => {
         btn.disabled = false;
@@ -508,6 +467,7 @@
 
       enableTiers();
       seatLoader.classList.remove('active');
+      loadStandingAreas();
       console.log('Seat index initialized:', state.tiers.upper.length + state.tiers.lower.length + state.tiers.standing.length, 'sections');
     }
 
@@ -530,10 +490,27 @@
       throw new Error('Section data not found: ' + sectionName);
     }
 
+    let standingAreas = [];
+    let selectedStandingLocation = null;
+
+    async function loadStandingAreas() {
+      try {
+        const res = await fetch('./data/standing_areas.json');
+        if (res.ok) {
+          const data = await res.json();
+          standingAreas = data.areas || [];
+        }
+      } catch (err) {
+        console.warn('Failed to load standing areas:', err);
+        standingAreas = [];
+      }
+    }
+
     async function setBlock(blockName) {
       state.block = blockName;
       state.row = '';
       state.seat = '';
+      selectedStandingLocation = null;
       state.currentSection = null;
 
       resetSelect(rowSelect, 'Select your row');
@@ -544,6 +521,7 @@
         seatSelect.disabled = true;
         rowRow.style.display = 'none';
         seatRow.style.display = 'none';
+        showStandingLocationPicker(blockName);
         updateSummary();
         return;
       }
@@ -575,6 +553,137 @@
       seatRow.style.display = 'none';
 
       updateSummary();
+    }
+
+    // Viewport: normalized [0,1] region shown on canvas
+    const VIEW = { minX: 0.14, maxX: 0.81, minY: 0.19, maxY: 0.81 };
+
+    function normToCanvas(xN, yN, cw, ch) {
+      return {
+        x: ((xN - VIEW.minX) / (VIEW.maxX - VIEW.minX)) * cw,
+        y: ((yN - VIEW.minY) / (VIEW.maxY - VIEW.minY)) * ch
+      };
+    }
+
+    function canvasToNorm(cx, cy, cw, ch) {
+      return {
+        xN: VIEW.minX + (cx / cw) * (VIEW.maxX - VIEW.minX),
+        yN: VIEW.minY + (cy / ch) * (VIEW.maxY - VIEW.minY)
+      };
+    }
+
+    function drawVenueMap(canvas, selectedAreaName) {
+      const ctx = canvas.getContext('2d');
+      const W = canvas.width, H = canvas.height;
+
+      ctx.clearRect(0, 0, W, H);
+      ctx.fillStyle = '#05060b';
+      ctx.fillRect(0, 0, W, H);
+
+      // Stage placeholder (left of all GA areas)
+      const s1 = normToCanvas(0.20, 0.38, W, H);
+      const s2 = normToCanvas(0.40, 0.62, W, H);
+      ctx.fillStyle = 'rgba(255,255,255,0.06)';
+      ctx.fillRect(s1.x, s1.y, s2.x - s1.x, s2.y - s1.y);
+      ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(s1.x, s1.y, s2.x - s1.x, s2.y - s1.y);
+      ctx.fillStyle = 'rgba(255,255,255,0.28)';
+      ctx.font = 'bold 10px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('STAGE', (s1.x + s2.x) / 2, (s1.y + s2.y) / 2);
+
+      // All GA areas
+      for (const area of standingAreas) {
+        const sel = area.name === selectedAreaName;
+        const p1 = normToCanvas(area.minX, area.minY, W, H);
+        const p2 = normToCanvas(area.maxX, area.maxY, W, H);
+        const aw = p2.x - p1.x, ah = p2.y - p1.y;
+
+        ctx.fillStyle = sel ? 'rgba(0,196,204,0.28)' : 'rgba(255,255,255,0.05)';
+        ctx.fillRect(p1.x, p1.y, aw, ah);
+        ctx.strokeStyle = sel ? '#00C4CC' : 'rgba(255,255,255,0.22)';
+        ctx.lineWidth = sel ? 2 : 1;
+        ctx.strokeRect(p1.x, p1.y, aw, ah);
+
+        const charWidth = 6.5;
+        const fs = Math.max(7, Math.min(10, aw / Math.max(area.label.length * charWidth / 10, 1)));
+        ctx.font = `${sel ? 'bold ' : ''}${fs}px sans-serif`;
+        ctx.fillStyle = sel ? '#00C4CC' : 'rgba(255,255,255,0.45)';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(area.label, p1.x + aw / 2, p1.y + ah / 2);
+      }
+
+      // Picked point
+      if (selectedStandingLocation) {
+        const pt = normToCanvas(selectedStandingLocation.xN, selectedStandingLocation.yN, W, H);
+        ctx.fillStyle = '#ff3d7f';
+        ctx.beginPath();
+        ctx.arc(pt.x, pt.y, 7, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+      }
+    }
+
+    let canvasListenersAttached = false;
+
+    function handleCanvasInteraction(clientX, clientY) {
+      const canvas = document.getElementById('standingCanvas');
+      if (!canvas) return;
+      const area = standingAreas.find(a => a.name === state.block);
+      if (!area) return;
+
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+      const cx = (clientX - rect.left) * scaleX;
+      const cy = (clientY - rect.top) * scaleY;
+      const { xN, yN } = canvasToNorm(cx, cy, canvas.width, canvas.height);
+
+      // Clamp to selected area's bounds
+      const clampedX = Math.max(area.minX, Math.min(area.maxX, xN));
+      const clampedY = Math.max(area.minY, Math.min(area.maxY, yN));
+
+      selectedStandingLocation = { xN: clampedX, yN: clampedY };
+      drawVenueMap(canvas, state.block);
+      updateSummary();
+    }
+
+    function showStandingLocationPicker(areaName) {
+      const pickerContainer = document.getElementById('standingLocationPicker');
+      const canvas = document.getElementById('standingCanvas');
+      if (!pickerContainer || !canvas) return;
+
+      if (!standingAreas.find(a => a.name === areaName)) {
+        console.warn('Standing area not found in standing_areas.json:', areaName);
+        return;
+      }
+
+      pickerContainer.style.display = 'block';
+
+      const instruction = document.getElementById('standingInstruction');
+      if (instruction) {
+        instruction.textContent = 'Tap your approximate location in this area';
+        instruction.style.display = 'block';
+      }
+
+      drawVenueMap(canvas, areaName);
+
+      if (!canvasListenersAttached) {
+        canvas.addEventListener('click', (e) => {
+          handleCanvasInteraction(e.clientX, e.clientY);
+        });
+        canvas.addEventListener('touchend', (e) => {
+          e.preventDefault();
+          const touch = e.changedTouches[0];
+          handleCanvasInteraction(touch.clientX, touch.clientY);
+        });
+        canvasListenersAttached = true;
+      }
     }
 
     function setRow(row) {
@@ -652,21 +761,39 @@
       if (!state.tier || !state.block) return;
       if (!isStanding && (!state.row || !state.seat)) return;
 
-      const seatData = {
-        tier: state.tier,
-        block: state.block,
-        blockLabel: labelForSection(state.block),
-        row: isStanding ? null : state.row,
-        seat: isStanding ? null : state.seat,
-        timestamp: new Date().toISOString()
-      };
+      let seatData;
+      if (isStanding) {
+        if (!selectedStandingLocation) {
+          alert('Please select your location on the map.');
+          return;
+        }
+        seatData = {
+          type: 'standing',
+          tier: state.tier,
+          area: state.block,
+          section: state.block,
+          sectionId: state.block,
+          xN: selectedStandingLocation.xN,
+          yN: selectedStandingLocation.yN,
+          timestamp: new Date().toISOString()
+        };
+      } else {
+        seatData = {
+          type: 'seat',
+          tier: state.tier,
+          block: state.block,
+          blockLabel: labelForSection(state.block),
+          row: state.row,
+          seat: state.seat,
+          timestamp: new Date().toISOString()
+        };
+      }
 
       localStorage.setItem('hs_together_seat', JSON.stringify(seatData));
 
       console.log('Seat saved:', seatData);
       console.log('Redirecting to run page...');
 
-      // Direct redirect without alert
       window.location.href = './run-hs-together-together.html';
     });
 
