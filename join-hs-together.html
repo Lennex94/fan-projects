@@ -255,8 +255,8 @@
         <p style="margin: 0 0 24px; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.12em; color: #00C4CC; font-weight: 600;">Pick your seat here</p>
         <div class="seat-loader" id="seatLoader">
           <strong>Seat data not loaded.</strong>
-          <p class="muted">If you opened this file directly, your browser blocks the data file. Please upload the seatmap JSON.</p>
-          <label for="seatFile">Load seatmap_mapping.json</label>
+          <p class="muted">If you opened this file directly, your browser blocks the data file. Please upload the seat_index JSON.</p>
+          <label for="seatFile">Load seat_index.json</label>
           <input id="seatFile" type="file" accept="application/json" />
         </div>
 
@@ -356,6 +356,7 @@
     const state = {
       tiers: { upper: [], lower: [], standing: [] },
       sections: {},
+      currentSection: null,
       tier: '',
       block: '',
       row: '',
@@ -494,36 +495,106 @@
     }
 
     function initSeatData(data) {
-      if (!data || !data.seats) {
-        console.error('Invalid data format: missing seats array');
+      if (!data || !data.tiers) {
+        console.error('Invalid data format: missing tiers object');
         return;
       }
-      const sections = {};
-      data.seats.forEach(seat => {
-        const section = seat.section;
-        if (!section) return;
-        if (!sections[section]) {
-          sections[section] = { rows: {} };
-        }
-        const rowKey = String(seat.row || '');
-        const seatKey = String(seat.seat || '');
-        if (!sections[section].rows[rowKey]) {
-          sections[section].rows[rowKey] = [];
-        }
-        if (!sections[section].rows[rowKey].includes(seatKey)) {
-          sections[section].rows[rowKey].push(seatKey);
-        }
-      });
 
-      state.sections = sections;
-      const sectionNames = Object.keys(sections);
-      state.tiers.upper = sectionNames.filter(name => /^2-\d{3}$/.test(name)).sort();
-      state.tiers.lower = sectionNames.filter(name => /^1-\d{3}$/.test(name)).sort();
-      state.tiers.standing = sectionNames.filter(name => name.startsWith('GA-')).sort();
+      state.sections = {};
+      state.currentSection = null;
+      state.tiers.upper = Array.isArray(data.tiers.upper) ? data.tiers.upper.slice() : [];
+      state.tiers.lower = Array.isArray(data.tiers.lower) ? data.tiers.lower.slice() : [];
+      state.tiers.standing = Array.isArray(data.tiers.standing) ? data.tiers.standing.slice() : [];
 
       enableTiers();
       seatLoader.classList.remove('active');
-      console.log('Seat data initialized:', sectionNames.length, 'sections');
+      console.log('Seat index initialized:', state.tiers.upper.length + state.tiers.lower.length + state.tiers.standing.length, 'sections');
+    }
+
+    async function fetchSectionData(sectionName) {
+      const encoded = encodeURIComponent(sectionName);
+      const paths = [
+        `/data/seats/${encoded}.json`,
+        `./data/seats/${encoded}.json`,
+        `data/seats/${encoded}.json`
+      ];
+      for (const path of paths) {
+        try {
+          const res = await fetch(path);
+          if (!res.ok) continue;
+          return await res.json();
+        } catch (err) {
+          console.warn('Failed to load section data:', path, err);
+        }
+      }
+      throw new Error('Section data not found: ' + sectionName);
+    }
+
+    async function setBlock(blockName) {
+      state.block = blockName;
+      state.row = '';
+      state.seat = '';
+      state.currentSection = null;
+
+      resetSelect(rowSelect, 'Select your row');
+      resetSelect(seatSelect, 'Select your seat');
+
+      if (state.tier === 'standing') {
+        rowSelect.disabled = true;
+        seatSelect.disabled = true;
+        rowRow.style.display = 'none';
+        seatRow.style.display = 'none';
+        updateSummary();
+        return;
+      }
+
+      try {
+        state.currentSection = await fetchSectionData(blockName);
+      } catch (err) {
+        alert('Could not load block data. Please try again.');
+        console.error(err);
+        rowSelect.disabled = true;
+        seatSelect.disabled = true;
+        rowRow.style.display = 'none';
+        seatRow.style.display = 'none';
+        updateSummary();
+        return;
+      }
+
+      const rows = Object.keys(state.currentSection.rows || {}).sort(valueSort);
+      rows.forEach(row => {
+        const option = document.createElement('option');
+        option.value = row;
+        option.textContent = row;
+        rowSelect.appendChild(option);
+      });
+
+      rowSelect.disabled = false;
+      seatSelect.disabled = true;
+      rowRow.style.display = 'block';
+      seatRow.style.display = 'none';
+
+      updateSummary();
+    }
+
+    function setRow(row) {
+      state.row = row;
+      state.seat = '';
+
+      resetSelect(seatSelect, 'Select your seat');
+
+      const seats = (state.currentSection?.rows[row] || []).slice().sort(valueSort);
+      seats.forEach(seat => {
+        const option = document.createElement('option');
+        option.value = seat;
+        option.textContent = seat;
+        seatSelect.appendChild(option);
+      });
+
+      seatSelect.disabled = false;
+      seatRow.style.display = 'block';
+
+      updateSummary();
     }
 
     tierButtons.forEach(btn => {
@@ -554,22 +625,21 @@
           const data = JSON.parse(reader.result);
           initSeatData(data);
         } catch (err) {
-          alert('Could not read the seatmap JSON.');
+          alert('Could not read the seat_index JSON.');
         }
       };
       reader.readAsText(file);
     });
 
-    fetch('./data/seatmap_mapping.json')
+    fetch('./data/seat_index.json')
       .then(res => {
         if (!res.ok) throw new Error('HTTP ' + res.status);
         return res.json();
       })
       .then(initSeatData)
       .catch(err => {
-        console.error('Failed to load seat data:', err);
+        console.error('Failed to load seat index:', err);
         seatLoader.classList.add('active');
-        // Falls der fetch fehlschlägt, prüfen wir ob wir lokal auf dem Dateisystem sind
         if (window.location.protocol === 'file:') {
           console.warn('CORS blocks fetch on file:// protocol. Please use a local server or upload the file manually.');
         }
