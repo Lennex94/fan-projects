@@ -565,10 +565,11 @@ async function syncCheck() {
 
     if (!syncData || syncData.start_epoch === null || syncData.start_epoch === undefined) {
       // Admin hat noch nicht gestartet oder hat resettet
-      if (state.playing || state.waitMode) {
-        // Show lief lokal, wurde aber zurückgesetzt → zurück in Wartezustand
+      if (state.playing) {
+        // Show lief, wurde aber zurückgesetzt → zurück in Wartezustand
         resetToWaiting();
       }
+      // Wenn im waitMode: einfach weiter warten, nicht zurücksetzen
       return;
     }
 
@@ -609,6 +610,7 @@ async function syncCheck() {
  */
 function beginAnimation() {
   document.body.classList.add('playing');
+  document.body.classList.remove('wait-mode');
 
   if (document.documentElement.requestFullscreen) {
     document.documentElement.requestFullscreen().catch(() => {});
@@ -670,7 +672,8 @@ async function startShow() {
   } else {
     // ⏳ Fall B: Admin hat noch NICHT gestartet → Wartemodus
     state.waitMode = true;
-    setStatus("⏳ Waiting for show signal...");
+    document.body.classList.add('wait-mode');
+    setStatus("Waiting for show signal");
     screen.style.backgroundColor = state.background;
 
     // Alle 3 Sekunden nachfragen (engeres Polling im Wartemodus)
@@ -782,6 +785,7 @@ function resetToWaiting() {
   state.startEpoch = null;
   state.waitMode   = false;
   document.body.classList.remove('playing');
+  document.body.classList.remove('wait-mode');
   setStatus('Show begins soon');
   startBtn.classList.remove('hidden');
   startBtn.textContent = "Press Start when 'Coming Up Roses' begins";
