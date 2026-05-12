@@ -1,214 +1,212 @@
-// =============================================================
-// js/admin.js
-// Logik für die Admin-Seite
-// =============================================================
-
-import { fetchSyncState, setStartEpoch, resetShow, measureClockOffset, fetchParticipantCount }
-  from './sync.js';
-
-// ⚠️ WICHTIG: Ändere diesen PIN bevor du live gehst!
-const ADMIN_PIN = '1586';
-
-// DOM-Elemente
-const pinSection   = document.getElementById('pinSection');
-const pinInput     = document.getElementById('pinInput');
-const pinConfirm   = document.getElementById('pinConfirm');
-const pinError     = document.getElementById('pinError');
-const mainSection  = document.getElementById('mainSection');
-const statusBox    = document.getElementById('statusBox');
-const btnStart     = document.getElementById('btnStart');
-const btnReset     = document.getElementById('btnReset');
-const offsetInfo   = document.getElementById('offsetInfo');
-const pollInfo     = document.getElementById('pollInfo');
-
-let clockOffset   = 0;      // Unterschied zwischen lokaler und Server-Uhr
-let pollInterval  = null;   // Timer für regelmäßige Datenbankabfragen
-let isRunning     = false;  // Läuft die Show gerade?
-let durationMs    = 60000;  // Wird aus timeline.json geladen
-let autoResetDone = false;  // Verhindert mehrfachen Auto-Reset pro Show
-
-// -------------------------------------------------------
-// Timeline laden (für durationMs)
-// -------------------------------------------------------
-
-async function loadDuration() {
-  try {
-    const paths = ['/data/timeline.json', './data/timeline.json', 'data/timeline.json'];
-    for (const path of paths) {
-      const res = await fetch(path);
-      if (res.ok) {
-        const data = await res.json();
-        if (data?.meta?.durationMs) {
-          durationMs = data.meta.durationMs;
-          console.log('[Admin] Show duration loaded:', durationMs, 'ms');
-        }
-        return;
-      }
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Admin – Show Sync</title>
+  <link rel="stylesheet" href="./css/styles.css" />
+  <style>
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #05060b;
+      font-family: 'ITC Franklin Gothic LT Medium', sans-serif;
+      color: #f9f7f3;
     }
-  } catch (err) {
-    console.warn('[Admin] timeline.json not found – using default 60s:', err.message);
-  }
-}
 
-// -------------------------------------------------------
-// PIN-Prüfung
-// -------------------------------------------------------
-
-function checkPin() {
-  const entered = pinInput.value.trim();
-  if (entered === ADMIN_PIN) {
-    pinSection.style.display  = 'none';
-    mainSection.style.display = 'flex';
-    startAdminSession();
-  } else {
-    pinError.textContent = 'Wrong PIN. Please try again.';
-    pinInput.value = '';
-    pinInput.focus();
-  }
-}
-
-pinConfirm.addEventListener('click', checkPin);
-pinInput.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') checkPin();
-});
-
-// -------------------------------------------------------
-// Admin-Session starten
-// -------------------------------------------------------
-
-async function startAdminSession() {
-  setStatus('⏳ Connecting...', 'waiting');
-
-  await loadDuration();
-
-  clockOffset = await measureClockOffset();
-  offsetInfo.textContent = `Server offset: ${clockOffset >= 0 ? '+' : ''}${clockOffset}ms`;
-
-  await poll();
-
-  pollInterval = setInterval(poll, 5000);
-  btnStart.disabled = false;
-
-  // Participant count: sofort und dann alle 30 Sekunden
-  updateParticipantCount();
-  setInterval(updateParticipantCount, 30000);
-}
-
-async function updateParticipantCount() {
-  const count = await fetchParticipantCount();
-  const el = document.getElementById('participantCount');
-  if (!el) return;
-  el.textContent = count === null ? 'Participants: –' : `Participants: ~${count.toLocaleString('de-DE')}`;
-}
-
-// -------------------------------------------------------
-// UI in Bereitschaftszustand setzen
-// (nach Show-Ende oder manuellem Reset)
-// -------------------------------------------------------
-
-function resetAdminUI() {
-  isRunning     = false;
-  autoResetDone = false;
-  setStatus('⏸ Ready – press ▶ to start the show', 'waiting');
-  btnStart.textContent = '▶ SHOW STARTEN';
-  btnStart.disabled    = false;
-}
-
-// -------------------------------------------------------
-// Datenbank abfragen und Status anzeigen
-// -------------------------------------------------------
-
-async function poll() {
-  try {
-    const state = await fetchSyncState();
-    pollInfo.textContent = `Last check: ${new Date().toLocaleTimeString('de-DE')}`;
-
-    if (state && state.start_epoch !== null && state.start_epoch !== undefined) {
-      const correctedNow = Date.now() + clockOffset;
-      const elapsedMs    = correctedNow - state.start_epoch;
-      const elapsedSec   = (elapsedMs / 1000).toFixed(1);
-
-      // Show ist abgelaufen → automatisch zurücksetzen
-      if (elapsedMs > durationMs && !autoResetDone) {
-        autoResetDone = true;
-        console.log('[Admin] Show finished – auto-reset');
-        try {
-          await resetShow();
-        } catch (err) {
-          console.error('[Admin] Auto-reset failed:', err.message);
-        }
-        resetAdminUI();
-        return;
-      }
-
-      // Show läuft noch
-      isRunning = true;
-      const remaining = Math.max(0, Math.round((durationMs - elapsedMs) / 1000));
-      setStatus(`🟢 SHOW RUNNING – ${elapsedSec}s elapsed (${remaining}s left)`, 'running');
-      btnStart.textContent = '▶ RESTART (Reset + Start)';
-
-    } else {
-      // Keine aktive Show
-      if (isRunning) {
-        // War vorher running → wurde extern resettet
-        resetAdminUI();
-      } else {
-        setStatus('⏸ Ready – press ▶ to start the show', 'waiting');
-        btnStart.textContent = '▶ SHOW STARTEN';
-      }
-      isRunning = false;
+    .admin-wrap {
+      width: 100%;
+      max-width: 480px;
+      padding: 2rem 1.5rem;
     }
-  } catch (err) {
-    setStatus('⚠️ Connection lost – check WiFi', 'error');
-  }
-}
 
-// -------------------------------------------------------
-// START-Knopf (kein confirm-Dialog – direkt loslegen)
-// -------------------------------------------------------
+    .admin-title {
+      font-size: 1.1rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: rgba(249,247,243,0.4);
+      margin-bottom: 0.5rem;
+    }
 
-btnStart.addEventListener('click', async () => {
-  btnStart.disabled = true;
-  setStatus('⏳ Starting...', 'waiting');
-  autoResetDone = false;
+    .admin-headline {
+      font-size: 2rem;
+      font-weight: 700;
+      margin: 0 0 2rem 0;
+    }
 
-  try {
-    const startEpoch = Date.now() + clockOffset;
-    await setStartEpoch(startEpoch);
+    /* PIN-Eingabe */
+    #pinSection {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
 
-    isRunning = true;
-    setStatus('🟢 STARTED! All participants are now synced.', 'running');
-    btnStart.textContent = '▶ RESTART (Reset + Start)';
+    #pinSection label {
+      font-size: 0.85rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: rgba(249,247,243,0.5);
+    }
 
-    setTimeout(poll, 1500);
-  } catch (err) {
-    setStatus('❌ Start failed: ' + err.message, 'error');
-    console.error(err);
-  } finally {
-    btnStart.disabled = false;
-  }
-});
+    #pinInput {
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid rgba(255,255,255,0.3);
+      color: #f9f7f3;
+      font-size: 1.5rem;
+      letter-spacing: 0.3em;
+      padding: 0.5rem 0;
+      width: 100%;
+      text-align: center;
+      outline: none;
+    }
 
-// -------------------------------------------------------
-// RESET-Knopf
-// -------------------------------------------------------
+    #pinInput:focus {
+      border-bottom-color: #ff3d7f;
+    }
 
-btnReset.addEventListener('click', async () => {
-  if (!confirm('Reset show? All participant animations will stop.')) return;
+    /* Hauptbereich */
+    #mainSection {
+      display: none;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
 
-  try {
-    await resetShow();
-    resetAdminUI();
-  } catch (err) {
-    setStatus('❌ Reset failed: ' + err.message, 'error');
-  }
-});
+    .status-box {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 4px;
+      padding: 1.25rem;
+      font-size: 1.1rem;
+      font-weight: 600;
+      min-height: 3.5rem;
+      display: flex;
+      align-items: center;
+    }
 
-// -------------------------------------------------------
-// Hilfsfunktion: Status-Box aktualisieren
-// -------------------------------------------------------
+    .status-box.running {
+      border-color: #00C4CC;
+      color: #00C4CC;
+    }
 
-function setStatus(message, type) {
-  statusBox.textContent = message;
-  statusBox.className   = 'status-box ' + (type || 'waiting');
-}
+    .status-box.waiting {
+      color: rgba(249,247,243,0.6);
+    }
+
+    .status-box.error {
+      border-color: #ff4d6d;
+      color: #ff4d6d;
+    }
+
+    .btn-start {
+      background: #ff3d7f;
+      color: #fff;
+      font-size: 1.8rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      padding: 1.25rem 2rem;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      width: 100%;
+      transition: opacity 0.2s, transform 0.1s;
+      text-transform: uppercase;
+    }
+
+    .btn-start:hover:not(:disabled) {
+      opacity: 0.9;
+    }
+
+    .btn-start:active:not(:disabled) {
+      transform: scale(0.98);
+    }
+
+    .btn-start:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .btn-reset {
+      background: transparent;
+      color: rgba(249,247,243,0.4);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 4px;
+      padding: 0.75rem;
+      width: 100%;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: all 0.2s;
+    }
+
+    .btn-reset:hover {
+      color: rgba(249,247,243,0.8);
+      border-color: rgba(255,255,255,0.35);
+    }
+
+    .info-row {
+      font-size: 0.8rem;
+      color: rgba(249,247,243,0.3);
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .btn-confirm {
+      background: #ff3d7f;
+      color: #fff;
+      font-size: 1rem;
+      padding: 0.75rem 1.5rem;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      width: 100%;
+    }
+  </style>
+</head>
+<body>
+  <div class="admin-wrap">
+    <p class="admin-title">FanProjects</p>
+    <h1 class="admin-headline">Show Admin</h1>
+
+    <!-- PIN-Schutz -->
+    <div id="pinSection">
+      <label for="pinInput">Admin-PIN eingeben</label>
+      <input
+        id="pinInput"
+        type="password"
+        inputmode="numeric"
+        maxlength="6"
+        placeholder="••••"
+        autocomplete="off"
+      />
+      <button class="btn-confirm" id="pinConfirm">Weiter →</button>
+      <p id="pinError" style="color:#ff4d6d; font-size:0.85rem; min-height:1.2em;"></p>
+    </div>
+
+    <!-- Hauptbereich (nach PIN) -->
+    <div id="mainSection">
+      <div id="statusBox" class="status-box waiting">Verbinde mit Server...</div>
+
+      <div id="participantCount" style="font-size:0.85rem; color:rgba(249,247,243,0.45); padding:0.5rem 0;">Participants: –</div>
+
+      <button id="btnStart" class="btn-start" disabled>
+        ▶ SHOW STARTEN
+      </button>
+
+      <button id="btnReset" class="btn-reset">
+        ↺ Reset show (Stop)
+      </button>
+
+      <div class="info-row">
+        <span id="offsetInfo">Offset: –</span>
+        <span id="pollInfo">Last check: –</span>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="./js/admin.js"></script>
+</body>
+</html>
+</body>
+</html>
