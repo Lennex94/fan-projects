@@ -36,6 +36,23 @@ const state = {
 };
 
 // =============================================================
+// WAKE LOCK – verhindert Bildschirmsperre während der Show
+// =============================================================
+
+let wakeLock = null;
+
+async function requestWakeLock() {
+  if (!('wakeLock' in navigator)) return;
+  try {
+    wakeLock = await navigator.wakeLock.request('screen');
+    wakeLock.addEventListener('release', () => { wakeLock = null; });
+    console.log('[WakeLock] Screen bleibt an');
+  } catch (err) {
+    console.warn('[WakeLock] Nicht möglich:', err.message);
+  }
+}
+
+// =============================================================
 // STATUS-ANZEIGE
 // =============================================================
 
@@ -638,6 +655,7 @@ function beginAnimation() {
 async function startShow() {
   if (!state.seat || !state.timeline) return;
 
+  requestWakeLock();
   startBtn.classList.add('hidden');
 
   // Startzeit noch nicht bekannt? → Einmal direkt nachfragen
@@ -700,6 +718,11 @@ async function startShow() {
  */
 async function handleReturnToForeground() {
   console.log('[Sync] Browser wieder sichtbar – Re-Sync...');
+
+  // Wake Lock wird beim Tab-Wechsel automatisch freigegeben → neu anfordern
+  if (state.waitMode || state.playing) {
+    requestWakeLock();
+  }
 
   // 1. Uhr neu abgleichen
   state.clockOffset = await measureClockOffset();
