@@ -124,6 +124,29 @@ export async function fetchParticipantCount() {
 }
 
 /**
+ * Liest den Show-Status direkt aus Supabase (kein Cloudflare-Cache).
+ * Nur für die Admin-Seite gedacht, die immer frische Daten braucht.
+ */
+export async function fetchSyncStateDirect() {
+  try {
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/show_sync?id=eq.${SYNC_ID}&select=start_epoch`,
+      {
+        headers: {
+          apikey: SUPABASE_KEY,
+          Accept: 'application/json'
+        }
+      }
+    );
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data[0] || null;
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Misst den Unterschied zwischen der lokalen Uhr und der Server-Uhr.
  * Smartphones können manchmal bis zu mehreren Sekunden falsch gehen.
  * Dieser Offset wird bei der Zeitberechnung dazugerechnet.
