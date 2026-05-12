@@ -14,15 +14,9 @@ const SYNC_ID = 'hs_together';
  */
 export async function fetchSyncState() {
   try {
-    const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/show_sync?id=eq.${SYNC_ID}&select=start_epoch`,
-      {
-        headers: {
-          apikey: SUPABASE_KEY,
-          Accept: 'application/json'
-        }
-      }
-    );
+    const res = await fetch('/api/sync', {
+      headers: { Accept: 'application/json' }
+    });
     if (!res.ok) return null;
     const data = await res.json();
     return data[0] || null;
