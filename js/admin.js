@@ -7,7 +7,7 @@ import { fetchSyncState, setStartEpoch, resetShow, measureClockOffset }
   from './sync.js';
 
 // ⚠️ WICHTIG: Ändere diesen PIN bevor du live gehst!
-const ADMIN_PIN = '1234';
+const ADMIN_PIN = '1586';
 
 // DOM-Elemente
 const pinSection   = document.getElementById('pinSection');
