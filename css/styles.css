@@ -1059,6 +1059,58 @@ a:hover {
   letter-spacing: 0.05em;
 }
 
+/* Wait indicator – shown after button press, before show starts */
+.run-wait-indicator {
+  position: absolute;
+  z-index: 10;
+  top: 50%;
+  left: 50%;
+  transform: translateX(-50%) translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  text-align: center;
+  width: 100%;
+  padding: 0 2rem;
+  pointer-events: none;
+}
+
+.run-wait-indicator[hidden] {
+  display: none !important;
+}
+
+.run-wait-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #00C4CC;
+  box-shadow: 0 0 14px #00C4CC;
+  animation: waitDotPulse 1.5s ease-in-out infinite;
+}
+
+.run-wait-title {
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #fff;
+  margin: 0;
+}
+
+.run-wait-sub {
+  font-size: 0.78rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.4);
+  animation: wait-text-pulse 2.5s ease-in-out infinite;
+}
+
+@keyframes waitDotPulse {
+  0%, 100% { transform: scale(1); opacity: 1; box-shadow: 0 0 14px #00C4CC; }
+  50% { transform: scale(0.45); opacity: 0.3; box-shadow: 0 0 4px rgba(0,196,204,0.2); }
+}
+
 /* Pulse animation while waiting for show signal */
 .wait-mode .run-status {
   animation: wait-text-pulse 2.5s ease-in-out infinite;
