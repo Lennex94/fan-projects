@@ -1059,6 +1059,36 @@ a:hover {
   letter-spacing: 0.05em;
 }
 
+/* Power saving mode notice – shown before Start is pressed */
+.run-power-notice {
+  position: absolute;
+  top: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  background: rgba(255, 193, 7, 0.1);
+  border: 1px solid rgba(255, 193, 7, 0.35);
+  border-radius: 10px;
+  padding: 0.65rem 1.1rem;
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.7);
+  text-align: center;
+  max-width: 320px;
+  width: calc(100% - 3rem);
+  line-height: 1.55;
+  pointer-events: none;
+}
+
+.run-power-notice strong {
+  color: rgba(255, 193, 7, 0.9);
+  font-weight: 700;
+}
+
+body.wait-mode .run-power-notice,
+body.playing .run-power-notice {
+  display: none;
+}
+
 /* Wait indicator – shown after button press, before show starts */
 .run-wait-indicator {
   position: absolute;
