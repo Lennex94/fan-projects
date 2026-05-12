@@ -611,6 +611,7 @@ async function syncCheck() {
 function beginAnimation() {
   document.body.classList.add('playing');
   document.body.classList.remove('wait-mode');
+  document.getElementById('waitIndicator').hidden = true;
 
   if (document.documentElement.requestFullscreen) {
     document.documentElement.requestFullscreen().catch(() => {});
@@ -673,7 +674,8 @@ async function startShow() {
     // ⏳ Fall B: Admin hat noch NICHT gestartet → Wartemodus
     state.waitMode = true;
     document.body.classList.add('wait-mode');
-    setStatus("Waiting for show signal");
+    setStatus('');
+    document.getElementById('waitIndicator').hidden = false;
     screen.style.backgroundColor = state.background;
 
     // Alle 3 Sekunden nachfragen (engeres Polling im Wartemodus)
@@ -786,6 +788,7 @@ function resetToWaiting() {
   state.waitMode   = false;
   document.body.classList.remove('playing');
   document.body.classList.remove('wait-mode');
+  document.getElementById('waitIndicator').hidden = true;
   setStatus('Show begins soon');
   startBtn.classList.remove('hidden');
   startBtn.textContent = "Press Start when 'Coming Up Roses' begins";
