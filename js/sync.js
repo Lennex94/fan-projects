@@ -71,6 +71,59 @@ export async function resetShow() {
 }
 
 /**
+ * Sendet einen "Ich bin noch hier"-Ping an die participants-Tabelle.
+ * Wird alle 3 Minuten von der Run-Seite aufgerufen.
+ */
+export async function sendHeartbeat() {
+  try {
+    let deviceId = localStorage.getItem('fanproject_device_id');
+    if (!deviceId) {
+      deviceId = crypto.randomUUID
+        ? crypto.randomUUID()
+        : Math.random().toString(36).slice(2) + Date.now().toString(36);
+      localStorage.setItem('fanproject_device_id', deviceId);
+    }
+    await fetch(`${SUPABASE_URL}/rest/v1/participants`, {
+      method: 'POST',
+      headers: {
+        apikey: SUPABASE_KEY,
+        'Content-Type': 'application/json',
+        Prefer: 'resolution=merge-duplicates'
+      },
+      body: JSON.stringify({ id: deviceId, project: SYNC_ID, last_seen: new Date().toISOString() })
+    });
+  } catch {
+    // Non-critical, silent fail
+  }
+}
+
+/**
+ * Liest die Anzahl aktiver Teilnehmer der letzten 5 Minuten.
+ * Nur für die Admin-Seite.
+ */
+export async function fetchParticipantCount() {
+  try {
+    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/participants?project=eq.${SYNC_ID}&last_seen=gte.${fiveMinutesAgo}&select=id`,
+      {
+        headers: {
+          apikey: SUPABASE_KEY,
+          Prefer: 'count=exact',
+          Range: '0-0'
+        }
+      }
+    );
+    const range = res.headers.get('Content-Range');
+    if (!range) return null;
+    const total = range.split('/')[1];
+    return total === '*' ? 0 : parseInt(total, 10);
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Misst den Unterschied zwischen der lokalen Uhr und der Server-Uhr.
  * Smartphones können manchmal bis zu mehreren Sekunden falsch gehen.
  * Dieser Offset wird bei der Zeitberechnung dazugerechnet.
