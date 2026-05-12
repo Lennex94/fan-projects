@@ -45,7 +45,13 @@ async function requestWakeLock() {
   if (!('wakeLock' in navigator)) return;
   try {
     wakeLock = await navigator.wakeLock.request('screen');
-    wakeLock.addEventListener('release', () => { wakeLock = null; });
+    wakeLock.addEventListener('release', () => {
+      wakeLock = null;
+      // Automatisch neu anfordern wenn Screen noch sichtbar und Show aktiv
+      if (document.visibilityState === 'visible' && (state.waitMode || state.playing)) {
+        requestWakeLock();
+      }
+    });
     console.log('[WakeLock] Screen bleibt an');
   } catch (err) {
     console.warn('[WakeLock] Nicht möglich:', err.message);
@@ -629,6 +635,7 @@ function beginAnimation() {
   document.body.classList.add('playing');
   document.body.classList.remove('wait-mode');
   document.getElementById('waitIndicator').hidden = true;
+  requestWakeLock();
 
   if (document.documentElement.requestFullscreen) {
     document.documentElement.requestFullscreen().catch(() => {});
