@@ -1059,6 +1059,33 @@ a:hover {
   letter-spacing: 0.05em;
 }
 
+/* Pulse animation while waiting for show signal */
+.wait-mode .run-status {
+  animation: wait-text-pulse 2.5s ease-in-out infinite;
+}
+
+.wait-mode .run-status::before {
+  content: '';
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #00C4CC;
+  margin-right: 10px;
+  vertical-align: middle;
+  animation: wait-dot-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes wait-text-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.45; }
+}
+
+@keyframes wait-dot-pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(0.55); opacity: 0.3; }
+}
+
 .text-center {
   text-align: center;
 }
