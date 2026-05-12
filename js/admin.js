@@ -3,7 +3,7 @@
 // Logik für die Admin-Seite
 // =============================================================
 
-import { fetchSyncState, setStartEpoch, resetShow, measureClockOffset, fetchParticipantCount }
+import { fetchSyncStateDirect, setStartEpoch, resetShow, measureClockOffset, fetchParticipantCount }
   from './sync.js';
 
 // ⚠️ WICHTIG: Ändere diesen PIN bevor du live gehst!
@@ -120,7 +120,7 @@ function resetAdminUI() {
 
 async function poll() {
   try {
-    const state = await fetchSyncState();
+    const state = await fetchSyncStateDirect();
     pollInfo.textContent = `Last check: ${new Date().toLocaleTimeString('de-DE')}`;
 
     if (state && state.start_epoch !== null && state.start_epoch !== undefined) {
