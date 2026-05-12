@@ -8,7 +8,7 @@
 //  - Automatischer Re-Sync wenn Browser zurück in Vordergrund kommt
 // =============================================================
 
-import { fetchSyncState, measureClockOffset } from './sync.js';
+import { fetchSyncState, measureClockOffset, sendHeartbeat } from './sync.js';
 
 'use strict';
 
@@ -933,6 +933,10 @@ async function init() {
   state.background = state.timeline.meta?.backgroundColor || state.background;
 
   checkReady();
+
+  // Participant heartbeat: sofort und dann alle 3 Minuten
+  sendHeartbeat();
+  setInterval(sendHeartbeat, 3 * 60 * 1000);
 }
 
 // =============================================================
