@@ -3,7 +3,7 @@
 // Logik für die Admin-Seite
 // =============================================================
 
-import { fetchSyncState, setStartEpoch, resetShow, measureClockOffset }
+import { fetchSyncState, setStartEpoch, resetShow, measureClockOffset, fetchParticipantCount }
   from './sync.js';
 
 // ⚠️ WICHTIG: Ändere diesen PIN bevor du live gehst!
@@ -88,6 +88,17 @@ async function startAdminSession() {
 
   pollInterval = setInterval(poll, 5000);
   btnStart.disabled = false;
+
+  // Participant count: sofort und dann alle 30 Sekunden
+  updateParticipantCount();
+  setInterval(updateParticipantCount, 30000);
+}
+
+async function updateParticipantCount() {
+  const count = await fetchParticipantCount();
+  const el = document.getElementById('participantCount');
+  if (!el) return;
+  el.textContent = count === null ? 'Participants: –' : `Participants: ~${count.toLocaleString('de-DE')}`;
 }
 
 // -------------------------------------------------------
