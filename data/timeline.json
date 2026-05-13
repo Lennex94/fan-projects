@@ -2,7 +2,7 @@
   "meta": {
     "durationMs": 242018,
     "backgroundColor": "#000000",
-    "exportedAt": "2026-05-13T12:18:02.293Z"
+    "exportedAt": "2026-05-13T22:23:19.535Z"
   },
   "effects": [
     {
@@ -1485,9 +1485,9 @@
       "speed": 0.2,
       "burstTail": 0.5,
       "twinkleSoftness": 1,
-      "twinkleBase": 0,
+      "twinkleBase": 0.24,
       "twinkleIntensity": 1,
-      "twinkleDensity": 0.1,
+      "twinkleDensity": 0.3,
       "twinkleSpeed": 0.3,
       "gradientDirection": "radial",
       "axis": "y",
